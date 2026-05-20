@@ -1,0 +1,126 @@
+/* ── Sharp Grotesk — Self-hosted fonts ── */
+@font-face {
+  font-family: 'SharpGrotesk';
+  src: url('/fonts/SharpGrotesk/SharpGrotesk-Light20.otf') format('opentype');
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SharpGrotesk';
+  src: url('/fonts/SharpGrotesk/SharpGrotesk-Book20.otf') format('opentype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SharpGrotesk';
+  src: url('/fonts/SharpGrotesk/SharpGrotesk-SemiBold20.otf') format('opentype');
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SharpGrotesk';
+  src: url('/fonts/SharpGrotesk/SharpGrotesk-Bold20.otf') format('opentype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'SharpGrotesk';
+  src: url('/fonts/SharpGrotesk/SharpGrotesk-Black20.otf') format('opentype');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Display variant — Medium 25 (wider tracking, used for headings) */
+@font-face {
+  font-family: 'SharpGroteskDisplay';
+  src: url('/fonts/SharpGrotesk/SharpGrotesk-Medium25.otf') format('opentype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ── Tailwind v4 ── */
+@import "tailwindcss";
+
+/* ── Design Tokens ── */
+@theme {
+  --color-primary: #FF2035;
+  --color-primary-muted: rgba(255, 32, 53, 0.2);
+  --color-bg-dark: #1A1A1A;
+  --color-bg-nav: #1E1E1E;
+
+  --font-sans: 'SharpGrotesk', sans-serif;
+  --font-display: 'SharpGroteskDisplay', 'SharpGrotesk', sans-serif;
+}
+
+/* ── Base ── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #1A1A1A;
+  color: #FFFFFF;
+  font-family: 'SharpGrotesk', sans-serif;
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ── Glassmorphism ── */
+.glass-card {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+@supports not (backdrop-filter: blur(1px)) {
+  .glass-card {
+    background: rgba(30, 30, 30, 0.92);
+  }
+}
+
+/* ── Marquee (partner logo strip) ── */
+@keyframes marquee {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+.animate-marquee:hover {
+  animation-play-state: paused;
+}
+
+/* ── Layout helper ── */
+.section-container {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding-left: 80px;
+  padding-right: 80px;
+}
+
+@media (max-width: 768px) {
+  .section-container {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+}
