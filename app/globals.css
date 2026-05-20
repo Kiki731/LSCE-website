@@ -110,12 +110,33 @@ body {
   animation-play-state: paused;
 }
 
+/* ── Hero entry animations (load, not scroll) ── */
+@keyframes heroEntry {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hero-entry    { animation: heroEntry 0.7s ease-out both; }
+.hero-entry-d1 { animation: heroEntry 0.7s ease-out 0.15s both; }
+.hero-entry-d2 { animation: heroEntry 0.7s ease-out 0.30s both; }
+.hero-entry-d3 { animation: heroEntry 0.7s ease-out 0.50s both; }
+.hero-entry-d4 { animation: heroEntry 0.7s ease-out 0.65s both; }
+
+/* ── Hide scrollbar (speakers marquee row) ── */
+.scrollbar-hide {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
 /* ── Layout helper ── */
 .section-container {
   max-width: 1440px;
   margin: 0 auto;
-  padding-left: 80px;
-  padding-right: 80px;
+  padding-left: 120px;
+  padding-right: 120px;
 }
 
 @media (max-width: 768px) {
