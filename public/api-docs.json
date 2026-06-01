@@ -1,0 +1,178 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "LSCE Tickets API",
+    "description": "All backend API endpoints for the Lagos Students Career Expo ticketing system.",
+    "version": "1.0.0",
+    "contact": {
+      "email": "hello@lagoscareerexpo.com"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local development"
+    },
+    {
+      "url": "https://lagoscareerexpo.com",
+      "description": "Production"
+    }
+  ],
+  "tags": [
+    { "name": "tickets", "description": "Ticket purchase and payment flow" }
+  ],
+  "paths": {
+    "/api/tickets/apply-coupon": {
+      "post": {
+        "tags": ["tickets"],
+        "summary": "Validate a discount code",
+        "description": "Validates a coupon code server-side and returns the discount percentage and adjusted totals. Coupon codes are stored in the DISCOUNT_CODES environment variable and never exposed to the client.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["code", "tier", "quantity"],
+                "properties": {
+                  "code":     { "type": "string", "example": "LSCE10", "description": "The discount code to validate (case-insensitive)" },
+                  "tier":     { "type": "string", "enum": ["bronze", "silver", "gold"], "example": "silver" },
+                  "quantity": { "type": "integer", "minimum": 1, "maximum": 10, "example": 2 }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Validation result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "oneOf": [
+                    {
+                      "description": "Valid code",
+                      "type": "object",
+                      "properties": {
+                        "valid":          { "type": "boolean", "example": true },
+                        "pct":            { "type": "integer", "example": 10, "description": "Discount percentage" },
+                        "discountAmount": { "type": "integer", "example": 3000, "description": "Amount discounted in Naira" },
+                        "total":          { "type": "integer", "example": 27000, "description": "Final total in Naira" },
+                        "message":        { "type": "string", "example": "10% discount applied" }
+                      }
+                    },
+                    {
+                      "description": "Invalid code",
+                      "type": "object",
+                      "properties": {
+                        "valid":   { "type": "boolean", "example": false },
+                        "message": { "type": "string", "example": "Invalid discount code" }
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": { "description": "Missing required fields" },
+          "500": { "description": "Internal server error" }
+        }
+      }
+    },
+
+    "/api/tickets/verify-payment": {
+      "post": {
+        "tags": ["tickets"],
+        "summary": "Verify a Paystack payment reference",
+        "description": "Calls Paystack's transaction/verify endpoint server-side. Confirms the payment succeeded and the amount was not tampered with. Must be called before create-order.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["reference"],
+                "properties": {
+                  "reference":      { "type": "string", "example": "LSCE-1719000000000-ABC123", "description": "Paystack payment reference" },
+                  "expectedAmount": { "type": "integer", "example": 15000, "description": "Expected total in Naira (used to detect tampering)" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Verification result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "valid":       { "type": "boolean", "example": true },
+                    "reference":   { "type": "string", "example": "LSCE-1719000000000-ABC123" },
+                    "amountNaira": { "type": "integer", "example": 15000 },
+                    "email":       { "type": "string", "example": "buyer@email.com" },
+                    "metadata":    { "type": "object" }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Payment not verified or amount mismatch" },
+          "500": { "description": "Internal server error" }
+        }
+      }
+    },
+
+    "/api/tickets/create-order": {
+      "post": {
+        "tags": ["tickets"],
+        "summary": "Save a verified order to the database",
+        "description": "Creates an order row in Supabase and one attendee row per ticket seat. Sends a Resend confirmation email to the buyer. Idempotent — safe to call twice with the same paystack_reference.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": ["buyer_name", "buyer_email", "ticket_type", "quantity", "unit_price", "total_amount", "paystack_reference"],
+                "properties": {
+                  "buyer_name":         { "type": "string", "example": "Adebayo Okafor" },
+                  "buyer_email":        { "type": "string", "format": "email", "example": "adebayo@email.com" },
+                  "buyer_phone":        { "type": "string", "example": "+2348012345678" },
+                  "ticket_type":        { "type": "string", "enum": ["bronze", "silver", "gold"], "example": "gold" },
+                  "quantity":           { "type": "integer", "minimum": 1, "example": 2 },
+                  "unit_price":         { "type": "integer", "example": 30000, "description": "Price per ticket in Naira" },
+                  "discount_code":      { "type": "string", "example": "CAMPUS", "nullable": true },
+                  "discount_amount":    { "type": "integer", "example": 9000, "description": "Total discount in Naira" },
+                  "total_amount":       { "type": "integer", "example": 51000, "description": "Final amount charged in Naira" },
+                  "paystack_reference": { "type": "string", "example": "LSCE-1719000000000-ABC123" },
+                  "attendee_emails":    { "type": "array", "items": { "type": "string", "format": "email" }, "description": "One email per ticket seat" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Order created or duplicate detected",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "orderId":   { "type": "string", "format": "uuid", "example": "a3f2c1d0-..." },
+                    "success":   { "type": "boolean", "example": true },
+                    "duplicate": { "type": "boolean", "example": false }
+                  }
+                }
+              }
+            }
+          },
+          "400": { "description": "Missing required fields" },
+          "500": { "description": "Failed to create order" }
+        }
+      }
+    }
+  }
+}

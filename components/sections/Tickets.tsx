@@ -75,7 +75,7 @@ export default function Tickets() {
         {/* Heading */}
         <FadeUp>
           <div className="flex flex-col gap-2 items-center text-center max-w-[500px]">
-            <h2 className="font-display text-[26px] text-white leading-[1.2] font-[500]">
+            <h2 className="font-display text-[22px] md:text-[26px] text-white leading-[1.2] font-[500]">
               Secure{' '}
               <span className="text-[#FF2035]">Your Spot</span>{' '}
               Before They&apos;re Gone.
@@ -87,7 +87,7 @@ export default function Tickets() {
         </FadeUp>
 
         {/* Cards */}
-        <div className="flex flex-col md:flex-row gap-4 w-full items-center md:items-stretch">
+        <div className="flex flex-col md:flex-row gap-6 md:gap-4 w-full items-center md:items-stretch">
           {TICKETS.map(({ tier, emoji, label, description, borderColor, headerGradient, perks, starIcon }) => (
             <div
               key={tier}
@@ -130,17 +130,28 @@ export default function Tickets() {
                     </div>
                   ))}
                 </div>
+
+                {/* Per-card CTA — links directly to checkout with tier pre-selected */}
+                <div className="mt-auto pt-4">
+                  <Link
+                    href={`/tickets?tier=${tier}`}
+                    className="inline-flex items-center gap-1.5 bg-[#FF2035] text-white px-4 py-2.5 rounded-[24px] font-sans text-[13px] leading-none hover:opacity-90 transition-opacity"
+                  >
+                    Get {label}
+                    <Image src="/icons/Button star.svg" alt="" width={12} height={12} className="size-[12px]" />
+                  </Link>
+                </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* CTA */}
+        {/* Bottom CTA — generic fallback */}
         <Link
           href="/tickets"
           className="inline-flex items-center gap-1.5 bg-[#FF2035] text-white px-5 py-3 rounded-[24px] font-sans text-[15px] leading-none hover:opacity-90 transition-opacity"
         >
-          Get a ticket
+          View all tickets
           <Image src="/icons/Button star.svg" alt="" width={14} height={14} className="size-[14px]" />
         </Link>
       </div>

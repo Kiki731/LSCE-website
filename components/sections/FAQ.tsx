@@ -41,11 +41,11 @@ export default function FAQ() {
 
   return (
     <section className="bg-[#F7F5F2] py-[120px]">
-      <div className="section-container flex flex-col md:flex-row gap-12 md:gap-16 items-start">
+      <div className="section-container flex flex-col lg:flex-row gap-10 lg:gap-16 items-start">
 
         {/* Left — label */}
-        <FadeUp className="flex flex-col gap-3 md:w-[380px] shrink-0">
-          <h2 className="font-display text-[26px] text-[#1A1A1A] leading-[1.2] font-[500]">
+        <FadeUp className="flex flex-col gap-3 lg:w-[380px] shrink-0">
+          <h2 className="font-display text-[22px] md:text-[26px] text-[#1A1A1A] leading-[1.2] font-[500]">
             Frequently{' '}
             <span className="text-[#FF2035]">Asked</span>{' '}
             Questions

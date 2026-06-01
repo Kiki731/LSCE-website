@@ -31,7 +31,7 @@ export default function Newsletter() {
             {/* Content */}
             <div className="relative z-10 flex flex-col gap-6 max-w-[580px]">
               <div className="flex flex-col gap-3">
-                <h2 className="font-display text-[26px] text-white leading-[1.2] font-[500]">
+                <h2 className="font-display text-[22px] md:text-[26px] text-white leading-[1.2] font-[500]">
                   Be the{' '}
                   <span className="text-[#FF2035]">First</span>{' '}
                   to Know.

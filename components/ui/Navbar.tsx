@@ -12,9 +12,11 @@ const NAV_LINKS = [
   { label: 'Ambassadors', href: '/ambassadors' },
 ]
 
+const LIGHT_PATHS = ['/gallery', '/speakers', '/ambassadors']
+
 function useNavVariant() {
   const pathname = usePathname()
-  return pathname === '/gallery' ? 'light' : 'dark'
+  return LIGHT_PATHS.includes(pathname) ? 'light' : 'dark'
 }
 
 export default function Navbar() {
@@ -37,15 +39,15 @@ export default function Navbar() {
         scrolled ? '' : 'px-5 pt-5 md:px-[120px]'
       }`}
     >
-      {/* Desktop */}
+      {/* Desktop — only show at lg (1024px+) */}
       <nav
-        className={`hidden md:flex items-center justify-between py-4 transition-all duration-300 ${
+        className={`hidden lg:flex items-center justify-between py-4 transition-all duration-300 ${
           scrolled ? 'px-[120px]' : 'px-8 rounded-[40px]'
         } ${isDark ? 'bg-[#1E1E1E]' : 'bg-white'}`}
       >
         <Link href="/" className="shrink-0">
           <Image
-            src="/images/lsce-logo.png"
+            src={isDark ? '/images/lsce-logo.png' : '/images/Lsce logo black.png'}
             alt="Lagos Students Career Expo"
             width={120}
             height={28}
@@ -74,7 +76,7 @@ export default function Navbar() {
             className={`px-5 py-[10px] rounded-[24px] font-sans text-[15px] leading-none transition-opacity hover:opacity-80 ${
               isDark
                 ? 'bg-white text-[#FF2035]'
-                : 'border border-[#FF2035] text-[#FF2035]'
+                : 'text-[#FF2035]'
             }`}
           >
             Become a Sponsor
@@ -95,15 +97,15 @@ export default function Navbar() {
         </div>
       </nav>
 
-      {/* Mobile */}
+      {/* Mobile + Tablet — show below lg (1024px) */}
       <nav
-        className={`md:hidden flex items-center justify-between px-5 py-3 transition-all duration-300 ${
+        className={`lg:hidden flex items-center justify-between px-5 py-3 transition-all duration-300 ${
           scrolled ? '' : 'rounded-[24px]'
         } ${isDark ? 'bg-[#1E1E1E]' : 'bg-white'}`}
       >
         <Link href="/" className="shrink-0">
           <Image
-            src="/images/lsce-logo.png"
+            src={isDark ? '/images/lsce-logo.png' : '/images/Lsce logo black.png'}
             alt="Lagos Students Career Expo"
             width={90}
             height={21}
@@ -140,7 +142,7 @@ export default function Navbar() {
 
       {mobileOpen && (
         <div
-          className={`md:hidden mt-2 rounded-[20px] px-5 py-5 flex flex-col gap-4 ${
+          className={`lg:hidden mt-2 rounded-[20px] px-5 py-5 flex flex-col gap-4 ${
             isDark ? 'bg-[#1E1E1E]' : 'bg-white'
           }`}
         >

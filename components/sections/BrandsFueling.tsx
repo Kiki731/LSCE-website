@@ -27,7 +27,7 @@ export default function BrandsFueling() {
         {/* Heading */}
         <FadeUp>
           <div className="flex flex-col gap-3 items-center text-center max-w-[620px]">
-            <h2 className="font-display text-[26px] text-[#1A1A1A] leading-[1.2] font-[500]">
+            <h2 className="font-display text-[22px] md:text-[26px] text-[#1A1A1A] leading-[1.2] font-[500]">
               The Brands{' '}
               <span className="text-[#0cd56d]">Fueling</span>{' '}
               the Future.
@@ -40,7 +40,7 @@ export default function BrandsFueling() {
         </FadeUp>
 
         {/* Logo grid */}
-        <div className="flex flex-wrap justify-center items-center gap-x-14 gap-y-[65px] w-full">
+        <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-8 md:gap-x-10 md:gap-y-10 w-full">
           {LOGOS.map(({ name, src, width, height }) => (
             <div key={name} className="flex items-center justify-center shrink-0">
               <Image
@@ -49,7 +49,7 @@ export default function BrandsFueling() {
                 width={width}
                 height={height}
                 className="object-contain opacity-80 hover:opacity-100 transition-opacity"
-                style={{ maxHeight: '50px', width: 'auto' }}
+                style={{ maxHeight: '28px', width: 'auto' }}
               />
             </div>
           ))}

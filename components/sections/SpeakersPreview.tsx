@@ -40,7 +40,7 @@ export default async function SpeakersPreview() {
         {/* Heading */}
         <FadeUp>
           <div className="flex flex-col gap-3 items-center text-center max-w-[600px]">
-            <h2 className="font-display text-[26px] text-white leading-[1.2] font-[500]">
+            <h2 className="font-display text-[22px] md:text-[26px] text-white leading-[1.2] font-[500]">
               Learn From Those Who Did It{' '}
               <span className="text-[#0cd56d]">First.</span>
             </h2>

@@ -18,7 +18,7 @@ export default function GalleryPreview() {
         {/* Heading */}
         <FadeUp>
           <div className="flex flex-col gap-3 items-center text-center max-w-[620px]">
-            <h2 className="font-display text-[26px] text-[#1A1A1A] leading-[1.2] font-[500]">
+            <h2 className="font-display text-[22px] md:text-[26px] text-[#1A1A1A] leading-[1.2] font-[500]">
               We Set the Bar. Now We{' '}
               <span className="text-[#FF2035]">Break It</span>.
             </h2>

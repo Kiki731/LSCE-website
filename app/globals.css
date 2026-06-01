@@ -122,6 +122,41 @@ body {
 .hero-entry-d3 { animation: heroEntry 0.7s ease-out 0.50s both; }
 .hero-entry-d4 { animation: heroEntry 0.7s ease-out 0.65s both; }
 
+/* ── Ambassador marquee animations ── */
+@keyframes marquee-left {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes marquee-right {
+  0%   { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+
+.animate-marquee-left {
+  animation: marquee-left 30s linear infinite;
+}
+
+.animate-marquee-right {
+  animation: marquee-right 30s linear infinite;
+}
+
+/* ── Admin form input (dark theme) ── */
+.input-dark {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  color: white;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+.input-dark::placeholder { color: rgba(255,255,255,0.2); }
+.input-dark:focus { border-color: #FF2035; }
+
 /* ── Hide scrollbar (speakers marquee row) ── */
 .scrollbar-hide {
   scrollbar-width: none;
@@ -139,7 +174,16 @@ body {
   padding-right: 120px;
 }
 
-@media (max-width: 768px) {
+/* tablet: 768–1023px */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .section-container {
+    padding-left: 48px;
+    padding-right: 48px;
+  }
+}
+
+/* mobile: <768px */
+@media (max-width: 767px) {
   .section-container {
     padding-left: 20px;
     padding-right: 20px;

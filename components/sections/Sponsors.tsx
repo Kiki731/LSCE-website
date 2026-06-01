@@ -19,17 +19,17 @@ const EXHIBIT_PERKS = [
 export default function Sponsors() {
   return (
     <section
-      className="py-[80px]"
+      className="py-[60px] md:py-[80px]"
       style={{
         background: 'linear-gradient(148deg, rgb(103,19,29) 12%, rgb(37,11,14) 88%)',
       }}
     >
-      <div className="section-container flex flex-col gap-12 items-center">
+      <div className="section-container flex flex-col gap-10 md:gap-12 items-center">
 
         {/* Heading */}
         <FadeUp>
           <div className="flex flex-col gap-3 items-center text-center max-w-[620px]">
-            <h2 className="font-display text-[26px] text-white leading-[1.2] font-[500]">
+            <h2 className="font-display text-[22px] md:text-[26px] text-white leading-[1.2] font-[500]">
               Where Top Brands Meet Top{' '}
               <span className="text-[#FF2035]">Talent</span>.
             </h2>
@@ -41,12 +41,12 @@ export default function Sponsors() {
           </div>
         </FadeUp>
 
-        {/* Cards row */}
-        <div className="flex flex-col md:flex-row items-start justify-center gap-0 w-full">
+        {/* Cards row — stacked on mobile+tablet, side-by-side on desktop */}
+        <div className="flex flex-col gap-6 lg:flex-row lg:gap-0 items-start justify-center w-full">
 
           {/* Sponsor card */}
           <div
-            className="w-full md:w-[450px] shrink-0 flex flex-col gap-6 rounded-[24px] p-8 pt-10"
+            className="w-full lg:w-[450px] shrink-0 flex flex-col gap-6 rounded-[24px] p-8 pt-10"
             style={{
               background: 'rgba(255, 32, 53,0.07)',
               backdropFilter: 'blur(20px)',
@@ -54,10 +54,8 @@ export default function Sponsors() {
               border: '1px solid rgba(255,255,255,0.12)',
             }}
           >
-           
-
             <div className="flex flex-col gap-5">
-              <h3 className="font-display text-[24px] text-white font-[500] text-center leading-[1.2]">
+              <h3 className="font-display text-[22px] md:text-[24px] text-white font-[500] text-center leading-[1.2]">
                 🥂 Sponsor
               </h3>
               <hr className="border-white/20" />
@@ -83,10 +81,9 @@ export default function Sponsors() {
               <Image src="/icons/Button star red.svg" alt="" width={14} height={14} className="size-[14px]" />
             </Link>
           </div>
-          
 
           {/* Arrow between cards — desktop only */}
-          <div className="hidden md:flex flex-col items-center justify-center self-center w-[80px] shrink-0 mt-[-24px]">
+          <div className="hidden lg:flex flex-col items-center justify-center self-center w-[80px] shrink-0 mt-[-24px]">
             <Image
               src="/images/Curved arrow.svg"
               alt=""
@@ -98,7 +95,7 @@ export default function Sponsors() {
 
           {/* Exhibit card — offset lower on desktop */}
           <div
-            className="w-full md:w-[450px] shrink-0 flex flex-col gap-6 rounded-[24px] p-8 md:mt-20"
+            className="w-full lg:w-[450px] shrink-0 flex flex-col gap-6 rounded-[24px] p-8 lg:mt-20"
             style={{
               background: 'rgba(255, 32, 53,0.07)',
               backdropFilter: 'blur(20px)',
@@ -107,7 +104,7 @@ export default function Sponsors() {
             }}
           >
             <div className="flex flex-col gap-5">
-              <h3 className="font-display text-[24px] text-white font-[500] text-center leading-[1.2]">
+              <h3 className="font-display text-[22px] md:text-[24px] text-white font-[500] text-center leading-[1.2]">
                 🎪 Exhibit
               </h3>
               <hr className="border-white/20" />
@@ -124,7 +121,6 @@ export default function Sponsors() {
                 ))}
               </div>
             </div>
-
 
             <Link
               href="/sponsor"
