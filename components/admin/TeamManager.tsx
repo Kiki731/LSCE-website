@@ -5,6 +5,7 @@ import { useState, useEffect, useCallback } from 'react'
 interface AdminUser {
   id: string
   email: string
+  role: 'super_admin' | 'checkin'
   created_at: string
   last_sign_in: string | null
   confirmed: boolean
@@ -15,6 +16,43 @@ function fmtDate(iso: string | null) {
   return new Date(iso).toLocaleDateString('en-NG', { day: '2-digit', month: 'short', year: 'numeric' })
 }
 
+function RoleBadge({ role }: { role: string }) {
+  const isSuper = role === 'super_admin'
+  return (
+    <span
+      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-[6px] font-sans text-[11px] font-semibold"
+      style={{
+        background: isSuper ? 'rgba(255,32,53,0.12)' : 'rgba(255,255,255,0.06)',
+        color:      isSuper ? '#FF2035'              : 'rgba(255,255,255,0.5)',
+      }}
+    >
+      {isSuper ? (
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <path d="M5 1l1.2 2.5L9 4.2 7 6.1l.5 2.9L5 7.5 2.5 9l.5-2.9L1 4.2l2.8-.7L5 1z" fill="currentColor"/>
+        </svg>
+      ) : (
+        <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+          <path d="M2 9.5c0-1.657 1.343-3 3-3s3 1.343 3 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+          <circle cx="5" cy="3.5" r="2" stroke="currentColor" strokeWidth="1.2"/>
+        </svg>
+      )}
+      {isSuper ? 'Super Admin' : 'Check-in Staff'}
+    </span>
+  )
+}
+
+function SkeletonRow() {
+  return (
+    <tr className="border-b border-white/4">
+      {[220, 80, 80, 80, 60].map((w, i) => (
+        <td key={i} className="px-5 py-4">
+          <div className="h-3 rounded-full bg-white/8 animate-pulse" style={{ width: w }} />
+        </td>
+      ))}
+    </tr>
+  )
+}
+
 export default function TeamManager({ currentUserEmail }: { currentUserEmail?: string }) {
   const [users, setUsers]       = useState<AdminUser[]>([])
   const [loading, setLoading]   = useState(true)
@@ -23,7 +61,10 @@ export default function TeamManager({ currentUserEmail }: { currentUserEmail?: s
   const [error, setError]       = useState('')
   const [success, setSuccess]   = useState('')
 
-  const [form, setForm] = useState({ email: '', password: '', confirm: '' })
+  const [form, setForm] = useState({
+    email: '', password: '', confirm: '',
+    role: 'super_admin' as 'super_admin' | 'checkin',
+  })
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -50,7 +91,7 @@ export default function TeamManager({ currentUserEmail }: { currentUserEmail?: s
     const res = await fetch('/api/admin/team', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: form.email, password: form.password }),
+      body: JSON.stringify({ email: form.email, password: form.password, role: form.role }),
     })
     const data = await res.json()
 
@@ -60,15 +101,15 @@ export default function TeamManager({ currentUserEmail }: { currentUserEmail?: s
       return
     }
 
-    setSuccess(`Admin account created for ${form.email}`)
-    setForm({ email: '', password: '', confirm: '' })
+    setSuccess(`${form.role === 'super_admin' ? 'Super Admin' : 'Check-in Staff'} account created for ${form.email}`)
+    setForm({ email: '', password: '', confirm: '', role: 'super_admin' })
     setShowForm(false)
     setSaving(false)
     load()
   }
 
   async function handleDelete(user: AdminUser) {
-    if (!confirm(`Remove admin access for ${user.email}? They will no longer be able to sign in.`)) return
+    if (!confirm(`Remove access for ${user.email}? They will no longer be able to sign in.`)) return
     const res = await fetch('/api/admin/team', {
       method: 'DELETE',
       headers: { 'Content-Type': 'application/json' },
@@ -79,6 +120,9 @@ export default function TeamManager({ currentUserEmail }: { currentUserEmail?: s
     load()
   }
 
+  const superAdmins = users.filter(u => u.role === 'super_admin' || !u.role)
+  const checkinStaff = users.filter(u => u.role === 'checkin')
+
   return (
     <div className="p-8 flex flex-col gap-6">
 
@@ -87,16 +131,38 @@ export default function TeamManager({ currentUserEmail }: { currentUserEmail?: s
         <div>
           <h1 className="font-display font-[500] text-white text-[24px] leading-none">Team</h1>
           <p className="font-sans text-[13px] text-white/40 mt-1.5">
-            Admin users with portal access
+            Portal access management
           </p>
         </div>
         <button
           onClick={() => { setShowForm(!showForm); setError(''); setSuccess('') }}
-          className="flex items-center gap-2 px-4 py-2.5 rounded-[10px] font-sans text-[13px] font-semibold"
+          className="flex items-center gap-2 px-4 py-2.5 rounded-[10px] font-sans text-[13px] font-semibold transition-colors"
           style={{ background: showForm ? 'rgba(255,255,255,0.08)' : '#FF2035', color: 'white' }}
         >
-          {showForm ? '✕ Cancel' : '+ Add Admin'}
+          {showForm ? '✕ Cancel' : '+ Add User'}
         </button>
+      </div>
+
+      {/* Role info cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="bg-[#161616] border border-white/6 rounded-[14px] p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <RoleBadge role="super_admin" />
+          </div>
+          <p className="font-sans text-[12px] text-white/40 leading-[1.5]">
+            Full portal access — dashboard, orders, attendees, coupons, team management.
+          </p>
+          <p className="font-display font-[500] text-[20px] text-white mt-2">{superAdmins.length}</p>
+        </div>
+        <div className="bg-[#161616] border border-white/6 rounded-[14px] p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <RoleBadge role="checkin" />
+          </div>
+          <p className="font-sans text-[12px] text-white/40 leading-[1.5]">
+            Event-day check-in access only — can scan tickets and toggle check-in status.
+          </p>
+          <p className="font-display font-[500] text-[20px] text-white mt-2">{checkinStaff.length}</p>
+        </div>
       </div>
 
       {success && (
@@ -107,12 +173,39 @@ export default function TeamManager({ currentUserEmail }: { currentUserEmail?: s
 
       {/* Create form */}
       {showForm && (
-        <form onSubmit={handleCreate} className="bg-[#161616] border border-white/8 rounded-[16px] p-6 flex flex-col gap-4">
+        <form onSubmit={handleCreate} className="bg-[#161616] border border-white/10 rounded-[16px] p-6 flex flex-col gap-4">
           <div>
-            <p className="font-display font-[500] text-white text-[15px]">New Admin User</p>
+            <p className="font-display font-[500] text-white text-[15px]">New Portal User</p>
             <p className="font-sans text-[12px] text-white/40 mt-1">
-              The user will be able to sign in immediately. No email confirmation required.
+              User can sign in immediately — no email confirmation required.
             </p>
+          </div>
+
+          {/* Role selector */}
+          <div className="flex flex-col gap-1.5">
+            <label className="font-sans text-[11px] font-semibold text-white/50 uppercase tracking-wider">Role</label>
+            <div className="flex gap-2">
+              {([
+                { value: 'super_admin', label: 'Super Admin', desc: 'Full access' },
+                { value: 'checkin',    label: 'Check-in Staff', desc: 'Event day only' },
+              ] as const).map(r => (
+                <button
+                  key={r.value}
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, role: r.value }))}
+                  className="flex-1 flex flex-col items-start gap-0.5 px-4 py-3 rounded-[10px] border text-left transition-all"
+                  style={{
+                    background:   form.role === r.value ? 'rgba(255,32,53,0.1)' : 'rgba(255,255,255,0.03)',
+                    borderColor:  form.role === r.value ? '#FF2035' : 'rgba(255,255,255,0.1)',
+                  }}
+                >
+                  <span className="font-sans text-[13px] font-semibold" style={{ color: form.role === r.value ? '#FF2035' : 'rgba(255,255,255,0.7)' }}>
+                    {r.label}
+                  </span>
+                  <span className="font-sans text-[11px] text-white/30">{r.desc}</span>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -122,8 +215,8 @@ export default function TeamManager({ currentUserEmail }: { currentUserEmail?: s
                 required type="email"
                 value={form.email}
                 onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                placeholder="newadmin@thelscexpo.com"
-                className="bg-white/5 border border-white/10 rounded-[10px] px-4 py-3 font-sans text-[14px] text-white placeholder:text-white/20 outline-none focus:border-[#FF2035] transition-colors"
+                placeholder="user@thelscexpo.com"
+                className="bg-white/5 border border-white/15 rounded-[10px] px-4 py-3 font-sans text-[14px] text-white placeholder:text-white/20 outline-none focus:border-[#FF2035] transition-colors"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -133,7 +226,7 @@ export default function TeamManager({ currentUserEmail }: { currentUserEmail?: s
                 value={form.password}
                 onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
                 placeholder="Min. 8 characters"
-                className="bg-white/5 border border-white/10 rounded-[10px] px-4 py-3 font-sans text-[14px] text-white placeholder:text-white/20 outline-none focus:border-[#FF2035] transition-colors"
+                className="bg-white/5 border border-white/15 rounded-[10px] px-4 py-3 font-sans text-[14px] text-white placeholder:text-white/20 outline-none focus:border-[#FF2035] transition-colors"
               />
             </div>
             <div className="flex flex-col gap-1.5">
@@ -143,7 +236,7 @@ export default function TeamManager({ currentUserEmail }: { currentUserEmail?: s
                 value={form.confirm}
                 onChange={e => setForm(f => ({ ...f, confirm: e.target.value }))}
                 placeholder="Repeat password"
-                className="bg-white/5 border border-white/10 rounded-[10px] px-4 py-3 font-sans text-[14px] text-white placeholder:text-white/20 outline-none focus:border-[#FF2035] transition-colors"
+                className="bg-white/5 border border-white/15 rounded-[10px] px-4 py-3 font-sans text-[14px] text-white placeholder:text-white/20 outline-none focus:border-[#FF2035] transition-colors"
               />
             </div>
           </div>
@@ -156,31 +249,31 @@ export default function TeamManager({ currentUserEmail }: { currentUserEmail?: s
 
           <button
             type="submit" disabled={saving}
-            className="w-fit px-5 py-2.5 rounded-[10px] font-sans text-[13px] font-semibold text-white"
+            className="w-fit px-5 py-2.5 rounded-[10px] font-sans text-[13px] font-semibold text-white transition-colors"
             style={{ background: saving ? 'rgba(255,32,53,0.4)' : '#FF2035' }}
           >
-            {saving ? 'Creating…' : 'Create Admin'}
+            {saving ? 'Creating…' : 'Create User'}
           </button>
         </form>
       )}
 
       {/* Users table */}
       <div className="bg-[#161616] border border-white/6 rounded-[16px] overflow-hidden">
-        {loading ? (
-          <p className="px-5 py-8 text-center font-sans text-[13px] text-white/25">Loading…</p>
-        ) : (
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/6">
-                {['User', 'Created', 'Last Sign In', 'Status', ''].map(h => (
-                  <th key={h} className="px-5 py-3 text-left font-sans text-[11px] text-white/30 uppercase tracking-wider">
-                    {h}
-                  </th>
-                ))}
-              </tr>
-            </thead>
-            <tbody>
-              {users.map(u => {
+        <table className="w-full">
+          <thead>
+            <tr className="border-b border-white/6">
+              {['User', 'Role', 'Created', 'Last Sign In', 'Status', ''].map(h => (
+                <th key={h} className="px-5 py-3 text-left font-sans text-[11px] text-white/30 uppercase tracking-wider">
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {loading ? (
+              Array.from({ length: 3 }).map((_, i) => <SkeletonRow key={i} />)
+            ) : (
+              users.map(u => {
                 const isMe = u.email === currentUserEmail
                 return (
                   <tr key={u.id} className="border-b border-white/4 last:border-0 hover:bg-white/2 transition-colors">
@@ -197,12 +290,15 @@ export default function TeamManager({ currentUserEmail }: { currentUserEmail?: s
                         </div>
                       </div>
                     </td>
+                    <td className="px-5 py-3.5">
+                      <RoleBadge role={u.role} />
+                    </td>
                     <td className="px-5 py-3.5 font-sans text-[12px] text-white/40">{fmtDate(u.created_at)}</td>
                     <td className="px-5 py-3.5 font-sans text-[12px] text-white/40">{fmtDate(u.last_sign_in)}</td>
                     <td className="px-5 py-3.5">
                       <span className={`inline-flex items-center gap-1.5 font-sans text-[11px] font-semibold ${u.confirmed ? 'text-green-400' : 'text-yellow-500'}`}>
                         <span className={`w-1.5 h-1.5 rounded-full ${u.confirmed ? 'bg-green-400' : 'bg-yellow-500'}`} />
-                        {u.confirmed ? 'Confirmed' : 'Pending'}
+                        {u.confirmed ? 'Active' : 'Pending'}
                       </span>
                     </td>
                     <td className="px-5 py-3.5">
@@ -217,10 +313,10 @@ export default function TeamManager({ currentUserEmail }: { currentUserEmail?: s
                     </td>
                   </tr>
                 )
-              })}
-            </tbody>
-          </table>
-        )}
+              })
+            )}
+          </tbody>
+        </table>
       </div>
 
     </div>

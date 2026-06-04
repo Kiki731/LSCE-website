@@ -1,25 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import { TICKET_TYPES, type TicketTier } from '@/lib/ticket-config'
 
 /**
  * POST /api/payments/initiate
  *
  * Initialises a Paystack transaction server-side using the SECRET key.
- * The amount is calculated here — the client never sets the amount directly,
- * which prevents price-tampering attacks.
+ * Amount is locked server-side — client cannot tamper with prices.
+ * Discount codes are validated against the Supabase coupons table.
  *
- * Returns { access_code, reference, amountNaira } to the client.
- * The client then opens the Paystack popup using the access_code.
+ * Returns { access_code, reference, amountNaira } — client opens Paystack popup.
  */
 
-function getDiscountMap(): Record<string, number> {
-  const raw = process.env.DISCOUNT_CODES ?? ''
-  return raw.split(',').reduce<Record<string, number>>((acc, entry) => {
-    const [code, pctStr] = entry.trim().split(':')
-    const pct = parseInt(pctStr ?? '', 10)
-    if (code && !isNaN(pct) && pct > 0 && pct <= 100) acc[code.toUpperCase()] = pct
-    return acc
-  }, {})
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  )
 }
 
 function generateRef(): string {
@@ -64,12 +61,25 @@ export async function POST(req: NextRequest) {
     let discountPct = 0
 
     if (discount_code) {
-      const codes = getDiscountMap()
-      const pct = codes[discount_code.toUpperCase().trim()] ?? 0
-      if (pct) {
-        discountPct = pct
-        discountAmount = Math.round(subtotal * (pct / 100))
-        subtotal = subtotal - discountAmount
+      const supabase = getAdminClient()
+      const { data: coupon } = await supabase
+        .from('coupons')
+        .select('discount_pct, is_active, max_uses, times_used, valid_from, valid_until, ticket_types')
+        .eq('code', discount_code.toUpperCase().trim())
+        .single()
+
+      const now = new Date()
+      const valid = coupon &&
+        coupon.is_active &&
+        (!coupon.max_uses || coupon.times_used < coupon.max_uses) &&
+        (!coupon.valid_from  || new Date(coupon.valid_from)  <= now) &&
+        (!coupon.valid_until || new Date(coupon.valid_until) >= now) &&
+        (!coupon.ticket_types?.length || coupon.ticket_types.includes(tier))
+
+      if (valid) {
+        discountPct    = coupon.discount_pct as number
+        discountAmount = Math.round(subtotal * (discountPct / 100))
+        subtotal       = subtotal - discountAmount
       }
     }
 

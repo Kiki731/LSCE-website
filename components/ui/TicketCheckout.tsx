@@ -352,7 +352,7 @@ function OrderSummary({
               cursor: canPay && !paying ? 'pointer' : 'not-allowed',
             }}
           >
-            {paying ? 'Redirecting to payment…' : 'Proceed to Pay'}
+            {paying ? 'Opening payment…' : 'Proceed to Pay'}
           </button>
         )}
       </div>
@@ -450,11 +450,24 @@ export default function TicketCheckout() {
   const discountAmount = discountApplied ? Math.round(subtotal * (discountPct / 100)) : 0
   const total = subtotal - discountAmount
 
-  /* ── Paystack redirect flow ──────────────────────────────────────────────────
-     Server initialises the transaction (amount set server-side, tamper-proof).
-     We redirect to Paystack's hosted payment page. After payment, Paystack
-     redirects back to /tickets/success?reference=xxx where we verify + save.
+  /* ── Paystack inline popup flow ─────────────────────────────────────────────
+     1. Server initialises the transaction (amount locked server-side).
+        Returns access_code + reference.
+     2. We load the Paystack inline JS (once) and open the popup using
+        the access_code — no redirect, stays on our page.
+     3. On success the callback fires → we save the order + redirect to /tickets/success.
   ── */
+
+  // Load Paystack inline script once on mount
+  useEffect(() => {
+    if (document.getElementById('paystack-inline-js')) return
+    const script  = document.createElement('script')
+    script.id     = 'paystack-inline-js'
+    script.src    = 'https://js.paystack.co/v1/inline.js'
+    script.async  = true
+    document.body.appendChild(script)
+  }, [])
+
   const handlePay = useCallback(async () => {
     if (!selectedTier || !buyerInfoValid) return
     setPayError('')
@@ -476,14 +489,14 @@ export default function TicketCheckout() {
 
       const data = await res.json()
 
-      if (!res.ok || !data.authorization_url) {
+      if (!res.ok || !data.access_code) {
         setPayError(data.error ?? 'Could not initialise payment. Please try again.')
         setPaying(false)
         return
       }
 
-      // Store buyer info so the success page can save the order after redirect
-      sessionStorage.setItem('lsce_pending_order', JSON.stringify({
+      // Store buyer info in session so the success page can complete the order
+      const pendingOrder = {
         buyer_name:      buyer.name,
         buyer_email:     buyer.email,
         buyer_phone:     buyer.phone,
@@ -496,17 +509,39 @@ export default function TicketCheckout() {
         attendee_emails: buyer.belongsToMe
           ? [buyer.email, ...buyer.attendeeEmails].slice(0, quantity)
           : buyer.attendeeEmails.slice(0, quantity),
-      }))
+      }
+      sessionStorage.setItem('lsce_pending_order', JSON.stringify(pendingOrder))
 
-      // Redirect to Paystack's hosted payment page
-      window.location.href = data.authorization_url
+      // Open Paystack popup using the pre-initialised access_code
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const PaystackPop = (window as any).PaystackPop
+      if (!PaystackPop) {
+        // Script not ready yet — fall back to direct URL
+        window.location.href = `https://checkout.paystack.com/${data.access_code}`
+        return
+      }
+
+      const handler = PaystackPop.setup({
+        key:         process.env.NEXT_PUBLIC_PAYSTACK_PUBLIC_KEY!,
+        email:       buyer.email,
+        amount:      data.amountNaira * 100,  // kobo — required even with access_code
+        currency:    'NGN',
+        ref:         data.reference,
+        access_code: data.access_code,
+        callback: (response: { reference: string }) => {
+          window.location.href = `/tickets/success?reference=${response.reference}`
+        },
+        onClose: () => {
+          setPaying(false)
+        },
+      })
+
+      handler.openIframe()
     } catch {
       setPayError('Network error. Please check your connection and try again.')
       setPaying(false)
     }
   }, [selectedTier, buyer, total, ticket, quantity, discountApplied, discountCode, discountAmount, buyerInfoValid])
-
-  // No Paystack script needed — we use the redirect (authorization_url) flow
 
   return (
     <>
@@ -758,7 +793,7 @@ export default function TicketCheckout() {
                 color: buyerInfoValid && !paying ? '#fff' : '#999',
               }}
             >
-              {paying ? 'Redirecting to payment…' : 'Proceed to Pay'}
+              {paying ? 'Opening payment…' : 'Proceed to Pay'}
             </button>
           )}
         </div>

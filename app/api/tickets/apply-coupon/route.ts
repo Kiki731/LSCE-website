@@ -1,29 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import { TICKET_TYPES, type TicketTier } from '@/lib/ticket-config'
 
-/**
- * Validates a discount code entirely server-side.
- * Codes are stored in .env.local as:
- *   DISCOUNT_CODES=LSCE10:10,LSCE20:20,CAMPUS:15
- * Format: CODE:PERCENTAGE (integer, 1-100)
- *
- * They are NEVER sent to the client — only the result (valid/invalid + %) is returned.
- */
-
-function getDiscountMap(): Record<string, number> {
-  const raw = process.env.DISCOUNT_CODES ?? ''
-  if (!raw) return {}
-
-  return raw.split(',').reduce<Record<string, number>>((acc, entry) => {
-    const [code, pctStr] = entry.trim().split(':')
-    const pct = parseInt(pctStr ?? '', 10)
-    if (code && !isNaN(pct) && pct > 0 && pct <= 100) {
-      acc[code.toUpperCase()] = pct
-    }
-    return acc
-  }, {})
+function getAdminClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  )
 }
 
+/**
+ * Validates a coupon code against the `coupons` table in Supabase.
+ * The code itself is never exposed to the client — only valid/invalid + discount %.
+ */
 export async function POST(req: NextRequest) {
   try {
     const { code, tier, quantity } = await req.json() as {
@@ -41,13 +30,42 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ valid: false, message: 'Invalid ticket type' }, { status: 400 })
     }
 
-    const codes = getDiscountMap()
-    const pct = codes[code.toUpperCase().trim()] ?? 0
+    const supabase = getAdminClient()
+    const { data: coupon, error } = await supabase
+      .from('coupons')
+      .select('*')
+      .eq('code', code.toUpperCase().trim())
+      .single()
 
-    if (!pct) {
+    if (error || !coupon) {
       return NextResponse.json({ valid: false, message: 'Invalid discount code' })
     }
 
+    // Check active
+    if (!coupon.is_active) {
+      return NextResponse.json({ valid: false, message: 'This code is no longer active' })
+    }
+
+    // Check usage limit
+    if (coupon.max_uses !== null && coupon.times_used >= coupon.max_uses) {
+      return NextResponse.json({ valid: false, message: 'This code has reached its usage limit' })
+    }
+
+    // Check validity window
+    const now = new Date()
+    if (coupon.valid_from && new Date(coupon.valid_from) > now) {
+      return NextResponse.json({ valid: false, message: 'This code is not active yet' })
+    }
+    if (coupon.valid_until && new Date(coupon.valid_until) < now) {
+      return NextResponse.json({ valid: false, message: 'This code has expired' })
+    }
+
+    // Check tier restriction
+    if (coupon.ticket_types?.length && !coupon.ticket_types.includes(tier)) {
+      return NextResponse.json({ valid: false, message: `This code only applies to: ${coupon.ticket_types.join(', ')}` })
+    }
+
+    const pct = coupon.discount_pct as number
     const subtotal = ticket.price * quantity
     const discountAmount = Math.round(subtotal * (pct / 100))
     const total = subtotal - discountAmount

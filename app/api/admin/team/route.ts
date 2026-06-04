@@ -19,11 +19,12 @@ export async function GET() {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
 
   const users = data.users.map(u => ({
-    id:         u.id,
-    email:      u.email,
-    created_at: u.created_at,
+    id:           u.id,
+    email:        u.email,
+    role:         (u.user_metadata?.role as string) ?? 'super_admin',
+    created_at:   u.created_at,
     last_sign_in: u.last_sign_in_at,
-    confirmed:  !!u.confirmed_at,
+    confirmed:    !!u.confirmed_at,
   }))
 
   return NextResponse.json({ users })
@@ -34,21 +35,24 @@ export async function POST(req: NextRequest) {
   const user = await requireAdmin()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const { email, password } = await req.json()
+  const { email, password, role = 'super_admin' } = await req.json()
 
   if (!email || !password) {
     return NextResponse.json({ error: 'Email and password are required' }, { status: 400 })
   }
-
   if (password.length < 8) {
     return NextResponse.json({ error: 'Password must be at least 8 characters' }, { status: 400 })
+  }
+  if (!['super_admin', 'checkin'].includes(role)) {
+    return NextResponse.json({ error: 'Invalid role' }, { status: 400 })
   }
 
   const supabase = await createSupabaseAdminClient()
   const { data, error } = await supabase.auth.admin.createUser({
     email,
     password,
-    email_confirm: true,   // Skip email confirmation for admin-created users
+    email_confirm: true,
+    user_metadata: { role },
   })
 
   if (error) {
@@ -59,11 +63,11 @@ export async function POST(req: NextRequest) {
   }
 
   return NextResponse.json({
-    user: { id: data.user.id, email: data.user.email, created_at: data.user.created_at },
+    user: { id: data.user.id, email: data.user.email, role, created_at: data.user.created_at },
   })
 }
 
-/* ── DELETE /api/admin/team/[id] — remove a user ── */
+/* ── DELETE /api/admin/team — remove a user ── */
 export async function DELETE(req: NextRequest) {
   const user = await requireAdmin()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -71,7 +75,6 @@ export async function DELETE(req: NextRequest) {
   const { id } = await req.json()
   if (!id) return NextResponse.json({ error: 'User ID required' }, { status: 400 })
 
-  // Prevent self-deletion
   if (id === user.id) {
     return NextResponse.json({ error: 'You cannot delete your own account' }, { status: 400 })
   }

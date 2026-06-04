@@ -133,7 +133,7 @@ export default function CouponsManager() {
 
       {/* Create form */}
       {showForm && (
-        <form onSubmit={handleCreate} className="bg-[#161616] border border-white/8 rounded-[16px] p-6 flex flex-col gap-4">
+        <form onSubmit={handleCreate} className="bg-[#161616] border border-white/12 rounded-[16px] p-6 flex flex-col gap-4">
           <p className="font-display font-[500] text-white text-[15px]">New Coupon</p>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

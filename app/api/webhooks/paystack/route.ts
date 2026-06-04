@@ -119,7 +119,14 @@ export async function POST(req: NextRequest) {
     email: buyerEmail,
   }))
 
-  await supabase.from('attendees').insert(attendeeRows)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: insertedAttendees } = await (supabase as any)
+    .from('attendees')
+    .insert(attendeeRows)
+    .select('ticket_code')
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ticketCodes: string[] = (insertedAttendees ?? []).map((a: any) => a.ticket_code as string)
 
   // ── 6. Send confirmation email ───────────────────────────────────────────────
   await sendTicketConfirmation({
@@ -130,6 +137,7 @@ export async function POST(req: NextRequest) {
     quantity,
     totalAmount: amountNaira,
     paystackRef: reference,
+    ticketCodes,
   })
 
   console.log(`[webhook] Order ${order.id} created for ${buyerEmail} (${reference})`)

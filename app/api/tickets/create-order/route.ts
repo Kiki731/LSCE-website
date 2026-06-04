@@ -3,7 +3,6 @@ import { createClient } from '@supabase/supabase-js'
 import { sendTicketConfirmation } from '@/lib/email'
 import type { TicketTier } from '@/lib/ticket-config'
 
-// Uses service-role key so it bypasses RLS — only called server-side after payment verified
 function getAdminClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,17 +24,17 @@ export async function POST(req: NextRequest) {
       discount_amount,
       total_amount,
       paystack_reference,
-      attendee_emails,   // string[] — emails for all seats
+      attendee_emails,
     } = body
 
-    // Basic validation
     if (!buyer_name || !buyer_email || !ticket_type || !quantity || !paystack_reference) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const supabase = getAdminClient()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const supabase = getAdminClient() as any
 
-    // Check for duplicate reference (idempotency)
+    // Idempotency — don't double-create
     const { data: existing } = await supabase
       .from('orders')
       .select('id')
@@ -52,11 +51,11 @@ export async function POST(req: NextRequest) {
       .insert({
         buyer_name,
         buyer_email,
-        buyer_phone: buyer_phone || null,
+        buyer_phone:     buyer_phone || null,
         ticket_type,
         quantity,
         unit_price,
-        discount_code: discount_code || null,
+        discount_code:   discount_code || null,
         discount_amount: discount_amount || 0,
         total_amount,
         paystack_reference,
@@ -70,26 +69,27 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to create order' }, { status: 500 })
     }
 
-    // Create attendee rows (one per seat)
+    // Create one attendee row per seat
     const emails: string[] = attendee_emails?.length
       ? attendee_emails
       : Array(quantity).fill(buyer_email)
 
-    const attendeeRows = emails.map((email: string) => ({
-      order_id: order.id,
-      email,
-    }))
+    const attendeeRows = emails.map((email: string) => ({ order_id: order.id, email }))
 
-    const { error: attendeeErr } = await supabase
+    const { data: insertedAttendees, error: attendeeErr } = await supabase
       .from('attendees')
       .insert(attendeeRows)
+      .select('ticket_code')
 
     if (attendeeErr) {
-      // Non-fatal — order is saved, attendees can be backfilled
       console.error('Attendee insert error:', attendeeErr)
     }
 
-    // Send confirmation email via Resend (non-fatal if it fails)
+    // Collect ticket codes for the email
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ticketCodes: string[] = (insertedAttendees ?? []).map((a: any) => a.ticket_code as string)
+
+    // Send confirmation email with QR codes (non-fatal)
     await sendTicketConfirmation({
       orderId:     order.id,
       buyerName:   buyer_name,
@@ -98,9 +98,19 @@ export async function POST(req: NextRequest) {
       quantity,
       totalAmount: total_amount,
       paystackRef: paystack_reference,
+      ticketCodes,
     })
 
-    return NextResponse.json({ orderId: order.id, success: true })
+    return NextResponse.json({
+      orderId:     order.id,
+      success:     true,
+      buyerName:   buyer_name,
+      buyerEmail:  buyer_email,
+      ticketType:  ticket_type,
+      quantity,
+      totalAmount: total_amount,
+      ticketCodes,
+    })
   } catch (err) {
     console.error('create-order error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
