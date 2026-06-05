@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const supabase = getAdminClient() as any
 
-    // Idempotency — don't double-create
+    // ── Idempotency: order may already exist if webhook fired first ────────────
     const { data: existing } = await supabase
       .from('orders')
       .select('id')
@@ -42,10 +42,74 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (existing) {
-      return NextResponse.json({ orderId: existing.id, duplicate: true })
+      // Webhook beat us here. The attendees were created with buyer email as
+      // placeholder. If the checkout provided real attendee emails, update them now.
+      const provided: string[] = attendee_emails ?? []
+
+      const { data: existingAttendees } = await supabase
+        .from('attendees')
+        .select('id, email, ticket_code')
+        .eq('order_id', existing.id)
+        .order('created_at', { ascending: true })
+
+      // Update each attendee row with the corresponding provided email (by seat index)
+      if (existingAttendees?.length && provided.length) {
+        await Promise.allSettled(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (existingAttendees as any[]).map((att: any, i: number) => {
+            const newEmail = provided[i]
+            if (newEmail && newEmail.toLowerCase() !== att.email.toLowerCase()) {
+              return supabase
+                .from('attendees')
+                .update({ email: newEmail })
+                .eq('id', att.id)
+            }
+          })
+        )
+      }
+
+      // Re-fetch updated attendees to get final ticket codes + emails
+      const { data: finalAttendees } = await supabase
+        .from('attendees')
+        .select('ticket_code, email')
+        .eq('order_id', existing.id)
+        .order('created_at', { ascending: true })
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const ticketCodes: string[] = (finalAttendees ?? []).map((a: any) => a.ticket_code as string)
+
+      // Send guest claim emails for seats not belonging to the buyer
+      if (finalAttendees?.length) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const guestAttendees = (finalAttendees as any[]).filter(
+          (a: any) => a.email.toLowerCase() !== buyer_email.toLowerCase()
+        )
+        await Promise.allSettled(
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          guestAttendees.map((a: any) =>
+            sendGuestTicketClaim({
+              guestEmail: a.email,
+              buyerName:  buyer_name,
+              ticketType: ticket_type as TicketTier,
+              ticketCode: a.ticket_code,
+            })
+          )
+        )
+      }
+
+      return NextResponse.json({
+        orderId:     existing.id,
+        duplicate:   true,
+        buyerName:   buyer_name,
+        buyerEmail:  buyer_email,
+        ticketType:  ticket_type,
+        quantity,
+        totalAmount: total_amount,
+        ticketCodes,
+      })
     }
 
-    // Create order
+    // ── Fresh order ────────────────────────────────────────────────────────────
     const { data: order, error: orderErr } = await supabase
       .from('orders')
       .insert({
@@ -69,7 +133,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to create order' }, { status: 500 })
     }
 
-    // Create one attendee row per seat
+    // One attendee row per seat — use provided emails or fall back to buyer's
     const emails: string[] = attendee_emails?.length
       ? attendee_emails
       : Array(quantity).fill(buyer_email)
@@ -85,28 +149,29 @@ export async function POST(req: NextRequest) {
       console.error('Attendee insert error:', attendeeErr)
     }
 
-    // Collect ticket codes for the email
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const ticketCodes: string[] = (insertedAttendees ?? []).map((a: any) => a.ticket_code as string)
 
-    // Send guest claim emails to attendees who are NOT the buyer (non-fatal)
-    if (insertedAttendees && insertedAttendees.length > 0) {
-      const guestAttendees = (insertedAttendees as { ticket_code: string; email: string }[])
-        .filter(a => a.email.toLowerCase() !== buyer_email.toLowerCase())
-
+    // Send guest claim emails to non-buyer attendees
+    if (insertedAttendees?.length) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const guestAttendees = (insertedAttendees as any[]).filter(
+        (a: any) => a.email.toLowerCase() !== buyer_email.toLowerCase()
+      )
       await Promise.allSettled(
-        guestAttendees.map(a =>
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        guestAttendees.map((a: any) =>
           sendGuestTicketClaim({
-            guestEmail:  a.email,
-            buyerName:   buyer_name,
-            ticketType:  ticket_type as import('@/lib/ticket-config').TicketTier,
-            ticketCode:  a.ticket_code,
+            guestEmail: a.email,
+            buyerName:  buyer_name,
+            ticketType: ticket_type as TicketTier,
+            ticketCode: a.ticket_code,
           })
         )
       )
     }
 
-    // Send buyer confirmation email with QR codes (non-fatal)
+    // Send buyer confirmation email
     await sendTicketConfirmation({
       orderId:     order.id,
       buyerName:   buyer_name,
