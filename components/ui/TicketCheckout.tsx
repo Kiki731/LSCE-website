@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { TICKET_LIST, TICKET_TYPES, type TicketTier } from '@/lib/ticket-config'
 
@@ -354,9 +354,25 @@ export default function TicketCheckout() {
   const [discountError, setDiscountError] = useState('')
   const [buyer, setBuyer] = useState<BuyerInfo>({ name: '', email: '', phone: '', belongsToMe: true, attendeeEmails: [] })
   const [attendeeEmailInput, setAttendeeEmailInput] = useState('')
-  const [paying, setPaying] = useState(false)
-  const [payError, setPayError] = useState('')
+  const [paying, setPaying]               = useState(false)
+  const [payError, setPayError]           = useState('')
   const [applyingCoupon, setApplyingCoupon] = useState(false)
+  const [emailUsed, setEmailUsed]         = useState(false)
+  const emailCheckTimer                   = useRef<ReturnType<typeof setTimeout>>(null)
+
+  // Soft check — debounced, fires after user stops typing their email
+  function checkEmailUsed(email: string) {
+    if (emailCheckTimer.current) clearTimeout(emailCheckTimer.current)
+    setEmailUsed(false)
+    if (!email.includes('@') || email.length < 5) return
+    emailCheckTimer.current = setTimeout(async () => {
+      try {
+        const res  = await fetch(`/api/tickets/check-email?email=${encodeURIComponent(email)}`)
+        const data = await res.json()
+        setEmailUsed(!!data.used)
+      } catch { /* non-critical — ignore */ }
+    }, 600)
+  }
 
   const handleApplyDiscount = useCallback(async () => {
     if (!selectedTier || !discountCode.trim()) return
@@ -582,10 +598,25 @@ export default function TicketCheckout() {
                       Email Address <span className="text-[#FF2035]">*</span>
                     </label>
                     <input type="email" value={buyer.email}
-                      onChange={e => setBuyer(b => ({ ...b, email: e.target.value }))}
+                      onChange={e => {
+                        setBuyer(b => ({ ...b, email: e.target.value }))
+                        checkEmailUsed(e.target.value)
+                      }}
                       placeholder="Enter your email"
-                      className="border border-[#E5E5E5] rounded-[8px] px-4 py-3 font-sans text-[13px] text-[#1A1A1A] outline-none focus:border-[#1A1A1A] transition-colors placeholder:text-[#1A1A1A]/30"
+                      className="border rounded-[8px] px-4 py-3 font-sans text-[13px] text-[#1A1A1A] outline-none transition-colors placeholder:text-[#1A1A1A]/30"
+                      style={{ borderColor: emailUsed ? '#D97706' : '#E5E5E5' }}
                     />
+                    {emailUsed && (
+                      <div className="flex items-start gap-2 bg-amber-50 border border-amber-200 rounded-[8px] px-3 py-2.5">
+                        <svg className="shrink-0 mt-0.5" width="13" height="13" viewBox="0 0 14 14" fill="none">
+                          <path d="M7 1L13 13H1L7 1z" stroke="#D97706" strokeWidth="1.3" strokeLinejoin="round"/>
+                          <path d="M7 5.5v3M7 10h.01" stroke="#D97706" strokeWidth="1.4" strokeLinecap="round"/>
+                        </svg>
+                        <p className="font-sans text-[11px] text-amber-700 leading-[1.5]">
+                          This email already has a ticket registered. Only continue if you&apos;re buying additional seats.
+                        </p>
+                      </div>
+                    )}
                   </div>
                   <div className="flex flex-col gap-1.5">
                     <label className="font-sans text-[12px] font-semibold text-[#1A1A1A]/70">

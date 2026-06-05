@@ -32,70 +32,64 @@ export async function POST(req: NextRequest) {
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const supabase = getAdminClient() as any
+    const db = getAdminClient() as any
 
     // ── Idempotency: order may already exist if webhook fired first ────────────
-    const { data: existing } = await supabase
+    const { data: existing } = await db
       .from('orders')
       .select('id')
       .eq('paystack_reference', paystack_reference)
       .single()
 
     if (existing) {
-      // Webhook beat us here. The attendees were created with buyer email as
-      // placeholder. If the checkout provided real attendee emails, update them now.
-      const provided: string[] = attendee_emails ?? []
+      // Webhook beat us here — attendees were created with buyer email as placeholder.
+      // Fetch by seat order, update each with the real email, then send claim emails.
+      const provided: string[] = Array.isArray(attendee_emails) ? attendee_emails : []
 
-      const { data: existingAttendees } = await supabase
+      const { data: seats } = await db
         .from('attendees')
         .select('id, email, ticket_code')
         .eq('order_id', existing.id)
         .order('created_at', { ascending: true })
 
-      // Update each attendee row with the corresponding provided email (by seat index)
-      if (existingAttendees?.length && provided.length) {
-        await Promise.allSettled(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (existingAttendees as any[]).map((att: any, i: number) => {
-            const newEmail = provided[i]
-            if (newEmail && newEmail.toLowerCase() !== att.email.toLowerCase()) {
-              return supabase
-                .from('attendees')
-                .update({ email: newEmail })
-                .eq('id', att.id)
-            }
-          })
-        )
-      }
-
-      // Re-fetch updated attendees to get final ticket codes + emails
-      const { data: finalAttendees } = await supabase
-        .from('attendees')
-        .select('ticket_code, email')
-        .eq('order_id', existing.id)
-        .order('created_at', { ascending: true })
-
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const ticketCodes: string[] = (finalAttendees ?? []).map((a: any) => a.ticket_code as string)
+      const seatList = (seats ?? []) as any[]
 
-      // Send guest claim emails for seats not belonging to the buyer
-      if (finalAttendees?.length) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const guestAttendees = (finalAttendees as any[]).filter(
-          (a: any) => a.email.toLowerCase() !== buyer_email.toLowerCase()
+      // Update seat emails where a better email was provided
+      await Promise.allSettled(
+        seatList.map((att, i) => {
+          const newEmail = provided[i]
+          if (newEmail && newEmail.toLowerCase() !== att.email.toLowerCase()) {
+            return db.from('attendees').update({ email: newEmail }).eq('id', att.id)
+          }
+        })
+      )
+
+      // Build final list using provided emails (don't re-fetch — avoids stale read race)
+      const finalSeats = seatList.map((att, i) => ({
+        ticket_code: att.ticket_code as string,
+        email:       (provided[i] ?? att.email) as string,
+      }))
+
+      const ticketCodes = finalSeats.map(s => s.ticket_code)
+
+      // Send guest claim emails directly from the provided list
+      const guestSeats = finalSeats.filter(
+        s => s.email.toLowerCase() !== buyer_email.toLowerCase()
+      )
+
+      console.log(`[create-order] duplicate — sending ${guestSeats.length} guest claim email(s)`)
+
+      await Promise.allSettled(
+        guestSeats.map(s =>
+          sendGuestTicketClaim({
+            guestEmail: s.email,
+            buyerName:  buyer_name,
+            ticketType: ticket_type as TicketTier,
+            ticketCode: s.ticket_code,
+          }).catch(err => console.error('[create-order] guest claim email failed:', s.email, err))
         )
-        await Promise.allSettled(
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          guestAttendees.map((a: any) =>
-            sendGuestTicketClaim({
-              guestEmail: a.email,
-              buyerName:  buyer_name,
-              ticketType: ticket_type as TicketTier,
-              ticketCode: a.ticket_code,
-            })
-          )
-        )
-      }
+      )
 
       return NextResponse.json({
         orderId:     existing.id,
@@ -109,8 +103,8 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // ── Fresh order ────────────────────────────────────────────────────────────
-    const { data: order, error: orderErr } = await supabase
+    // ── Fresh order ─────────────────────────────────────────────────────────
+    const { data: order, error: orderErr } = await db
       .from('orders')
       .insert({
         buyer_name,
@@ -129,49 +123,51 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (orderErr) {
-      console.error('Order insert error:', orderErr)
+      console.error('[create-order] order insert error:', orderErr)
       return NextResponse.json({ error: 'Failed to create order' }, { status: 500 })
     }
 
-    // One attendee row per seat — use provided emails or fall back to buyer's
-    const emails: string[] = attendee_emails?.length
+    // One attendee row per seat
+    const emails: string[] = Array.isArray(attendee_emails) && attendee_emails.length
       ? attendee_emails
       : Array(quantity).fill(buyer_email)
 
     const attendeeRows = emails.map((email: string) => ({ order_id: order.id, email }))
 
-    const { data: insertedAttendees, error: attendeeErr } = await supabase
+    const { data: insertedAttendees, error: attendeeErr } = await db
       .from('attendees')
       .insert(attendeeRows)
       .select('ticket_code, email')
 
     if (attendeeErr) {
-      console.error('Attendee insert error:', attendeeErr)
+      console.error('[create-order] attendee insert error:', attendeeErr)
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const ticketCodes: string[] = (insertedAttendees ?? []).map((a: any) => a.ticket_code as string)
 
-    // Send guest claim emails to non-buyer attendees
-    if (insertedAttendees?.length) {
+    // Guest claim emails for non-buyer seats
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const guestAttendees = (insertedAttendees ?? [] as any[]).filter(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const guestAttendees = (insertedAttendees as any[]).filter(
-        (a: any) => a.email.toLowerCase() !== buyer_email.toLowerCase()
-      )
-      await Promise.allSettled(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        guestAttendees.map((a: any) =>
-          sendGuestTicketClaim({
-            guestEmail: a.email,
-            buyerName:  buyer_name,
-            ticketType: ticket_type as TicketTier,
-            ticketCode: a.ticket_code,
-          })
-        )
-      )
-    }
+      (a: any) => a.email.toLowerCase() !== buyer_email.toLowerCase()
+    )
 
-    // Send buyer confirmation email
+    console.log(`[create-order] fresh — sending ${guestAttendees.length} guest claim email(s)`)
+
+    await Promise.allSettled(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      guestAttendees.map((a: any) =>
+        sendGuestTicketClaim({
+          guestEmail: a.email,
+          buyerName:  buyer_name,
+          ticketType: ticket_type as TicketTier,
+          ticketCode: a.ticket_code,
+        }).catch(err => console.error('[create-order] guest claim email failed:', a.email, err))
+      )
+    )
+
+    // Buyer confirmation
     await sendTicketConfirmation({
       orderId:     order.id,
       buyerName:   buyer_name,
@@ -194,7 +190,7 @@ export async function POST(req: NextRequest) {
       ticketCodes,
     })
   } catch (err) {
-    console.error('create-order error:', err)
+    console.error('[create-order] error:', err)
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }

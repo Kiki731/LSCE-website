@@ -34,12 +34,12 @@ export default function TicketSuccessClient() {
   const [errorMsg, setErrorMsg] = useState('')
   const [downloading, setDownloading] = useState(false)
 
-  async function handleDownload(d: OrderDetails) {
+  function handleDownload(d: OrderDetails) {
     setDownloading(true)
     try {
-      // Dynamic import keeps jsPDF out of the initial page bundle
-      const { generateTicketPDF } = await import('@/lib/generate-ticket-pdf')
-      await generateTicketPDF({
+      // Opens a print-ready ticket page in a new window — no jsPDF, works everywhere
+      const { generateTicketPDF } = require('@/lib/generate-ticket-pdf')
+      generateTicketPDF({
         buyerName:   d.buyerName,
         buyerEmail:  d.buyerEmail,
         ticketType:  d.ticketType,
@@ -49,8 +49,8 @@ export default function TicketSuccessClient() {
         reference:   d.reference,
       })
     } catch (e) {
-      console.error('PDF generation failed:', e)
-      alert('Could not generate PDF. Please check your email for your ticket.')
+      console.error('Download failed:', e)
+      alert('Pop-ups may be blocked. Please allow pop-ups for this site and try again.')
     } finally {
       setDownloading(false)
     }
