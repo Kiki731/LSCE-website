@@ -29,9 +29,32 @@ function formatNaira(n: number) {
 }
 
 export default function TicketSuccessClient() {
-  const [state, setState]     = useState<State>('verifying')
-  const [details, setDetails] = useState<OrderDetails | null>(null)
+  const [state, setState]       = useState<State>('verifying')
+  const [details, setDetails]   = useState<OrderDetails | null>(null)
   const [errorMsg, setErrorMsg] = useState('')
+  const [downloading, setDownloading] = useState(false)
+
+  async function handleDownload(d: OrderDetails) {
+    setDownloading(true)
+    try {
+      // Dynamic import keeps jsPDF out of the initial page bundle
+      const { generateTicketPDF } = await import('@/lib/generate-ticket-pdf')
+      await generateTicketPDF({
+        buyerName:   d.buyerName,
+        buyerEmail:  d.buyerEmail,
+        ticketType:  d.ticketType,
+        quantity:    d.quantity,
+        totalAmount: d.totalAmount,
+        ticketCodes: d.ticketCodes,
+        reference:   d.reference,
+      })
+    } catch (e) {
+      console.error('PDF generation failed:', e)
+      alert('Could not generate PDF. Please check your email for your ticket.')
+    } finally {
+      setDownloading(false)
+    }
+  }
 
   useEffect(() => {
     async function process() {
@@ -285,7 +308,29 @@ export default function TicketSuccessClient() {
         </div>
 
         {/* CTAs */}
-        <div className="flex flex-col sm:flex-row items-center gap-3">
+        <div className="flex flex-col sm:flex-row items-center gap-3 flex-wrap justify-center">
+          {/* Download ticket PDF */}
+          <button
+            onClick={() => handleDownload(d)}
+            disabled={downloading}
+            className="inline-flex items-center gap-2 bg-[#1A1A1A] text-white px-6 py-3 rounded-[24px] font-sans text-[14px] leading-none hover:opacity-80 transition-opacity disabled:opacity-50"
+          >
+            {downloading ? (
+              <>
+                <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin shrink-0" />
+                Generating PDF…
+              </>
+            ) : (
+              <>
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                  <path d="M7.5 1v9M4 7l3.5 3.5L11 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M1.5 12h12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+                </svg>
+                Download Ticket
+              </>
+            )}
+          </button>
+
           <Link
             href="/"
             className="inline-flex items-center gap-1.5 bg-[#FF2035] text-white px-6 py-3 rounded-[24px] font-sans text-[14px] leading-none hover:opacity-90 transition-opacity"
