@@ -72,7 +72,7 @@ export async function generateTicketPDF(params: {
   const headerH      = 88  // mm for header area
   const footerH      = 24  // mm for footer
   const perPage      = Math.max(1, Math.floor(190 / ticketBlockH))
-  const pageCount    = Math.ceil(ticketCodes.length / perPage)
+  const pageCount    = Math.max(1, Math.ceil(ticketCodes.length / perPage))
 
   const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' })
   const W = 210  // A4 width

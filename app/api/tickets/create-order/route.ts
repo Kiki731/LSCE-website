@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { sendTicketConfirmation } from '@/lib/email'
+import { sendTicketConfirmation, sendGuestTicketClaim } from '@/lib/email'
 import type { TicketTier } from '@/lib/ticket-config'
 
 function getAdminClient() {
@@ -79,7 +79,7 @@ export async function POST(req: NextRequest) {
     const { data: insertedAttendees, error: attendeeErr } = await supabase
       .from('attendees')
       .insert(attendeeRows)
-      .select('ticket_code')
+      .select('ticket_code, email')
 
     if (attendeeErr) {
       console.error('Attendee insert error:', attendeeErr)
@@ -89,7 +89,24 @@ export async function POST(req: NextRequest) {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const ticketCodes: string[] = (insertedAttendees ?? []).map((a: any) => a.ticket_code as string)
 
-    // Send confirmation email with QR codes (non-fatal)
+    // Send guest claim emails to attendees who are NOT the buyer (non-fatal)
+    if (insertedAttendees && insertedAttendees.length > 0) {
+      const guestAttendees = (insertedAttendees as { ticket_code: string; email: string }[])
+        .filter(a => a.email.toLowerCase() !== buyer_email.toLowerCase())
+
+      await Promise.allSettled(
+        guestAttendees.map(a =>
+          sendGuestTicketClaim({
+            guestEmail:  a.email,
+            buyerName:   buyer_name,
+            ticketType:  ticket_type as import('@/lib/ticket-config').TicketTier,
+            ticketCode:  a.ticket_code,
+          })
+        )
+      )
+    }
+
+    // Send buyer confirmation email with QR codes (non-fatal)
     await sendTicketConfirmation({
       orderId:     order.id,
       buyerName:   buyer_name,

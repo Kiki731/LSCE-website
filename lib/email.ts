@@ -45,7 +45,7 @@ function buildConfirmationHtml(p: TicketConfirmationPayload): string {
   const ticket         = TICKET_TYPES[p.ticketType]
   const formattedTotal = '₦' + p.totalAmount.toLocaleString('en-NG')
   const firstName      = p.buyerName.split(' ')[0]
-  const logoUrl        = assetUrl('/images/lsce-logo.png')
+  const logoUrl        = assetUrl('/images/Lsce red.png')
 
   const qrBlocks = p.ticketCodes.map((code, i) => `
     <table width="100%" cellpadding="0" cellspacing="0"
@@ -261,6 +261,129 @@ See you there,
 The LSCE Team
 ${REPLY_TO}
 `.trim()
+}
+
+/* ── Guest ticket claim email ─────────────────────────────────────────────── */
+export interface GuestTicketPayload {
+  guestEmail:  string
+  buyerName:   string
+  ticketType:  TicketTier
+  ticketCode:  string
+}
+
+export async function sendGuestTicketClaim(p: GuestTicketPayload): Promise<void> {
+  const resend = getResend()
+  if (!resend) return
+
+  const ticket   = TICKET_TYPES[p.ticketType]
+  const claimUrl = `${SITE_URL}/tickets/claim/${p.ticketCode}`
+  const logoUrl  = assetUrl('/images/Lsce red.png')
+
+  const html = `<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /></head>
+<body style="margin:0;padding:0;background:#F7F5F2;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F7F5F2;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="100%" cellpadding="0" cellspacing="0" style="max-width:540px;">
+
+        <!-- Logo -->
+        <tr><td align="center" style="padding-bottom:28px;">
+          <a href="https://thelscexpo.com" style="display:inline-block;text-decoration:none;">
+            <img src="${logoUrl}" alt="LSCE 2026" height="36" style="display:block;height:36px;width:auto;" />
+          </a>
+        </td></tr>
+
+        <!-- Card -->
+        <tr><td style="background:white;border-radius:20px;border:1px solid #E5E5E5;overflow:hidden;">
+          <div style="background:${BRAND_RED};height:5px;border-radius:4px 4px 0 0;"></div>
+          <div style="padding:36px 32px;">
+
+            <p style="margin:0 0 6px;font-size:12px;color:#999;text-transform:uppercase;letter-spacing:0.08em;">You have a ticket</p>
+            <h1 style="margin:0 0 16px;font-size:24px;font-weight:700;color:#1A1A1A;line-height:1.25;">
+              ${p.buyerName} bought you<br/>a ticket to LSCE 2026 🎟️
+            </h1>
+            <p style="margin:0 0 28px;font-size:15px;color:#555;line-height:1.6;">
+              Your <strong>${ticket.name}</strong> is paid and waiting. Claim it to complete your registration and get your QR entry code.
+            </p>
+
+            <!-- Ticket preview -->
+            <table width="100%" cellpadding="0" cellspacing="0"
+              style="background:#F7F5F2;border-radius:10px;border:1px solid #E5E5E5;margin-bottom:28px;">
+              <tr><td style="padding:16px 20px;">
+                <table width="100%" cellpadding="0" cellspacing="0">
+                  <tr>
+                    <td>
+                      <p style="margin:0 0 2px;font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.06em;">Ticket</p>
+                      <p style="margin:0;font-size:15px;font-weight:700;color:#1A1A1A;">${ticket.name}</p>
+                    </td>
+                    <td style="text-align:right;">
+                      <p style="margin:0 0 2px;font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.06em;">Event</p>
+                      <p style="margin:0;font-size:13px;color:#1A1A1A;">LSCE 2026</p>
+                    </td>
+                  </tr>
+                </table>
+              </td></tr>
+            </table>
+
+            <!-- Event details -->
+            <table width="100%" cellpadding="0" cellspacing="0"
+              style="background:#FFF5F5;border-radius:10px;border:1px solid #FFD5D5;margin-bottom:28px;">
+              <tr><td style="padding:14px 20px;">
+                <p style="margin:0 0 2px;font-size:13px;color:#555;">📅 ${EVENT_DATE}</p>
+                <p style="margin:0;font-size:13px;color:#555;">📍 ${EVENT_VENUE}</p>
+              </td></tr>
+            </table>
+
+            <!-- CTA -->
+            <div style="text-align:center;">
+              <a href="${claimUrl}"
+                style="display:inline-block;background:${BRAND_RED};color:white;font-size:15px;font-weight:700;
+                       padding:16px 36px;border-radius:100px;text-decoration:none;letter-spacing:0.01em;">
+                Claim My Ticket →
+              </a>
+              <p style="margin:16px 0 0;font-size:11px;color:#bbb;">
+                Or copy this link: <span style="font-family:monospace;color:#999;">${claimUrl}</span>
+              </p>
+            </div>
+
+          </div>
+
+          <!-- Footer -->
+          <div style="border-top:1px solid #E5E5E5;padding:20px 32px;text-align:center;">
+            <p style="margin:0;font-size:12px;color:#999;">
+              Questions? <a href="mailto:${REPLY_TO}" style="color:${BRAND_RED};text-decoration:none;">${REPLY_TO}</a>
+            </p>
+          </div>
+        </td></tr>
+
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`
+
+  const text = `
+${p.buyerName} bought you a ${ticket.name} for ${EVENT_NAME}!
+
+Claim your ticket here: ${claimUrl}
+
+Event: ${EVENT_DATE}
+Venue: ${EVENT_VENUE}
+
+Questions? ${REPLY_TO}
+`.trim()
+
+  const { error } = await resend.emails.send({
+    from:    FROM_ADDRESS,
+    replyTo: REPLY_TO,
+    to:      [p.guestEmail],
+    subject: `${p.buyerName} bought you a ticket to LSCE 2026 🎟️`,
+    html,
+    text,
+  })
+
+  if (error) console.error('[email] Failed to send guest claim email:', error)
 }
 
 export async function sendTicketConfirmation(p: TicketConfirmationPayload): Promise<void> {
