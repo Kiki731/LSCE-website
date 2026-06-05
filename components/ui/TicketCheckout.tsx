@@ -621,9 +621,20 @@ export default function TicketCheckout() {
                           <path d="M7 1L13 13H1L7 1z" stroke="#D97706" strokeWidth="1.3" strokeLinejoin="round"/>
                           <path d="M7 5.5v3M7 10h.01" stroke="#D97706" strokeWidth="1.4" strokeLinecap="round"/>
                         </svg>
-                        <p className="font-sans text-[11px] text-amber-700 leading-[1.5]">
-                          This email already has a ticket registered. Only continue if you&apos;re buying additional seats.
-                        </p>
+                        <div className="flex flex-col gap-1">
+                          <p className="font-sans text-[11px] text-amber-700 leading-[1.5] font-semibold">
+                            This email already has a ticket.
+                          </p>
+                          {buyer.belongsToMe && quantity > 1 ? (
+                            <p className="font-sans text-[11px] text-amber-600 leading-[1.5]">
+                              You&apos;re paying for one of these seats yourself — but you already have a ticket. If you&apos;re buying <strong>only for others</strong>, uncheck &ldquo;one of these tickets is for me&rdquo; below so all {quantity} seats go to your guests.
+                            </p>
+                          ) : (
+                            <p className="font-sans text-[11px] text-amber-600 leading-[1.5]">
+                              Only continue if you&apos;re buying additional seats for others.
+                            </p>
+                          )}
+                        </div>
                       </div>
                     )}
                   </div>

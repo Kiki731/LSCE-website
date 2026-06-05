@@ -85,10 +85,7 @@ export default function Sidebar({ email, onClose }: { email?: string; onClose?: 
   }
 
   return (
-    <aside
-      className="flex flex-col w-[220px] shrink-0 bg-[#111111] border-r border-white/6"
-      style={{ height: '100dvh', overflowY: 'auto', position: 'sticky', top: 0 }}
-    >
+    <aside className="flex flex-col w-[220px] shrink-0 bg-[#111111] border-r border-white/6 h-full">
 
       {/* Logo — always visible, never scrolls away */}
       <div className="flex items-center gap-3 px-5 h-16 border-b border-white/6 shrink-0">

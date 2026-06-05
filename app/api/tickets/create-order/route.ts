@@ -65,12 +65,16 @@ export async function POST(req: NextRequest) {
       await Promise.allSettled(
         seatList.map((att, i) => {
           const newEmail = seatEmails[i]
-          if (newEmail && newEmail.toLowerCase() !== att.email.toLowerCase()) {
-            return db.from('attendees').update({ email: newEmail }).eq('id', att.id)
-              .then(({ error }: { error: unknown }) => {
-                if (error) console.error('[create-order] seat update failed:', att.id, error)
-              })
-          }
+          const isBuyerSeat = (newEmail ?? att.email).toLowerCase() === buyer_email.toLowerCase()
+          const updates: Record<string, unknown> = {}
+          if (newEmail && newEmail.toLowerCase() !== att.email.toLowerCase()) updates.email = newEmail
+          // Pre-fill buyer name for their own seat
+          if (isBuyerSeat && !att.name) updates.name = buyer_name
+          if (Object.keys(updates).length === 0) return
+          return db.from('attendees').update(updates).eq('id', att.id)
+            .then(({ error }: { error: unknown }) => {
+              if (error) console.error('[create-order] seat update failed:', att.id, error)
+            })
         })
       )
 
@@ -138,7 +142,12 @@ export async function POST(req: NextRequest) {
 
     // Always create exactly `quantity` attendee rows, padding with buyer email
     const seatEmails = normaliseEmails(attendee_emails, quantity, buyer_email)
-    const attendeeRows = seatEmails.map(email => ({ order_id: order.id, email }))
+    const attendeeRows = seatEmails.map(email => ({
+      order_id: order.id,
+      email,
+      // Pre-fill buyer's own name — they don't need to "claim" their seat
+      name: email.toLowerCase() === buyer_email.toLowerCase() ? buyer_name : null,
+    }))
 
     console.log(`[create-order] fresh — inserting ${attendeeRows.length} attendee(s):`, seatEmails)
 

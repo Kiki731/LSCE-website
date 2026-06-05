@@ -13,7 +13,6 @@ export default function AdminShell({
 }) {
   const [open, setOpen] = useState(false)
 
-  // Close sidebar when screen grows past 1240px
   useEffect(() => {
     const mq = window.matchMedia('(min-width: 1240px)')
     const handler = (e: MediaQueryListEvent) => { if (e.matches) setOpen(false) }
@@ -22,9 +21,14 @@ export default function AdminShell({
   }, [])
 
   return (
-    <div className="flex min-h-screen">
+    /*
+      h-screen + overflow-hidden on the shell means the shell never grows
+      taller than the viewport. The sidebar is naturally full height.
+      The main content area has overflow-y-auto so IT scrolls, not the window.
+    */
+    <div className="flex h-screen overflow-hidden bg-[#0E0E0E]">
 
-      {/* ── Mobile overlay ── */}
+      {/* Mobile backdrop */}
       {open && (
         <div
           className="fixed inset-0 bg-black/60 z-20 min-[1240px]:hidden"
@@ -32,22 +36,24 @@ export default function AdminShell({
         />
       )}
 
-      {/* ── Sidebar ──
-          Desktop (≥1240px): always visible as part of flex row
-          Mobile (<1240px):  fixed overlay, slides in/out        */}
-      <div
-        className="fixed min-[1240px]:static z-30 min-[1240px]:z-auto h-full min-[1240px]:h-auto transition-transform duration-200 min-[1240px]:translate-x-0"
-        style={{ transform: open ? 'translateX(0)' : undefined }}
-      >
-        <div className={`min-[1240px]:block ${open ? 'block' : 'hidden'} min-[1240px]:flex`}>
-          <Sidebar email={email} onClose={() => setOpen(false)} />
-        </div>
+      {/* Desktop sidebar — always visible, fills full height naturally */}
+      <div className="hidden min-[1240px]:flex shrink-0">
+        <Sidebar email={email} />
       </div>
 
-      {/* ── Main content ── */}
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* Mobile sidebar — slides in from left as a fixed overlay */}
+      <div
+        className={`fixed top-0 left-0 z-30 h-full min-[1240px]:hidden transition-transform duration-200 ${
+          open ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
+        <Sidebar email={email} onClose={() => setOpen(false)} />
+      </div>
 
-        {/* Mobile top bar with hamburger */}
+      {/* Main content — this is the ONLY scrollable region */}
+      <div className="flex-1 overflow-y-auto flex flex-col min-w-0">
+
+        {/* Mobile top bar */}
         <div className="flex items-center gap-3 px-5 h-14 bg-[#111111] border-b border-white/6 min-[1240px]:hidden shrink-0">
           <button
             onClick={() => setOpen(true)}
@@ -58,7 +64,6 @@ export default function AdminShell({
             <span className="w-5 h-[1.5px] bg-white/60 group-hover:bg-white transition-colors rounded" />
             <span className="w-3.5 h-[1.5px] bg-white/60 group-hover:bg-white transition-colors rounded" />
           </button>
-
           <div className="flex items-center gap-2">
             <div
               className="flex items-center justify-center w-6 h-6 rounded-[7px] shrink-0"

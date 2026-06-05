@@ -124,7 +124,12 @@ export async function POST(req: NextRequest) {
       : buyerEmail
   )
 
-  const attendeeRows = seatEmails.map(email => ({ order_id: order.id, email }))
+  const attendeeRows = seatEmails.map(email => ({
+    order_id: order.id,
+    email,
+    // Pre-fill buyer name for their own seat — no claiming required
+    name: email.toLowerCase() === buyerEmail.toLowerCase() ? buyerName : null,
+  }))
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: insertedAttendees } = await (supabase as any)
