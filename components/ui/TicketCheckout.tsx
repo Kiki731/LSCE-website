@@ -385,15 +385,30 @@ export default function TicketCheckout() {
     if (tier && ['bronze', 'silver', 'gold'].includes(tier)) setSelectedTier(tier)
   }, [])
 
+  // How many additional attendee emails are needed beyond the buyer's own seat
+  const maxAdditionalEmails = buyer.belongsToMe ? quantity - 1 : quantity
+  // All seats other than the buyer's are accounted for
+  const attendeeEmailsFull  = buyer.attendeeEmails.length >= maxAdditionalEmails
+  // Remaining slots
+  const slotsLeft           = Math.max(0, maxAdditionalEmails - buyer.attendeeEmails.length)
+
   const buyerInfoValid =
     buyer.name.trim().length > 1 &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(buyer.email) &&
-    buyer.phone.trim().length > 6
+    buyer.phone.trim().length > 6 &&
+    // For multi-seat: require all non-buyer seats to have an email
+    (quantity === 1 || attendeeEmailsFull)
 
   const addAttendeeEmail = (raw: string) => {
     const email = raw.trim().toLowerCase()
-    if (/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && !buyer.attendeeEmails.includes(email))
+    // Cap: don't add if we've already filled every non-buyer slot
+    if (
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
+      !buyer.attendeeEmails.includes(email) &&
+      buyer.attendeeEmails.length < maxAdditionalEmails
+    ) {
       setBuyer(b => ({ ...b, attendeeEmails: [...b.attendeeEmails, email] }))
+    }
     setAttendeeEmailInput('')
   }
 
@@ -592,32 +607,76 @@ export default function TicketCheckout() {
                     </span>
                   </label>
                   {quantity > 1 && (
-                    <div className="flex flex-col gap-2 border-t border-[#E5E5E5] pt-4">
-                      <div>
-                        <p className="font-display font-[500] text-[13px] text-[#1A1A1A]">Attendee emails</p>
-                        <p className="font-sans text-[11px] text-[#1A1A1A]/40 mt-0.5">
-                          Press Enter after each email. {quantity - (buyer.belongsToMe ? 1 : 0)} more needed.
-                        </p>
+                    <div className="flex flex-col gap-3 border-t border-[#E5E5E5] pt-4">
+                      {/* Header row */}
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="font-display font-[500] text-[13px] text-[#1A1A1A]">
+                            Attendee emails
+                          </p>
+                          <p className="font-sans text-[11px] text-[#1A1A1A]/40 mt-0.5">
+                            {attendeeEmailsFull
+                              ? 'All seats accounted for ✓'
+                              : `${slotsLeft} seat${slotsLeft !== 1 ? 's' : ''} still need${slotsLeft === 1 ? 's' : ''} an email`
+                            }
+                          </p>
+                        </div>
+                        {/* Slot counter pills */}
+                        <div className="flex gap-1 shrink-0 flex-wrap justify-end">
+                          {Array.from({ length: maxAdditionalEmails }).map((_, i) => (
+                            <span
+                              key={i}
+                              className="w-2 h-2 rounded-full transition-colors"
+                              style={{ background: i < buyer.attendeeEmails.length ? '#FF2035' : '#E5E5E5' }}
+                            />
+                          ))}
+                        </div>
                       </div>
+
+                      {/* Email tags */}
                       {buyer.attendeeEmails.length > 0 && (
                         <div className="flex flex-wrap gap-2">
                           {buyer.attendeeEmails.map((email, i) => (
-                            <span key={i} className="flex items-center gap-1.5 bg-[#F5F5F5] border border-[#E5E5E5] rounded-[6px] px-2.5 py-1 font-sans text-[12px] text-[#1A1A1A]">
+                            <span key={i}
+                              className="flex items-center gap-1.5 bg-[#F5F5F5] border border-[#E5E5E5] rounded-[6px] px-2.5 py-1 font-sans text-[12px] text-[#1A1A1A]">
                               {email}
                               <button type="button"
                                 onClick={() => setBuyer(b => ({ ...b, attendeeEmails: b.attendeeEmails.filter((_, j) => j !== i) }))}
-                                className="text-[#1A1A1A]/40 hover:text-[#FF2035] transition-colors leading-none">×</button>
+                                className="text-[#1A1A1A]/40 hover:text-[#FF2035] transition-colors leading-none">
+                                ×
+                              </button>
                             </span>
                           ))}
                         </div>
                       )}
-                      <input type="email" value={attendeeEmailInput}
-                        onChange={e => setAttendeeEmailInput(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); addAttendeeEmail(attendeeEmailInput) } }}
-                        onBlur={() => attendeeEmailInput && addAttendeeEmail(attendeeEmailInput)}
-                        placeholder="attendee@email.com"
-                        className="border border-[#E5E5E5] rounded-[8px] px-4 py-3 font-sans text-[13px] text-[#1A1A1A] outline-none focus:border-[#1A1A1A] transition-colors placeholder:text-[#1A1A1A]/30"
-                      />
+
+                      {/* Input — hidden once all slots are filled */}
+                      {!attendeeEmailsFull && (
+                        <input type="email" value={attendeeEmailInput}
+                          onChange={e => setAttendeeEmailInput(e.target.value)}
+                          onKeyDown={e => {
+                            if (e.key === 'Enter' || e.key === ',') {
+                              e.preventDefault()
+                              addAttendeeEmail(attendeeEmailInput)
+                            }
+                          }}
+                          onBlur={() => attendeeEmailInput && addAttendeeEmail(attendeeEmailInput)}
+                          placeholder={`Seat ${buyer.attendeeEmails.length + (buyer.belongsToMe ? 2 : 1)} email address`}
+                          className="border border-[#E5E5E5] rounded-[8px] px-4 py-3 font-sans text-[13px] text-[#1A1A1A] outline-none focus:border-[#FF2035] transition-colors placeholder:text-[#1A1A1A]/30"
+                        />
+                      )}
+
+                      {/* All filled confirmation */}
+                      {attendeeEmailsFull && (
+                        <div className="flex items-center gap-2 bg-[#F0FDF4] border border-green-100 rounded-[8px] px-3 py-2.5">
+                          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                            <path d="M2 7l4 4 6-6" stroke="#22c55e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                          </svg>
+                          <p className="font-sans text-[12px] text-green-700">
+                            All {quantity} seats have been assigned. Each person will receive their own ticket.
+                          </p>
+                        </div>
+                      )}
                     </div>
                   )}
                   {payError && (
