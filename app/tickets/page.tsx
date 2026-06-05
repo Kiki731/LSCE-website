@@ -12,12 +12,12 @@ export default function TicketsPage() {
       <main className="bg-[#F7F5F2] min-h-screen overflow-x-hidden">
 
         {/* ── Hero ── */}
-        <section className="relative pt-[160px] md:pt-[220px] pb-[60px] md:pb-[80px] overflow-hidden">
+        <section className="relative pt-[110px] md:pt-[200px] pb-[40px] md:pb-[80px] overflow-hidden">
 
-          {/* Decorative star — top right */}
+          {/* Decorative star — top right (desktop only) */}
           <div
             aria-hidden
-            className="pointer-events-none absolute top-10 right-[-130px] md:right-[-180px]"
+            className="hidden md:block pointer-events-none absolute top-10 right-[-130px] md:right-[-180px]"
             style={{ width: 600, height: 600, zIndex: 0 }}
           >
             <Image src="/icons/Star 4 top right.png" alt="" fill className="object-contain" />
