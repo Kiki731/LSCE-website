@@ -85,9 +85,12 @@ export default function Sidebar({ email, onClose }: { email?: string; onClose?: 
   }
 
   return (
-    <aside className="flex flex-col w-[220px] shrink-0 bg-[#111111] border-r border-white/6 min-h-screen">
+    <aside
+      className="flex flex-col w-[220px] shrink-0 bg-[#111111] border-r border-white/6"
+      style={{ height: '100dvh', overflowY: 'auto', position: 'sticky', top: 0 }}
+    >
 
-      {/* Logo + close button (close only shows on mobile) */}
+      {/* Logo — always visible, never scrolls away */}
       <div className="flex items-center gap-3 px-5 h-16 border-b border-white/6 shrink-0">
         <div
           className="flex items-center justify-center w-7 h-7 rounded-[8px] shrink-0"
@@ -112,8 +115,8 @@ export default function Sidebar({ email, onClose }: { email?: string; onClose?: 
         )}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex flex-col gap-0.5 px-3 py-4 flex-1">
+      {/* Navigation — grows to fill space, scrolls if needed */}
+      <nav className="flex flex-col gap-0.5 px-3 py-4 flex-1 overflow-y-auto">
         {NAV.map(item => {
           const active = pathname === item.href || pathname.startsWith(item.href + '/')
           return (
@@ -135,8 +138,8 @@ export default function Sidebar({ email, onClose }: { email?: string; onClose?: 
         })}
       </nav>
 
-      {/* User + sign out */}
-      <div className="px-3 pb-4 border-t border-white/6 pt-3">
+      {/* User + sign out — always pinned to bottom */}
+      <div className="px-3 pb-4 border-t border-white/6 pt-3 shrink-0">
         <div className="flex items-center gap-2.5 px-3 py-2.5">
           <div className="w-7 h-7 rounded-full bg-[#FF2035]/20 flex items-center justify-center shrink-0">
             <span className="font-display text-[11px] text-[#FF2035] font-[500]">

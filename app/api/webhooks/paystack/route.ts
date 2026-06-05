@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { createHmac } from 'crypto'
-import { sendTicketConfirmation } from '@/lib/email'
+import { sendTicketConfirmation, sendGuestTicketClaim } from '@/lib/email'
 import type { TicketTier } from '@/lib/ticket-config'
 
 /**
@@ -65,10 +65,11 @@ export async function POST(req: NextRequest) {
   const buyerEmail = (data.customer as Record<string, string>)?.email ?? ''
   const meta = (data.metadata ?? {}) as Record<string, unknown>
 
-  const buyerName   = (meta.buyer_name  as string) ?? 'Attendee'
-  const buyerPhone  = (meta.buyer_phone as string) ?? null
-  const ticketType  = (meta.ticket_type as TicketTier) ?? null
-  const quantity    = (meta.quantity    as number) ?? 1
+  const buyerName      = (meta.buyer_name      as string)   ?? 'Attendee'
+  const buyerPhone     = (meta.buyer_phone     as string)   ?? null
+  const ticketType     = (meta.ticket_type     as TicketTier) ?? null
+  const quantity       = (meta.quantity        as number)   ?? 1
+  const attendeeEmails = (meta.attendee_emails as string[]) ?? []
 
   if (!reference || !ticketType) {
     console.error('[webhook] Missing reference or ticket_type in metadata')
@@ -113,22 +114,52 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'DB error' }, { status: 500 })
   }
 
-  // ── 5. Create attendee rows ──────────────────────────────────────────────────
-  const attendeeRows = Array(quantity).fill(null).map(() => ({
-    order_id: order.id,
-    email: buyerEmail,
-  }))
+  // ── 5. Create attendee rows — one per seat with correct emails ──────────────
+  // attendee_emails from Paystack metadata (set by initiate route)
+  // Always produce exactly `quantity` rows, padding with buyer email if needed
+  const seatEmails: string[] = Array.from(
+    { length: quantity },
+    (_, i) => (attendeeEmails[i] && attendeeEmails[i].includes('@'))
+      ? attendeeEmails[i]
+      : buyerEmail
+  )
+
+  const attendeeRows = seatEmails.map(email => ({ order_id: order.id, email }))
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: insertedAttendees } = await (supabase as any)
     .from('attendees')
     .insert(attendeeRows)
-    .select('ticket_code')
+    .select('ticket_code, email')
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const ticketCodes: string[] = (insertedAttendees ?? []).map((a: any) => a.ticket_code as string)
 
-  // ── 6. Send confirmation email ───────────────────────────────────────────────
+  console.log(`[webhook] ${ticketCodes.length} attendee(s) created for order ${order.id}:`, seatEmails)
+
+  // ── 6. Send guest claim emails for non-buyer seats ───────────────────────────
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const guestAttendees = (insertedAttendees ?? [] as any[]).filter(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (a: any) => a.email.toLowerCase() !== buyerEmail.toLowerCase()
+  )
+
+  if (guestAttendees.length > 0) {
+    console.log(`[webhook] Sending ${guestAttendees.length} guest claim email(s)`)
+    await Promise.allSettled(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      guestAttendees.map((a: any) =>
+        sendGuestTicketClaim({
+          guestEmail: a.email as string,
+          buyerName,
+          ticketType,
+          ticketCode: a.ticket_code as string,
+        }).catch(err => console.error('[webhook] guest claim email failed:', a.email, err))
+      )
+    )
+  }
+
+  // ── 7. Send buyer confirmation email ─────────────────────────────────────────
   await sendTicketConfirmation({
     orderId:     order.id,
     buyerName,
@@ -140,6 +171,6 @@ export async function POST(req: NextRequest) {
     ticketCodes,
   })
 
-  console.log(`[webhook] Order ${order.id} created for ${buyerEmail} (${reference})`)
+  console.log(`[webhook] Order ${order.id} complete for ${buyerEmail} (${reference})`)
   return NextResponse.json({ received: true })
 }

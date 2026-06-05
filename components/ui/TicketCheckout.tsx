@@ -448,13 +448,22 @@ export default function TicketCheckout() {
     setPayError('')
     setPaying(true)
     try {
+      // Build seat email list now — pass to initiate so Paystack stores them
+      // in metadata. The webhook reads them to send guest claim emails even if
+      // the browser crashes after payment.
+      const attendeeEmailList = buyer.belongsToMe
+        ? [buyer.email, ...buyer.attendeeEmails].slice(0, quantity)
+        : buyer.attendeeEmails.slice(0, quantity)
+
       const res = await fetch('/api/payments/initiate', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           tier: selectedTier, quantity,
-          buyer_email: buyer.email, buyer_name: buyer.name,
-          buyer_phone: buyer.phone || undefined,
-          discount_code: discountApplied ? discountCode : undefined,
+          buyer_email:     buyer.email,
+          buyer_name:      buyer.name,
+          buyer_phone:     buyer.phone || undefined,
+          discount_code:   discountApplied ? discountCode : undefined,
+          attendee_emails: attendeeEmailList,
         }),
       })
       const data = await res.json()

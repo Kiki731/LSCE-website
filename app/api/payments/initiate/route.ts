@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
       buyer_name,
       buyer_phone,
       discount_code,
+      attendee_emails,
     } = await req.json() as {
       tier: TicketTier
       quantity: number
@@ -39,6 +40,7 @@ export async function POST(req: NextRequest) {
       buyer_name: string
       buyer_phone?: string
       discount_code?: string
+      attendee_emails?: string[]
     }
 
     // ── Validate inputs ────────────────────────────────────────────────────────
@@ -103,12 +105,15 @@ export async function POST(req: NextRequest) {
         callback_url: `${process.env.NEXT_PUBLIC_SITE_URL ?? 'https://thelscexpo.com'}/tickets/success`,
         metadata: {
           buyer_name,
-          buyer_phone:  buyer_phone ?? null,
-          ticket_type:  tier,
+          buyer_phone:     buyer_phone ?? null,
+          ticket_type:     tier,
           quantity,
           discount_code:   discount_code ?? null,
           discount_amount: discountAmount,
           discount_pct:    discountPct,
+          // Seat emails stored in Paystack metadata so the webhook can access them
+          // even if the browser crashes after payment (no session storage available)
+          attendee_emails: Array.isArray(attendee_emails) ? attendee_emails : [],
         },
         channels: ['card', 'bank', 'ussd', 'bank_transfer'],
       }),
