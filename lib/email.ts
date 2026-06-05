@@ -1,5 +1,4 @@
 import { Resend } from 'resend'
-import QRCode from 'qrcode'
 import { TICKET_TYPES, type TicketTier } from './ticket-config'
 
 function getResend() {
@@ -10,42 +9,44 @@ function getResend() {
   return new Resend(process.env.RESEND_API_KEY)
 }
 
-const EVENT_NAME  = 'Lagos Students Career Expo 2026'
-const EVENT_DATE  = 'Saturday, October 3rd, 2026'
-const EVENT_VENUE = 'Landmark Event Centre, Victoria Island, Lagos'
-const BRAND_RED   = '#FF2035'
-const REPLY_TO    = 'lagosstudentcareerexpo@gmail.com'
+const EVENT_NAME   = 'Lagos Students Career Expo 2026'
+const EVENT_DATE   = 'Saturday, October 3rd, 2026'
+const EVENT_VENUE  = 'Landmark Event Centre, Victoria Island, Lagos'
+const BRAND_RED    = '#FF2035'
+const REPLY_TO     = 'lagosstudentcareerexpo@gmail.com'
 const FROM_ADDRESS = process.env.RESEND_FROM ?? 'LSCE Tickets <tickets@thelscexpo.com>'
 
+// Production base URL — used to build absolute image URLs for emails
+// Update NEXT_PUBLIC_SITE_URL in .env.local to https://thelscexpo.com in production
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://thelscexpo.com').replace(/\/$/, '')
+
 export interface TicketConfirmationPayload {
-  orderId:      string
-  buyerName:    string
-  buyerEmail:   string
-  ticketType:   TicketTier
-  quantity:     number
-  totalAmount:  number
-  paystackRef:  string
-  ticketCodes:  string[]  // one per seat — used for QR codes
+  orderId:     string
+  buyerName:   string
+  buyerEmail:  string
+  ticketType:  TicketTier
+  quantity:    number
+  totalAmount: number
+  paystackRef: string
+  ticketCodes: string[]
 }
 
-/* Generate a QR code as a base64 PNG data URI — embedded directly in the email.
-   This means it renders immediately in all clients without loading an external URL.
-   Gmail, Outlook, Apple Mail all display inline base64 images with no blocking. */
-async function generateQRDataUri(code: string): Promise<string> {
-  return QRCode.toDataURL(code, {
-    width:  200,
-    margin: 2,
-    color:  { dark: '#1A1A1A', light: '#FFFFFF' },
-    errorCorrectionLevel: 'M',
-  })
+/* ── QR code URL — served by /api/qr/[code], works in all email clients ── */
+function qrUrl(code: string): string {
+  return `${SITE_URL}/api/qr/${encodeURIComponent(code)}`
 }
 
-function buildConfirmationHtml(p: TicketConfirmationPayload & { qrDataUris: string[] }): string {
+/* ── Absolute URL for static assets ── */
+function assetUrl(path: string): string {
+  return `${SITE_URL}${path}`
+}
+
+function buildConfirmationHtml(p: TicketConfirmationPayload): string {
   const ticket         = TICKET_TYPES[p.ticketType]
   const formattedTotal = '₦' + p.totalAmount.toLocaleString('en-NG')
   const firstName      = p.buyerName.split(' ')[0]
+  const logoUrl        = assetUrl('/images/lsce-logo.png')
 
-  // Build one QR block per seat
   const qrBlocks = p.ticketCodes.map((code, i) => `
     <table width="100%" cellpadding="0" cellspacing="0"
       style="background:white;border-radius:16px;border:1px solid #E5E5E5;margin-bottom:16px;">
@@ -60,21 +61,21 @@ function buildConfirmationHtml(p: TicketConfirmationPayload & { qrDataUris: stri
                 <p style="margin:0 0 12px;font-size:20px;font-weight:700;color:#1A1A1A;">${ticket.name}</p>
 
                 <p style="margin:0 0 4px;font-size:11px;color:#999;text-transform:uppercase;letter-spacing:0.06em;">Ticket ID</p>
-                <p style="margin:0 0 16px;font-size:22px;font-weight:700;color:#1A1A1A;letter-spacing:0.12em;font-family:monospace;">${code}</p>
+                <p style="margin:0 0 16px;font-size:24px;font-weight:700;color:#1A1A1A;letter-spacing:0.1em;font-family:monospace;">${code}</p>
 
                 <p style="margin:0;font-size:12px;color:#999;line-height:1.5;">
-                  Show this QR code or Ticket ID at the entrance. Bring a valid ID.
+                  Show this QR code or Ticket ID at the entrance.<br/>Bring a valid ID.
                 </p>
               </td>
-              <td style="vertical-align:top;text-align:center;white-space:nowrap;">
+              <td style="vertical-align:middle;text-align:center;white-space:nowrap;width:148px;">
                 <img
-                  src="${p.qrDataUris[i] ?? ''}"
-                  alt="QR Code for ticket ${code}"
+                  src="${qrUrl(code)}"
+                  alt="QR Code"
                   width="140"
                   height="140"
                   style="display:block;border-radius:8px;border:4px solid #F7F5F2;"
                 />
-                <p style="margin:6px 0 0;font-size:10px;color:#bbb;font-family:monospace;">${code}</p>
+                <p style="margin:6px 0 0;font-size:10px;color:#bbb;font-family:monospace;letter-spacing:0.08em;">${code}</p>
               </td>
             </tr>
           </table>
@@ -100,15 +101,20 @@ function buildConfirmationHtml(p: TicketConfirmationPayload & { qrDataUris: stri
           <!-- Logo -->
           <tr>
             <td align="center" style="padding-bottom:28px;">
-              <div style="display:inline-block;background:#1A1A1A;border-radius:12px;padding:12px 24px;">
-                <span style="color:white;font-size:17px;font-weight:700;letter-spacing:-0.3px;">LSCE 2026</span>
-              </div>
+              <a href="https://thelscexpo.com" style="display:inline-block;text-decoration:none;">
+                <img
+                  src="${logoUrl}"
+                  alt="LSCE 2026"
+                  height="36"
+                  style="display:block;height:36px;width:auto;"
+                />
+              </a>
             </td>
           </tr>
 
           <!-- Main card -->
           <tr>
-            <td style="background:#F7F5F2;border-radius:20px;overflow:hidden;">
+            <td style="border-radius:20px;overflow:hidden;">
 
               <!-- Greeting card -->
               <table width="100%" cellpadding="0" cellspacing="0"
@@ -122,7 +128,8 @@ function buildConfirmationHtml(p: TicketConfirmationPayload & { qrDataUris: stri
                         You&rsquo;re in, ${firstName}! 🎉
                       </h1>
                       <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.6;">
-                        Your ${ticket.name} for <strong>${EVENT_NAME}</strong> is confirmed. Below are your ticket(s) — each has a unique QR code and Ticket ID for entry.
+                        Your ${ticket.name} for <strong>${EVENT_NAME}</strong> is confirmed.
+                        Your ticket(s) are below — each has a unique QR code and Ticket ID for entry.
                       </p>
 
                       <!-- Order summary box -->
@@ -222,10 +229,10 @@ function buildConfirmationHtml(p: TicketConfirmationPayload & { qrDataUris: stri
 </html>`
 }
 
-function buildConfirmationText(p: TicketConfirmationPayload & { qrDataUris: string[] }): string {
-  const ticket = TICKET_TYPES[p.ticketType]
+function buildConfirmationText(p: TicketConfirmationPayload): string {
+  const ticket         = TICKET_TYPES[p.ticketType]
   const formattedTotal = '₦' + p.totalAmount.toLocaleString('en-NG')
-  const codes = p.ticketCodes.map((c, i) => `  Ticket ${i + 1}: ${c}`).join('\n')
+  const codes          = p.ticketCodes.map((c, i) => `  Ticket ${i + 1}: ${c}`).join('\n')
   return `
 Hi ${p.buyerName},
 
@@ -240,7 +247,7 @@ Order:
 Your Ticket ID${p.quantity > 1 ? 's' : ''}:
 ${codes}
 
-Show your Ticket ID or QR code at the entrance on the day.
+Show your QR code or Ticket ID at the entrance on the day.
 
 Event: ${EVENT_DATE}
 Venue: ${EVENT_VENUE}
@@ -248,7 +255,7 @@ Venue: ${EVENT_VENUE}
 What to bring:
 - This email
 - A valid student ID or government-issued ID
-- Your Ticket ID as a backup if QR can't be scanned
+- Your Ticket ID as backup if QR can't be scanned
 
 See you there,
 The LSCE Team
@@ -262,20 +269,13 @@ export async function sendTicketConfirmation(p: TicketConfirmationPayload): Prom
 
   const ticket = TICKET_TYPES[p.ticketType]
 
-  // Generate QR codes for every ticket code — base64 inline so no external requests needed
-  const qrDataUris = await Promise.all(
-    p.ticketCodes.map(code => generateQRDataUri(code).catch(() => ''))
-  )
-
-  const payload = { ...p, qrDataUris }
-
   const { error } = await resend.emails.send({
     from:    FROM_ADDRESS,
     replyTo: REPLY_TO,
     to:      [p.buyerEmail],
     subject: `Your ${ticket.name} for LSCE 2026 is confirmed 🎟️`,
-    html:    buildConfirmationHtml(payload),
-    text:    buildConfirmationText(payload),
+    html:    buildConfirmationHtml(p),
+    text:    buildConfirmationText(p),
   })
 
   if (error) {
