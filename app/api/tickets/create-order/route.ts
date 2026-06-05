@@ -10,6 +10,12 @@ function getAdminClient() {
   )
 }
 
+/** Always produce exactly `count` emails, padding with `fallback` if needed. */
+function normaliseEmails(raw: unknown, count: number, fallback: string): string[] {
+  const list = Array.isArray(raw) ? (raw as string[]).filter(Boolean) : []
+  return Array.from({ length: count }, (_, i) => list[i] ?? fallback)
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
@@ -43,9 +49,6 @@ export async function POST(req: NextRequest) {
 
     if (existing) {
       // Webhook beat us here — attendees were created with buyer email as placeholder.
-      // Fetch by seat order, update each with the real email, then send claim emails.
-      const provided: string[] = Array.isArray(attendee_emails) ? attendee_emails : []
-
       const { data: seats } = await db
         .from('attendees')
         .select('id, email, ticket_code')
@@ -55,30 +58,36 @@ export async function POST(req: NextRequest) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const seatList = (seats ?? []) as any[]
 
-      // Update seat emails where a better email was provided
+      // Compute exactly `quantity` emails — pad with buyer email if not enough provided
+      const seatEmails = normaliseEmails(attendee_emails, quantity, buyer_email)
+
+      // Update each seat where we have a better email
       await Promise.allSettled(
         seatList.map((att, i) => {
-          const newEmail = provided[i]
+          const newEmail = seatEmails[i]
           if (newEmail && newEmail.toLowerCase() !== att.email.toLowerCase()) {
             return db.from('attendees').update({ email: newEmail }).eq('id', att.id)
+              .then(({ error }: { error: unknown }) => {
+                if (error) console.error('[create-order] seat update failed:', att.id, error)
+              })
           }
         })
       )
 
-      // Build final list using provided emails (don't re-fetch — avoids stale read race)
+      // Merge ticket codes with correct emails
       const finalSeats = seatList.map((att, i) => ({
         ticket_code: att.ticket_code as string,
-        email:       (provided[i] ?? att.email) as string,
+        email:       seatEmails[i] ?? (att.email as string),
       }))
 
       const ticketCodes = finalSeats.map(s => s.ticket_code)
 
-      // Send guest claim emails directly from the provided list
+      // Send guest claim emails for non-buyer seats
       const guestSeats = finalSeats.filter(
         s => s.email.toLowerCase() !== buyer_email.toLowerCase()
       )
 
-      console.log(`[create-order] duplicate — sending ${guestSeats.length} guest claim email(s)`)
+      console.log(`[create-order] duplicate path — ${guestSeats.length} guest seat(s) from ${finalSeats.length} total`)
 
       await Promise.allSettled(
         guestSeats.map(s =>
@@ -87,7 +96,7 @@ export async function POST(req: NextRequest) {
             buyerName:  buyer_name,
             ticketType: ticket_type as TicketTier,
             ticketCode: s.ticket_code,
-          }).catch(err => console.error('[create-order] guest claim email failed:', s.email, err))
+          }).catch(err => console.error('[create-order] guest email failed for', s.email, err))
         )
       )
 
@@ -103,7 +112,7 @@ export async function POST(req: NextRequest) {
       })
     }
 
-    // ── Fresh order ─────────────────────────────────────────────────────────
+    // ── Fresh order ──────────────────────────────────────────────────────────
     const { data: order, error: orderErr } = await db
       .from('orders')
       .insert({
@@ -127,12 +136,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to create order' }, { status: 500 })
     }
 
-    // One attendee row per seat
-    const emails: string[] = Array.isArray(attendee_emails) && attendee_emails.length
-      ? attendee_emails
-      : Array(quantity).fill(buyer_email)
+    // Always create exactly `quantity` attendee rows, padding with buyer email
+    const seatEmails = normaliseEmails(attendee_emails, quantity, buyer_email)
+    const attendeeRows = seatEmails.map(email => ({ order_id: order.id, email }))
 
-    const attendeeRows = emails.map((email: string) => ({ order_id: order.id, email }))
+    console.log(`[create-order] fresh — inserting ${attendeeRows.length} attendee(s):`, seatEmails)
 
     const { data: insertedAttendees, error: attendeeErr } = await db
       .from('attendees')
@@ -153,7 +161,7 @@ export async function POST(req: NextRequest) {
       (a: any) => a.email.toLowerCase() !== buyer_email.toLowerCase()
     )
 
-    console.log(`[create-order] fresh — sending ${guestAttendees.length} guest claim email(s)`)
+    console.log(`[create-order] fresh — ${guestAttendees.length} guest seat(s) from ${ticketCodes.length} total`)
 
     await Promise.allSettled(
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -163,7 +171,7 @@ export async function POST(req: NextRequest) {
           buyerName:  buyer_name,
           ticketType: ticket_type as TicketTier,
           ticketCode: a.ticket_code,
-        }).catch(err => console.error('[create-order] guest claim email failed:', a.email, err))
+        }).catch(err => console.error('[create-order] guest email failed for', a.email, err))
       )
     )
 
