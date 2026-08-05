@@ -3,8 +3,8 @@ import Link from 'next/link'
 
 const QUICK_LINKS = [
   { label: 'Register', href: '/tickets' },
-  { label: 'Exhibit', href: '/exhibit' },
-  { label: 'Sponsor', href: '/sponsor' },
+  { label: 'Exhibit', href: 'mailto:lagosstudentcareerexpo@gmail.com' },
+  { label: 'Sponsor', href: 'mailto:lagosstudentcareerexpo@gmail.com' },
   { label: 'Ambassador', href: '/ambassadors' },
 ]
 

@@ -10,6 +10,7 @@ const NAV_LINKS = [
   { label: 'Our Teams', href: '/our-team' },
   { label: 'Gallery', href: '/gallery' },
   { label: 'Ambassadors', href: '/ambassadors' },
+  { label: 'Contact Us', href: '/contact' },
 ]
 
 const LIGHT_PATHS = ['/gallery', '/speakers', '/ambassadors']
