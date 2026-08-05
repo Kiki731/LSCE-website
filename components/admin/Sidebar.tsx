@@ -68,6 +68,27 @@ const NAV = [
     ),
   },
   {
+    label: 'Applications',
+    href: '/admin/applications',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="2" y="2" width="12" height="12" rx="2" stroke="currentColor" strokeWidth="1.4"/>
+        <path d="M5 5.5h6M5 8h6M5 10.5h3.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
+    label: 'Messages',
+    href: '/admin/contact-messages',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M2 3h12v8H2z" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+        <path d="M2 3l6 5 6-5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+        <rect x="2" y="3" width="12" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+      </svg>
+    ),
+  },
+  {
     label: 'Team',
     href: '/admin/team',
     icon: (
