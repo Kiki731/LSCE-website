@@ -145,7 +145,7 @@ export default function AmbassadorsPage() {
 
             <FadeUp delay={150}>
               <Link
-                href="#apply"
+                href="/ambassadors/apply"
                 className="inline-flex items-center gap-1.5 bg-[#FF2035] text-white px-5 py-3 rounded-[24px] font-sans text-[15px] leading-none hover:opacity-90 transition-opacity"
               >
                 Apply Now
@@ -339,7 +339,7 @@ export default function AmbassadorsPage() {
             <FadeUp delay={100}>
               <div className="flex justify-center">
                 <Link
-                  href="#apply"
+                  href="/ambassadors/apply"
                   className="inline-flex items-center gap-1.5 bg-[#FF2035] text-white px-5 py-3 rounded-[24px] font-sans text-[15px] leading-none hover:opacity-90 transition-opacity"
                 >
                   Find your Campus
@@ -353,7 +353,7 @@ export default function AmbassadorsPage() {
         {/* ════════════════════════════════
             FAQ
         ════════════════════════════════ */}
-        <section id="apply" className="section-container py-[80px] md:py-[120px]">
+        <section id="faq" className="section-container py-[80px] md:py-[120px]">
           <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-10 lg:gap-16 items-start">
 
             {/* Left — sticky title + CTA */}
