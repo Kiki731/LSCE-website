@@ -152,6 +152,7 @@ export interface Database {
           order_id: string
           name: string | null
           email: string
+          phone: string | null
           ticket_code: string
           checked_in: boolean
           checked_in_at: string | null

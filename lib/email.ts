@@ -14,7 +14,9 @@ const EVENT_DATE   = 'Saturday, October 3rd, 2026'
 const EVENT_VENUE  = 'Landmark Event Centre, Victoria Island, Lagos'
 const BRAND_RED    = '#FF2035'
 const REPLY_TO     = 'lagosstudentcareerexpo@gmail.com'
-const FROM_ADDRESS = process.env.RESEND_FROM ?? 'LSCE Tickets <tickets@thelscexpo.com>'
+// Use RESEND_FROM once thelscexpo.com is verified in the Resend dashboard.
+// Until then, leave RESEND_FROM unset and emails send from onboarding@resend.dev.
+const FROM_ADDRESS = process.env.RESEND_FROM ?? 'onboarding@resend.dev'
 
 // Production base URL — used to build absolute image URLs for emails
 // Update NEXT_PUBLIC_SITE_URL in .env.local to https://thelscexpo.com in production
@@ -45,44 +47,56 @@ function buildConfirmationHtml(p: TicketConfirmationPayload): string {
   const ticket         = TICKET_TYPES[p.ticketType]
   const formattedTotal = '₦' + p.totalAmount.toLocaleString('en-NG')
   const firstName      = p.buyerName.split(' ')[0]
-  const logoUrl        = assetUrl('/images/Lsce red.png')
+  const bannerUrl      = assetUrl('/images/EMERGE%20Themee%20Reveal%20Header.png')
 
   const qrBlocks = p.ticketCodes.map((code, i) => `
-    <table width="100%" cellpadding="0" cellspacing="0"
-      style="background:white;border-radius:16px;border:1px solid #E5E5E5;margin-bottom:16px;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
       <tr>
-        <td style="padding:24px;">
-          <table width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-              <td style="vertical-align:top;padding-right:24px;">
-                <p style="margin:0 0 4px;font-size:11px;color:#999;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;">
-                  ${p.quantity > 1 ? `Ticket ${i + 1} of ${p.quantity}` : 'Your Ticket'}
-                </p>
-                <p style="margin:0 0 12px;font-size:20px;font-weight:700;color:#1A1A1A;">${ticket.name}</p>
-
-                <p style="margin:0 0 4px;font-size:11px;color:#999;text-transform:uppercase;letter-spacing:0.06em;">Ticket ID</p>
-                <p style="margin:0 0 16px;font-size:24px;font-weight:700;color:#1A1A1A;letter-spacing:0.1em;font-family:monospace;">${code}</p>
-
-                <p style="margin:0;font-size:12px;color:#999;line-height:1.5;">
-                  Show this QR code or Ticket ID at the entrance.<br/>Bring a valid ID.
-                </p>
-              </td>
-              <td style="vertical-align:middle;text-align:center;white-space:nowrap;width:148px;">
-                <img
-                  src="${qrUrl(code)}"
-                  alt="QR Code"
-                  width="140"
-                  height="140"
-                  style="display:block;border-radius:8px;border:4px solid #F7F5F2;"
-                />
-                <p style="margin:6px 0 0;font-size:10px;color:#bbb;font-family:monospace;letter-spacing:0.08em;">${code}</p>
-              </td>
-            </tr>
-          </table>
+        <td>
+          ${p.quantity > 1 ? `<p style="margin:0 0 6px;font-size:11px;color:#999;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;">Ticket ${i + 1} of ${p.quantity}</p>` : ''}
+          <p style="margin:0 0 14px;font-size:14px;color:#333333;">
+            <strong>Your Ticket ID:</strong>&nbsp;
+            <span style="font-family:monospace;background:#F3F4F6;padding:3px 10px;border-radius:4px;font-size:13px;color:#111111;">${code}</span>
+          </p>
+          <img
+            src="${qrUrl(code)}"
+            alt="QR Code for ${code}"
+            width="140"
+            height="140"
+            style="display:block;margin-bottom:18px;border-radius:8px;border:1px solid #E5E5E5;"
+          />
+          <a href="${SITE_URL}/tickets/view/${code}"
+            style="display:inline-block;background:${BRAND_RED};color:white;font-size:14px;font-weight:600;
+                   padding:12px 28px;border-radius:100px;text-decoration:none;letter-spacing:0.01em;">
+            Download Ticket
+          </a>
         </td>
       </tr>
     </table>
+    ${i < p.ticketCodes.length - 1 ? '<hr style="border:none;border-top:1px solid #E5E5E5;margin:0 0 24px;" />' : ''}
   `).join('')
+
+  const cvSection = p.ticketType === 'silver' ? `
+    <hr style="border:none;border-top:1px solid #E5E5E5;margin:0 0 24px;" />
+    <table width="100%" cellpadding="0" cellspacing="0"
+      style="background:#FFF5F5;border-radius:10px;border:1px solid #FFD5D5;margin-bottom:24px;">
+      <tr>
+        <td style="padding:22px 24px;">
+          <p style="margin:0 0 4px;font-size:11px;color:${BRAND_RED};text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">Silver Pass — Action Required</p>
+          <p style="margin:0 0 8px;font-size:16px;font-weight:700;color:#1A1A1A;">Upload Your CV</p>
+          <p style="margin:0 0 18px;font-size:14px;color:#555555;line-height:1.7;">
+            Your Silver Pass includes CV submission for employer visibility at LSCE 2026.
+            Upload your CV to complete your registration and get in front of top companies.
+          </p>
+          <a href="${SITE_URL}/tickets/upload-cv/${p.ticketCodes[0]}"
+            style="display:inline-block;background:${BRAND_RED};color:white;font-size:14px;font-weight:600;
+                   padding:12px 28px;border-radius:100px;text-decoration:none;letter-spacing:0.01em;">
+            Upload My CV →
+          </a>
+        </td>
+      </tr>
+    </table>
+  ` : ''
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -91,132 +105,101 @@ function buildConfirmationHtml(p: TicketConfirmationPayload): string {
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Your LSCE Ticket</title>
 </head>
-<body style="margin:0;padding:0;background:#F7F5F2;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
+<body style="margin:0;padding:0;background:#F5F5F5;font-family:'Helvetica Neue',Helvetica,Arial,sans-serif;">
 
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F7F5F2;padding:40px 16px;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F5F5;padding:32px 16px;">
     <tr>
       <td align="center">
-        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:580px;">
+        <table width="100%" cellpadding="0" cellspacing="0"
+          style="max-width:600px;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #E5E5E5;">
 
-          <!-- Logo -->
+          <!-- Banner -->
           <tr>
-            <td align="center" style="padding-bottom:28px;">
-              <a href="https://thelscexpo.com" style="display:inline-block;text-decoration:none;">
+            <td style="padding:0;line-height:0;">
+              <a href="${SITE_URL}" style="display:block;line-height:0;">
                 <img
-                  src="${logoUrl}"
-                  alt="LSCE 2026"
-                  height="36"
-                  style="display:block;height:36px;width:auto;"
+                  src="${bannerUrl}"
+                  alt="Lagos Students Career Expo 3.0 — Emerge"
+                  width="600"
+                  style="display:block;width:100%;max-width:600px;"
                 />
               </a>
             </td>
           </tr>
 
-          <!-- Main card -->
+          <!-- Body -->
           <tr>
-            <td style="border-radius:20px;overflow:hidden;">
+            <td style="padding:36px 40px 12px;">
 
-              <!-- Greeting card -->
+              <!-- Greeting -->
+              <p style="margin:0 0 10px;font-size:19px;font-weight:700;color:#000000;">You&rsquo;re in, ${firstName}! 🎉</p>
+              <p style="margin:0 0 28px;font-size:14px;color:#444444;line-height:1.7;">
+                Your ${ticket.name} for the <strong>Lagos Students Career Expo 2026</strong> is confirmed.
+                Below is your ticket — show the QR code or Ticket ID at the entrance.
+              </p>
+
+              <hr style="border:none;border-top:1px solid #E5E5E5;margin:0 0 24px;" />
+
+              <!-- Event info -->
+              <p style="margin:0 0 6px;font-size:14px;color:#333333;">📅 ${EVENT_DATE}</p>
+              <p style="margin:0 0 24px;font-size:14px;color:#333333;">📍 ${EVENT_VENUE}</p>
+
+              <!-- Order summary -->
               <table width="100%" cellpadding="0" cellspacing="0"
-                style="background:white;border-radius:20px;border:1px solid #E5E5E5;margin-bottom:16px;">
+                style="background:#F9F6EE;border-radius:8px;margin-bottom:28px;">
                 <tr>
-                  <td>
-                    <div style="background:${BRAND_RED};height:5px;border-radius:4px 4px 0 0;"></div>
-                    <div style="padding:32px 28px 28px;">
-                      <p style="margin:0 0 6px;font-size:12px;color:#999;text-transform:uppercase;letter-spacing:0.08em;">Booking Confirmed</p>
-                      <h1 style="margin:0 0 16px;font-size:26px;font-weight:700;color:#1A1A1A;line-height:1.2;">
-                        You&rsquo;re in, ${firstName}! 🎉
-                      </h1>
-                      <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.6;">
-                        Your ${ticket.name} for <strong>${EVENT_NAME}</strong> is confirmed.
-                        Your ticket(s) are below — each has a unique QR code and Ticket ID for entry.
-                      </p>
-
-                      <!-- Order summary box -->
-                      <table width="100%" cellpadding="0" cellspacing="0"
-                        style="background:#F7F5F2;border-radius:10px;border:1px solid #E5E5E5;margin-bottom:24px;">
-                        <tr>
-                          <td style="padding:16px 20px;">
-                            <table width="100%" cellpadding="0" cellspacing="0">
-                              <tr>
-                                <td style="padding-right:16px;">
-                                  <p style="margin:0 0 2px;font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.06em;">Ticket Type</p>
-                                  <p style="margin:0;font-size:14px;font-weight:700;color:#1A1A1A;">${ticket.name}</p>
-                                </td>
-                                <td style="padding-right:16px;">
-                                  <p style="margin:0 0 2px;font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.06em;">Qty</p>
-                                  <p style="margin:0;font-size:14px;font-weight:700;color:#1A1A1A;">${p.quantity}</p>
-                                </td>
-                                <td>
-                                  <p style="margin:0 0 2px;font-size:10px;color:#999;text-transform:uppercase;letter-spacing:0.06em;">Total Paid</p>
-                                  <p style="margin:0;font-size:14px;font-weight:700;color:#1A1A1A;">${formattedTotal}</p>
-                                </td>
-                              </tr>
-                            </table>
-                          </td>
-                        </tr>
-                      </table>
-
-                      <!-- Event info box -->
-                      <table width="100%" cellpadding="0" cellspacing="0"
-                        style="background:#FFF5F5;border-radius:10px;border:1px solid #FFD5D5;">
-                        <tr>
-                          <td style="padding:16px 20px;">
-                            <p style="margin:0 0 4px;font-size:11px;color:${BRAND_RED};text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">Event Details</p>
-                            <p style="margin:0 0 4px;font-size:14px;font-weight:700;color:#1A1A1A;">${EVENT_NAME}</p>
-                            <p style="margin:0 0 2px;font-size:13px;color:#555;">📅 ${EVENT_DATE}</p>
-                            <p style="margin:0;font-size:13px;color:#555;">📍 ${EVENT_VENUE}</p>
-                          </td>
-                        </tr>
-                      </table>
-                    </div>
+                  <td style="padding:20px 24px;">
+                    <table width="100%" cellpadding="0" cellspacing="0">
+                      <tr>
+                        <td style="padding-right:16px;">
+                          <p style="margin:0 0 8px;font-size:10px;color:#999999;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;">Ticket Type</p>
+                          <p style="margin:0;font-size:15px;font-weight:700;color:#000000;">${ticket.name}</p>
+                        </td>
+                        <td style="padding-right:16px;">
+                          <p style="margin:0 0 8px;font-size:10px;color:#999999;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;">Qty</p>
+                          <p style="margin:0;font-size:15px;font-weight:700;color:#000000;">${p.quantity}</p>
+                        </td>
+                        <td>
+                          <p style="margin:0 0 8px;font-size:10px;color:#999999;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;">Total Paid</p>
+                          <p style="margin:0;font-size:15px;font-weight:700;color:#000000;">${formattedTotal}</p>
+                        </td>
+                      </tr>
+                    </table>
                   </td>
                 </tr>
               </table>
 
-              <!-- QR ticket block(s) -->
+              <hr style="border:none;border-top:1px solid #E5E5E5;margin:0 0 28px;" />
+
+              <!-- QR + Download Ticket (one block per ticket) -->
               ${qrBlocks}
 
+              <!-- CV upload section — Silver ticket holders only -->
+              ${cvSection}
+
+              <hr style="border:none;border-top:1px solid #E5E5E5;margin:0 0 24px;" />
+
               <!-- What to bring -->
-              <table width="100%" cellpadding="0" cellspacing="0"
-                style="background:white;border-radius:16px;border:1px solid #E5E5E5;margin-bottom:16px;">
-                <tr>
-                  <td style="padding:24px 28px;">
-                    <p style="margin:0 0 12px;font-size:13px;font-weight:700;color:#1A1A1A;">What to bring on the day</p>
-                    <ul style="margin:0;padding-left:18px;color:#666;font-size:13px;line-height:2;">
-                      <li>This email (show on your phone or printed)</li>
-                      <li>A valid student ID or government-issued ID</li>
-                      <li>Your Ticket ID if the QR code can&rsquo;t be scanned</li>
-                    </ul>
-                  </td>
-                </tr>
-              </table>
+              <p style="margin:0 0 12px;font-size:15px;font-weight:700;color:#000000;">What to bring:</p>
+              <ul style="margin:0 0 28px;padding-left:20px;color:#444444;font-size:14px;line-height:2.2;">
+                <li>This email (phone or printed)</li>
+                <li>A valid student ID or government-issued ID</li>
+                <li>Your Ticket ID as backup if QR can&rsquo;t be scanned</li>
+              </ul>
 
-              <!-- CTA -->
-              <div style="text-align:center;padding:8px 0 24px;">
-                <a href="https://thelscexpo.com"
-                  style="display:inline-block;background:${BRAND_RED};color:white;font-size:14px;font-weight:600;
-                         padding:14px 32px;border-radius:100px;text-decoration:none;letter-spacing:0.02em;">
-                  Visit thelscexpo.com →
-                </a>
-              </div>
+            </td>
+          </tr>
 
-              <!-- Footer -->
-              <table width="100%" cellpadding="0" cellspacing="0"
-                style="border-top:1px solid #E5E5E5;">
-                <tr>
-                  <td style="padding:20px 28px;text-align:center;">
-                    <p style="margin:0 0 4px;font-size:12px;color:#999;line-height:1.6;">
-                      Questions? Reply to this email or reach us at
-                      <a href="mailto:${REPLY_TO}" style="color:${BRAND_RED};text-decoration:none;">${REPLY_TO}</a>
-                    </p>
-                    <p style="margin:0;font-size:11px;color:#bbb;">
-                      &copy; ${new Date().getFullYear()} Lagos Students Career Expo. All rights reserved.
-                    </p>
-                  </td>
-                </tr>
-              </table>
-
+          <!-- Footer -->
+          <tr>
+            <td style="border-top:1px solid #E5E5E5;padding:20px 40px;text-align:center;">
+              <p style="margin:0 0 4px;font-size:13px;color:#666666;line-height:1.6;">
+                Questions? Reply to this email or write to
+                <a href="mailto:${REPLY_TO}" style="color:${BRAND_RED};text-decoration:none;">${REPLY_TO}</a>
+              </p>
+              <p style="margin:0;font-size:12px;color:#999999;">
+                &copy;${new Date().getFullYear()} Lagos Students Career Expo. All rights reserved.
+              </p>
             </td>
           </tr>
 

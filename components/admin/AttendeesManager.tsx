@@ -20,6 +20,7 @@ interface Attendee {
   checked_in: boolean
   checked_in_at: string | null
   created_at: string
+  cv_url: string | null
   orders: AttendeeOrder
 }
 
@@ -119,7 +120,7 @@ export default function AttendeesManager() {
   }
 
   function exportCSV() {
-    const headers = ['Name', 'Email', 'Ticket Code', 'Tier', 'Buyer Name', 'Buyer Email', 'Checked In', 'Check-in Time', 'Registered']
+    const headers = ['Name', 'Email', 'Ticket Code', 'Tier', 'Buyer Name', 'Buyer Email', 'CV Uploaded', 'Checked In', 'Check-in Time', 'Registered']
     const rows = attendees.map(a => [
       a.name ?? '',
       a.email,
@@ -127,6 +128,7 @@ export default function AttendeesManager() {
       a.orders?.ticket_type ?? '',
       a.orders?.buyer_name ?? '',
       a.orders?.buyer_email ?? '',
+      a.cv_url ? 'Yes' : 'No',
       a.checked_in ? 'Yes' : 'No',
       fmtDate(a.checked_in_at),
       fmtDate(a.created_at),
@@ -233,7 +235,7 @@ export default function AttendeesManager() {
           <table className="w-full">
             <thead>
               <tr className="border-b border-white/6">
-                {['Attendee', 'Ticket Code', 'Tier', 'Buyer', 'Registered', 'Check-in'].map(h => (
+                {['Attendee', 'Ticket Code', 'Tier', 'Buyer', 'Registered', 'CV', 'Check-in'].map(h => (
                   <th key={h} className="px-5 py-3 text-left font-sans text-[11px] text-white/30 uppercase tracking-wider whitespace-nowrap">
                     {h}
                   </th>
@@ -268,6 +270,29 @@ export default function AttendeesManager() {
                     </td>
                     <td className="px-5 py-3.5 font-sans text-[12px] text-white/40 whitespace-nowrap">
                       {fmtDate(a.created_at)}
+                    </td>
+                    {/* CV status — only relevant for silver tickets */}
+                    <td className="px-5 py-3.5">
+                      {a.orders?.ticket_type === 'silver' ? (
+                        <span
+                          className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-[6px] font-sans text-[11px] font-semibold"
+                          style={{
+                            background: a.cv_url ? 'rgba(34,197,94,0.12)' : 'rgba(255,255,255,0.06)',
+                            color:      a.cv_url ? '#22c55e'               : 'rgba(255,255,255,0.3)',
+                          }}
+                        >
+                          {a.cv_url ? (
+                            <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
+                              <path d="M1.5 5l2.5 2.5 4.5-4.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          ) : (
+                            <span className="w-2 h-2 rounded-full border border-current opacity-50 inline-block" />
+                          )}
+                          {a.cv_url ? 'CV uploaded' : 'No CV'}
+                        </span>
+                      ) : (
+                        <span className="font-sans text-[11px] text-white/15">—</span>
+                      )}
                     </td>
                     <td className="px-5 py-3.5">
                       <button

@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
   let query = db
     .from('attendees')
     .select(
-      `id, email, name, ticket_code, checked_in, checked_in_at, created_at,
+      `id, email, name, ticket_code, checked_in, checked_in_at, created_at, cv_url,
        orders!inner(id, buyer_name, buyer_email, ticket_type, quantity, total_amount, paystack_reference)`,
       { count: 'exact' }
     )

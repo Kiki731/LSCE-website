@@ -65,13 +65,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Ticket not found' }, { status: 404 })
   }
 
-  // Update name + phone (store phone in the name field with separator, or add phone column)
-  // We'll store in the `name` field for now. If you have a phone column, add it separately.
   const { data: updated, error: updateErr } = await db
     .from('attendees')
-    .update({ name: name.trim() })
+    .update({ name: name.trim(), phone: phone.trim() })
     .eq('ticket_code', code.toUpperCase().trim())
-    .select('id, email, name, ticket_code')
+    .select('id, email, name, phone, ticket_code')
     .single()
 
   if (updateErr) {

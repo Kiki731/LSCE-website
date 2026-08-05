@@ -57,6 +57,17 @@ const NAV = [
     ),
   },
   {
+    label: 'CVs',
+    href: '/admin/cvs',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="2" y="1" width="9" height="13" rx="1.5" stroke="currentColor" strokeWidth="1.4"/>
+        <path d="M13 4v9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"/>
+        <path d="M4 5h5M4 7.5h5M4 10h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
     label: 'Team',
     href: '/admin/team',
     icon: (
