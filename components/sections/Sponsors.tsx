@@ -74,7 +74,7 @@ export default function Sponsors() {
             </div>
 
             <Link
-              href="/sponsor"
+              href="/contact"
               className="flex items-center justify-center gap-1.5 bg-white text-[#FF2035] px-5 py-3 rounded-[24px] font-sans text-[15px] leading-none hover:opacity-90 transition-opacity mt-auto"
             >
               Become a Sponsor
@@ -123,7 +123,7 @@ export default function Sponsors() {
             </div>
 
             <Link
-              href="/sponsor"
+              href="/contact"
               className="flex items-center justify-center gap-1.5 bg-[#FF2035] text-white px-5 py-3 rounded-[24px] font-sans text-[15px] leading-none hover:opacity-90 transition-opacity mt-auto"
             >
               Become an Exhibitor

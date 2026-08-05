@@ -9,10 +9,9 @@ const QUICK_LINKS = [
 ]
 
 const SOCIAL_LINKS = [
-  { label: 'X/Twitter', href: 'https://twitter.com/lscelagos' },
-  { label: 'LinkedIn', href: 'https://linkedin.com/company/lsce' },
-  { label: 'Instagram', href: 'https://instagram.com/lscelagos' },
-  { label: 'Youtube', href: 'https://youtube.com/@lscelagos' },
+  { label: 'Instagram', href: 'https://www.instagram.com/thelscexpo?igsh=a3U4MnpqNjY4ODM0' },
+  { label: 'LinkedIn', href: 'https://www.linkedin.com/company/thelscexpo/' },
+  { label: 'X/Twitter', href: 'https://x.com/thelscexpo' },
 ]
 
 export default function Footer() {

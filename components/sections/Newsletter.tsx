@@ -46,7 +46,7 @@ export default function Newsletter() {
                 href="/tickets"
                 className="inline-flex items-center gap-1.5 bg-white text-[#440f15] px-5 py-3 rounded-[24px] font-sans text-[15px] leading-none hover:opacity-90 transition-opacity w-fit font-[500]"
               >
-                Join our Waitlist
+                Get a Ticket
               </Link>
             </div>
           </div>
