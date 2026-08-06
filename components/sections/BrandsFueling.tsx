@@ -21,7 +21,8 @@ const LOGOS = [
 
 export default function BrandsFueling() {
   return (
-    <section className="bg-[#F7F5F2] py-[80px] md:py-[160px]">
+    /* relative + z-10 so this card sits on top of the FAQ dark background below */
+    <section className="relative z-10 bg-[#F7F5F2] py-[80px] md:py-[120px] rounded-br-[60px] md:rounded-br-[120px] rounded-bl-[60px] md:rounded-bl-[120px]">
       <div className="section-container flex flex-col gap-14 items-center">
 
         {/* Heading */}
