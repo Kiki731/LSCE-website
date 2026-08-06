@@ -18,19 +18,13 @@ const EXHIBIT_PERKS = [
 
 export default function Sponsors() {
   return (
-    <section className="relative py-[60px] md:py-[80px] overflow-hidden">
-      {/* Background image */}
-      <div className="absolute inset-0 pointer-events-none">
-        <Image
-          src="/gallery/Brands Background.png"
-          alt=""
-          fill
-          className="object-cover object-center"
-        />
-        {/* Dark overlay to keep text readable */}
-        <div className="absolute inset-0" style={{ background: 'rgba(20,6,9,0.55)' }} />
-      </div>
-      <div className="relative z-10 section-container flex flex-col gap-10 md:gap-12 items-center">
+    <section
+      className="py-[60px] md:py-[80px]"
+      style={{
+        background: 'linear-gradient(148deg, rgb(103,19,29) 12%, rgb(37,11,14) 88%)',
+      }}
+    >
+      <div className="section-container flex flex-col gap-10 md:gap-12 items-center">
 
         {/* Heading */}
         <FadeUp>

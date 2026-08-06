@@ -18,19 +18,19 @@ const PILLARS = [
 
 export default function About() {
   return (
-    <section className="bg-[#F7F5F2] py-[80px] md:py-[120px]">
+    <section className="bg-[#1A1A1A] py-[80px] md:py-[120px]">
       <div className="section-container flex flex-col gap-6">
 
-        {/* Text + EMERGE theme photo */}
+        {/* Text + person photo — stacked on mobile/tablet, side-by-side on desktop */}
         <FadeUp className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-10 w-full">
           <div className="flex flex-col gap-8 w-full lg:max-w-[460px] lg:shrink-0">
             <div className="flex flex-col gap-3">
-              <h2 className="font-display text-[22px] md:text-[36px] text-[#1A1A1A] leading-[1.2] font-[500]">
+              <h2 className="font-display text-[22px] md:text-[26px] text-white leading-[1.2] font-[500]">
                 More Than a{' '}
-                <span className="text-[#FFBD4D]">Job Fair</span>. A Career
+                <span className="text-[#FF2035]">Job Fair</span>. A Career
                 Revolution.
               </h2>
-              <p className="font-sans text-[15px] text-[#1A1A1A]/70 leading-[1.5]">
+              <p className="font-sans text-[15px] text-white/80 leading-[1.5]">
                 The Lagos Students Career Expo is the largest student-organized
                 platform bridging the gap between talent and opportunity. We
                 don&apos;t just connect you with top employers—we empower you
@@ -54,11 +54,11 @@ export default function About() {
             </div>
           </div>
 
-          {/* EMERGE theme image */}
-          <div className="hidden lg:block shrink-0 relative w-[520px] h-[387px] overflow-hidden rounded-[12px]">
+          {/* Person photo — only on large desktop */}
+          <div className="hidden lg:block shrink-0 relative w-[380px] h-[420px]">
             <Image
-              src="/gallery/Emerge theme.png"
-              alt="EMERGE 2026 theme"
+              src="/images/about-mask.png"
+              alt="LSCE speaker"
               fill
               className="object-cover object-top"
             />
@@ -66,14 +66,14 @@ export default function About() {
         </FadeUp>
 
         {/* Pillars */}
-        <FadeUp delay={100} className="flex flex-col md:flex-row gap-2 w-full mt-4 md:mt-6">
+        <FadeUp delay={100} className="flex flex-col md:flex-row gap-2 w-full max-w-[950px] mx-auto mt-4 md:mt-6">
           {PILLARS.map(({ label, gradient }) => (
             <div
               key={label}
-              className="flex-1 flex items-center justify-center px-5 py-4"
+              className="flex-1 flex items-center justify-center px-5 py-3"
               style={{ background: gradient }}
             >
-              <span className="font-display text-[14px] md:text-[16px] text-white leading-[1.2] font-[500] text-center">
+              <span className="font-display text-[13px] md:text-[15px] text-white leading-[1.2] font-[500] text-center">
                 {label}
               </span>
             </div>
@@ -83,10 +83,10 @@ export default function About() {
         {/* Event info bar */}
         <FadeUp delay={200}>
           <div
-            className="flex flex-wrap items-center justify-center gap-2 md:gap-3 px-4 md:px-5 py-3 md:py-4 rounded-[10px] w-full"
-            style={{ background: '#FF2035' }}
+            className="flex flex-wrap items-center justify-center gap-2 md:gap-3 px-4 md:px-5 py-3 md:py-4 rounded-[10px] w-full max-w-[950px] mx-auto"
+            style={{ background: 'rgba(255, 32, 53, 0.07)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,0.02)' }}
           >
-            <span className="font-display text-[13px] md:text-[15px] text-white leading-[1.2] font-[500] whitespace-nowrap">
+            <span className="font-display text-[13px] md:text-[14px] text-white leading-[1.2] font-[500] whitespace-nowrap">
               Lagos, Nigeria
             </span>
             <Image
@@ -96,7 +96,7 @@ export default function About() {
               height={14}
               className="size-3.5"
             />
-            <span className="font-display text-[13px] md:text-[15px] text-white leading-[1.2] font-[500] whitespace-nowrap">
+            <span className="font-display text-[13px] md:text-[14px] text-white leading-[1.2] font-[500] whitespace-nowrap">
               Landmark Event Center
             </span>
             <Image
@@ -106,7 +106,7 @@ export default function About() {
               height={14}
               className="size-3.5"
             />
-            <span className="font-display text-[13px] md:text-[15px] text-white leading-[1.2] font-[500] whitespace-nowrap">
+            <span className="font-display text-[13px] md:text-[14px] text-white leading-[1.2] font-[500] whitespace-nowrap">
               October 3rd, 2026
             </span>
           </div>

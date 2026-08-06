@@ -35,16 +35,16 @@ export default async function SpeakersPreview() {
   const speakers = await getSpeakers()
 
   return (
-    <section className="bg-white py-[120px]">
+    <section className="bg-[#1A1A1A] py-[120px]">
       <div className="section-container flex flex-col gap-[69px] items-center">
         {/* Heading */}
         <FadeUp>
           <div className="flex flex-col gap-3 items-center text-center max-w-[600px]">
-            <h2 className="font-display text-[22px] md:text-[32px] text-[#1A1A1A] leading-[1.2] font-[500]">
+            <h2 className="font-display text-[22px] md:text-[26px] text-white leading-[1.2] font-[500]">
               Learn From Those Who Did It{' '}
               <span className="text-[#0cd56d]">First.</span>
             </h2>
-            <p className="font-sans text-[15px] text-[#1A1A1A]/70 leading-[1.4]">
+            <p className="font-sans text-[15px] text-white/80 leading-[1.4]">
               We&apos;ve curated a powerhouse roster of thought leaders, innovators,
               and disruptors. Get ready for insights and masterclasses that will
               completely shift your perspective.
@@ -75,11 +75,11 @@ export default async function SpeakersPreview() {
               </div>
 
               {/* Name plate */}
-              <div className="flex flex-col items-center justify-center px-14 py-7 border-t-2 border-[#e5e5e5] bg-[#F7F5F2] group-hover:bg-[#f0eeeb] transition-colors duration-200">
-                <p className="font-sans font-semibold text-[18px] text-[#1A1A1A] leading-[1.2] text-center w-full">
+              <div className="flex flex-col items-center justify-center px-14 py-7 border-t-2 border-[#f7f5f2] bg-[#282828] group-hover:bg-[#2a2a2a] transition-colors duration-200">
+                <p className="font-sans font-semibold text-[18px] text-white leading-[1.2] text-center w-full">
                   {speaker.name}
                 </p>
-                <p className="font-sans text-[13px] text-[#1A1A1A]/60 leading-[1.2] text-center w-full">
+                <p className="font-sans text-[13px] text-white leading-[1.2] text-center w-full opacity-80">
                   {speaker.role}
                 </p>
               </div>

@@ -8,7 +8,7 @@ const GA_ID    = 'G-G20T1NGPXK'
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: 'LSCE 3.0 | Lagos Students Career Expo 2026',
+  title: 'LSCE 3.0 — Lagos Students Career Expo 2026',
   description:
     'More Than a Job Fair. A Career Revolution. Join the largest student-organised expo in Lagos — October 3rd 2026, Landmark Event Centre.',
   keywords: ['LSCE', 'Lagos Students Career Expo', 'career', 'expo', 'Lagos', 'students', 'networking', '2026'],
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
     type:        'website',
     url:         SITE_URL,
     siteName:    'LSCE 2026',
-    title:       'LSCE 3.0 | Lagos Students Career Expo 2026',
+    title:       'LSCE 3.0 — Lagos Students Career Expo 2026',
     description: 'More Than a Job Fair. A Career Revolution. October 3rd 2026, Landmark Event Centre, Lagos.',
     // OG image is auto-generated from app/opengraph-image.tsx (1200×630)
     images: [
@@ -44,7 +44,7 @@ export const metadata: Metadata = {
   // ── Twitter / X card ─────────────────────────────────────────────────────────
   twitter: {
     card:        'summary_large_image',
-    title:       'LSCE 3.0 | Lagos Students Career Expo 2026',
+    title:       'LSCE 3.0 — Lagos Students Career Expo 2026',
     description: 'More Than a Job Fair. A Career Revolution. October 3rd 2026, Landmark Event Centre, Lagos.',
     images:      ['/opengraph-image'],
   },
