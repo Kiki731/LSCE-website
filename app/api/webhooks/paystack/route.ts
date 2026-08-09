@@ -70,6 +70,7 @@ export async function POST(req: NextRequest) {
   const ticketType     = (meta.ticket_type     as TicketTier) ?? null
   const quantity       = (meta.quantity        as number)   ?? 1
   const attendeeEmails = (meta.attendee_emails as string[]) ?? []
+  const breakouts      = Array.isArray(meta.breakouts) ? (meta.breakouts as string[]) : []
 
   if (!reference || !ticketType) {
     console.error('[webhook] Missing reference or ticket_type in metadata')
@@ -127,8 +128,8 @@ export async function POST(req: NextRequest) {
   const attendeeRows = seatEmails.map(email => ({
     order_id: order.id,
     email,
-    // Pre-fill buyer name for their own seat — no claiming required
     name: email.toLowerCase() === buyerEmail.toLowerCase() ? buyerName : null,
+    breakouts,
   }))
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -174,6 +175,7 @@ export async function POST(req: NextRequest) {
     totalAmount: amountNaira,
     paystackRef: reference,
     ticketCodes,
+    breakouts,
   })
 
   console.log(`[webhook] Order ${order.id} complete for ${buyerEmail} (${reference})`)

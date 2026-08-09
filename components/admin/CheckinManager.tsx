@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { BREAKOUT_MAP } from '@/lib/breakouts'
 
 interface AttendeeOrder {
   buyer_name: string
@@ -16,6 +17,7 @@ interface Attendee {
   checked_in: boolean
   checked_in_at: string | null
   created_at: string
+  breakouts: string[] | null
   orders: AttendeeOrder
 }
 
@@ -101,6 +103,23 @@ function AttendeeCard({
           {attendee.ticket_code}
         </code>
       </div>
+
+      {/* Breakout sessions */}
+      {attendee.breakouts && attendee.breakouts.length > 0 && (
+        <div className="flex flex-col gap-1.5 border-t border-white/8 pt-3">
+          <p className="font-sans text-[10px] text-white/35 uppercase tracking-wider">Breakout Sessions</p>
+          <div className="flex flex-col gap-1">
+            {attendee.breakouts.map((id, i) => (
+              <div key={id} className="flex items-center gap-2">
+                <span className="font-sans text-[11px] font-semibold text-[#FF2035] shrink-0">{i + 1}.</span>
+                <span className="font-sans text-[12px] text-white/70">
+                  {BREAKOUT_MAP[id]?.title ?? id}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Action */}
       <button

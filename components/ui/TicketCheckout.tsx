@@ -3,35 +3,47 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { TICKET_LIST, TICKET_TYPES, type TicketTier } from '@/lib/ticket-config'
+import { BREAKOUTS } from '@/lib/breakouts'
 
 /* ─────────────────────────────────────────────
-   Step breadcrumb
+   Step breadcrumb (4 steps)
 ───────────────────────────────────────────── */
-function StepTrail({ step }: { step: 1 | 2 }) {
+function StepTrail({ step }: { step: 1 | 2 | 3 }) {
   return (
-    <div className="flex items-center gap-3 md:gap-8 mb-6 md:mb-8">
+    <div className="flex items-center gap-1.5 md:gap-4 mb-6 md:mb-8">
       <p
-        className="font-display font-[500] text-[14px] md:text-[18px] leading-[1.2] whitespace-nowrap shrink-0 transition-colors"
+        className="font-display font-[500] text-[12px] md:text-[16px] leading-[1.2] whitespace-nowrap shrink-0 transition-colors"
         style={{ color: step >= 1 ? '#1A1A1A' : 'rgba(26,26,26,0.3)' }}
       >
         Select Ticket
       </p>
       <div className="flex-1 h-px bg-[#1A1A1A]/15" />
-      <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
-        <Image src="/icons/Button Star red.svg" alt="" width={12} height={12}
-          className="size-[10px] md:size-[12px] transition-opacity"
+      <div className="flex items-center gap-1 md:gap-1.5 shrink-0">
+        <Image src="/icons/Button Star red.svg" alt="" width={10} height={10}
+          className="size-[9px] md:size-[11px] transition-opacity"
           style={{ opacity: step >= 2 ? 1 : 0.3 }}
         />
-        <p className="font-display font-[500] text-[14px] md:text-[18px] leading-[1.2] whitespace-nowrap transition-colors"
+        <p className="font-display font-[500] text-[12px] md:text-[16px] leading-[1.2] whitespace-nowrap transition-colors"
           style={{ color: step >= 2 ? '#1A1A1A' : 'rgba(26,26,26,0.4)' }}>
           Buyer Info
         </p>
       </div>
       <div className="flex-1 h-px bg-[#1A1A1A]/15" />
-      <div className="flex items-center gap-1.5 md:gap-2 shrink-0">
-        <Image src="/icons/Button Star red.svg" alt="" width={12} height={12}
-          className="size-[10px] md:size-[12px] opacity-30" />
-        <p className="font-display font-[500] text-[14px] md:text-[18px] leading-[1.2] whitespace-nowrap text-[#1A1A1A]/30">
+      <div className="flex items-center gap-1 md:gap-1.5 shrink-0">
+        <Image src="/icons/Button Star red.svg" alt="" width={10} height={10}
+          className="size-[9px] md:size-[11px] transition-opacity"
+          style={{ opacity: step >= 3 ? 1 : 0.3 }}
+        />
+        <p className="font-display font-[500] text-[12px] md:text-[16px] leading-[1.2] whitespace-nowrap transition-colors"
+          style={{ color: step >= 3 ? '#1A1A1A' : 'rgba(26,26,26,0.4)' }}>
+          Breakouts
+        </p>
+      </div>
+      <div className="flex-1 h-px bg-[#1A1A1A]/15" />
+      <div className="flex items-center gap-1 md:gap-1.5 shrink-0">
+        <Image src="/icons/Button Star red.svg" alt="" width={10} height={10}
+          className="size-[9px] md:size-[11px] opacity-30" />
+        <p className="font-display font-[500] text-[12px] md:text-[16px] leading-[1.2] whitespace-nowrap text-[#1A1A1A]/30">
           Payment
         </p>
       </div>
@@ -123,14 +135,12 @@ function MobileTicketRow({ tier, selected, onSelect, quantity, onQuantityChange 
       className="rounded-[14px] border-2 overflow-hidden transition-all duration-200"
       style={{ borderColor: selected ? '#FF2035' : '#E5E5E5', background: selected ? '#FFF5F5' : '#FFFFFF' }}
     >
-      {/* Always-visible row — tap to select */}
       <button
         type="button"
         onClick={onSelect}
         className="w-full flex items-center justify-between px-4 py-3.5 text-left"
       >
         <div className="flex items-center gap-3">
-          {/* Radio dot */}
           <span
             className="w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 transition-colors"
             style={{ borderColor: selected ? '#FF2035' : '#CCCCCC' }}
@@ -156,7 +166,6 @@ function MobileTicketRow({ tier, selected, onSelect, quantity, onQuantityChange 
         </div>
       </button>
 
-      {/* Expanded details — only when selected */}
       {selected && (
         <div className="px-4 pb-4 flex flex-col gap-3 border-t border-[#FF2035]/15">
           <p className="font-sans text-[12px] text-[#1A1A1A]/60 leading-[1.5] pt-3">{t.description}</p>
@@ -168,7 +177,6 @@ function MobileTicketRow({ tier, selected, onSelect, quantity, onQuantityChange 
               </li>
             ))}
           </ul>
-          {/* Quantity stepper */}
           <div className="flex items-center justify-between pt-2 border-t border-[#FF2035]/10">
             <p className="font-sans text-[12px] text-[#1A1A1A]/60">Quantity</p>
             <div className="flex items-center gap-3">
@@ -191,12 +199,13 @@ function MobileTicketRow({ tier, selected, onSelect, quantity, onQuantityChange 
 function OrderSummary({
   tier, quantity, discountCode, discountApplied, discountPct,
   onDiscountChange, onApplyDiscount, applyingCoupon,
-  step, onContinue, onPay, buyerInfoValid, paying,
+  step, onContinue, onPay, buyerInfoValid, breakoutsValid, paying,
 }: {
   tier: TicketTier | null; quantity: number; discountCode: string
   discountApplied: boolean; discountPct: number
   onDiscountChange: (v: string) => void; onApplyDiscount: () => void; applyingCoupon: boolean
-  step: 1 | 2; onContinue: () => void; onPay: () => void; buyerInfoValid: boolean; paying: boolean
+  step: 1 | 2 | 3; onContinue: () => void; onPay: () => void
+  buyerInfoValid: boolean; breakoutsValid: boolean; paying: boolean
 }) {
   const ticket = tier ? TICKET_TYPES[tier] : null
   const subtotal = ticket ? ticket.price * quantity : 0
@@ -267,10 +276,20 @@ function OrderSummary({
             style={{ background: canContinue ? '#FF2035' : '#E5E5E5', color: canContinue ? '#fff' : '#999', cursor: canContinue ? 'pointer' : 'not-allowed' }}>
             Continue
           </button>
-        ) : (
-          <button type="button" onClick={onPay} disabled={!canPay || paying}
+        ) : step === 2 ? (
+          <button type="button" onClick={onContinue} disabled={!canPay}
             className="w-full py-3 rounded-[60px] font-sans text-[14px] font-semibold transition-all duration-150"
-            style={{ background: canPay && !paying ? '#FF2035' : '#E5E5E5', color: canPay && !paying ? '#fff' : '#999', cursor: canPay && !paying ? 'pointer' : 'not-allowed' }}>
+            style={{ background: canPay ? '#FF2035' : '#E5E5E5', color: canPay ? '#fff' : '#999', cursor: canPay ? 'pointer' : 'not-allowed' }}>
+            Continue
+          </button>
+        ) : (
+          <button type="button" onClick={onPay} disabled={!canPay || !breakoutsValid || paying}
+            className="w-full py-3 rounded-[60px] font-sans text-[14px] font-semibold transition-all duration-150"
+            style={{
+              background: canPay && breakoutsValid && !paying ? '#FF2035' : '#E5E5E5',
+              color: canPay && breakoutsValid && !paying ? '#fff' : '#999',
+              cursor: canPay && breakoutsValid && !paying ? 'pointer' : 'not-allowed',
+            }}>
             {paying ? 'Opening payment…' : 'Proceed to Pay'}
           </button>
         )}
@@ -280,8 +299,7 @@ function OrderSummary({
 }
 
 /* ─────────────────────────────────────────────
-   Mobile step-2 mini order summary
-   (shown inline in left column, above Pay btn)
+   Mobile step-2/3 mini order summary
 ───────────────────────────────────────────── */
 function MobileOrderSummary({ tier, quantity, discountCode, discountApplied, discountPct, onDiscountChange, onApplyDiscount, applyingCoupon }: {
   tier: TicketTier; quantity: number; discountCode: string
@@ -306,7 +324,6 @@ function MobileOrderSummary({ tier, quantity, discountCode, discountApplied, dis
           </div>
           <span className="font-display font-[500] text-[13px] text-[#1A1A1A]">{formatNaira(subtotal)}</span>
         </div>
-        {/* Discount */}
         {discountApplied ? (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5">
@@ -342,12 +359,91 @@ function MobileOrderSummary({ tier, quantity, discountCode, discountApplied, dis
 }
 
 /* ─────────────────────────────────────────────
+   Breakout session picker (step 3)
+───────────────────────────────────────────── */
+function BreakoutPicker({ selected, onChange }: {
+  selected: string[]
+  onChange: (ids: string[]) => void
+}) {
+  function toggle(id: string) {
+    if (selected.includes(id)) {
+      onChange(selected.filter(s => s !== id))
+    } else if (selected.length < 2) {
+      onChange([...selected, id])
+    }
+  }
+
+  const remaining = 2 - selected.length
+
+  return (
+    <div className="bg-white rounded-[14px] md:rounded-[16px] border border-[#E5E5E5] overflow-hidden">
+      <div className="flex items-center gap-3 px-4 md:px-5 py-4 border-b border-[#E5E5E5]">
+        <StepBadge n={3} active />
+        <div>
+          <h2 className="font-display font-[500] text-[14px] md:text-[15px] text-[#1A1A1A] leading-none">
+            Choose Your Breakout Sessions
+          </h2>
+          <p className="font-sans text-[11px] text-[#1A1A1A]/40 mt-0.5">
+            Select exactly 2 sessions you&apos;ll attend on the day
+          </p>
+        </div>
+      </div>
+      <div className="p-4 md:p-5 flex flex-col gap-3">
+        {selected.length === 2 ? (
+          <div className="flex items-center gap-2 bg-[#F0FDF4] border border-green-100 rounded-[8px] px-3 py-2.5">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <path d="M2 7l4 4 6-6" stroke="#22c55e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+            <p className="font-sans text-[12px] text-green-700">2 sessions selected — you&apos;re all set.</p>
+          </div>
+        ) : (
+          <p className="font-sans text-[12px] text-[#1A1A1A]/45">
+            Pick {remaining} more session{remaining !== 1 ? 's' : ''} to continue
+          </p>
+        )}
+        {BREAKOUTS.map(b => {
+          const isSelected = selected.includes(b.id)
+          const isDisabled = !isSelected && selected.length >= 2
+          return (
+            <button
+              key={b.id}
+              type="button"
+              onClick={() => toggle(b.id)}
+              disabled={isDisabled}
+              className="w-full text-left rounded-[12px] border-2 p-4 flex items-start gap-3 transition-all duration-150"
+              style={{
+                borderColor: isSelected ? '#FF2035' : '#E5E5E5',
+                backgroundColor: isSelected ? '#FFF5F5' : isDisabled ? '#FAFAFA' : '#FFFFFF',
+                opacity: isDisabled ? 0.45 : 1,
+                cursor: isDisabled ? 'not-allowed' : 'pointer',
+              }}
+            >
+              <span
+                className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors"
+                style={{ borderColor: isSelected ? '#FF2035' : '#CCCCCC' }}
+              >
+                {isSelected && <span className="w-2.5 h-2.5 rounded-full bg-[#FF2035]" />}
+              </span>
+              <div className="flex flex-col gap-1 min-w-0">
+                <p className="font-display font-[500] text-[14px] text-[#1A1A1A] leading-[1.2]">{b.title}</p>
+                <p className="font-sans text-[12px] text-[#1A1A1A]/55 leading-[1.4]">{b.description}</p>
+              </div>
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
+/* ─────────────────────────────────────────────
    Main checkout component
 ───────────────────────────────────────────── */
 export default function TicketCheckout() {
-  const [step, setStep] = useState<1 | 2>(1)
+  const [step, setStep] = useState<1 | 2 | 3>(1)
   const [selectedTier, setSelectedTier] = useState<TicketTier | null>(null)
   const [quantity, setQuantity] = useState(1)
+  const [selectedBreakouts, setSelectedBreakouts] = useState<string[]>([])
   const [discountCode, setDiscountCode] = useState('')
   const [discountApplied, setDiscountApplied] = useState(false)
   const [discountPct, setDiscountPct] = useState(0)
@@ -360,7 +456,6 @@ export default function TicketCheckout() {
   const [emailUsed, setEmailUsed]         = useState(false)
   const emailCheckTimer                   = useRef<ReturnType<typeof setTimeout>>(null)
 
-  // Soft check — debounced, fires after user stops typing their email
   function checkEmailUsed(email: string) {
     if (emailCheckTimer.current) clearTimeout(emailCheckTimer.current)
     setEmailUsed(false)
@@ -370,7 +465,7 @@ export default function TicketCheckout() {
         const res  = await fetch(`/api/tickets/check-email?email=${encodeURIComponent(email)}`)
         const data = await res.json()
         setEmailUsed(!!data.used)
-      } catch { /* non-critical — ignore */ }
+      } catch { /* non-critical */ }
     }, 600)
   }
 
@@ -401,23 +496,20 @@ export default function TicketCheckout() {
     if (tier && ['bronze', 'silver', 'gold'].includes(tier)) setSelectedTier(tier)
   }, [])
 
-  // How many additional attendee emails are needed beyond the buyer's own seat
   const maxAdditionalEmails = buyer.belongsToMe ? quantity - 1 : quantity
-  // All seats other than the buyer's are accounted for
   const attendeeEmailsFull  = buyer.attendeeEmails.length >= maxAdditionalEmails
-  // Remaining slots
   const slotsLeft           = Math.max(0, maxAdditionalEmails - buyer.attendeeEmails.length)
 
   const buyerInfoValid =
     buyer.name.trim().length > 1 &&
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(buyer.email) &&
     buyer.phone.trim().length > 6 &&
-    // For multi-seat: require all non-buyer seats to have an email
     (quantity === 1 || attendeeEmailsFull)
+
+  const breakoutsValid = selectedBreakouts.length === 2
 
   const addAttendeeEmail = (raw: string) => {
     const email = raw.trim().toLowerCase()
-    // Cap: don't add if we've already filled every non-buyer slot
     if (
       /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) &&
       !buyer.attendeeEmails.includes(email) &&
@@ -433,7 +525,6 @@ export default function TicketCheckout() {
   const discountAmount = discountApplied ? Math.round(subtotal * (discountPct / 100)) : 0
   const total = subtotal - discountAmount
 
-  // Load Paystack inline script once on mount
   useEffect(() => {
     if (document.getElementById('paystack-inline-js')) return
     const script = document.createElement('script')
@@ -444,13 +535,10 @@ export default function TicketCheckout() {
   }, [])
 
   const handlePay = useCallback(async () => {
-    if (!selectedTier || !buyerInfoValid) return
+    if (!selectedTier || !buyerInfoValid || !breakoutsValid) return
     setPayError('')
     setPaying(true)
     try {
-      // Build seat email list now — pass to initiate so Paystack stores them
-      // in metadata. The webhook reads them to send guest claim emails even if
-      // the browser crashes after payment.
       const attendeeEmailList = buyer.belongsToMe
         ? [buyer.email, ...buyer.attendeeEmails].slice(0, quantity)
         : buyer.attendeeEmails.slice(0, quantity)
@@ -464,6 +552,7 @@ export default function TicketCheckout() {
           buyer_phone:     buyer.phone || undefined,
           discount_code:   discountApplied ? discountCode : undefined,
           attendee_emails: attendeeEmailList,
+          breakouts:       selectedBreakouts,
         }),
       })
       const data = await res.json()
@@ -480,6 +569,7 @@ export default function TicketCheckout() {
         attendee_emails: buyer.belongsToMe
           ? [buyer.email, ...buyer.attendeeEmails].slice(0, quantity)
           : buyer.attendeeEmails.slice(0, quantity),
+        breakouts: selectedBreakouts,
       }))
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const PaystackPop = (window as any).PaystackPop
@@ -500,7 +590,7 @@ export default function TicketCheckout() {
       setPayError('Network error. Please check your connection and try again.')
       setPaying(false)
     }
-  }, [selectedTier, buyer, total, ticket, quantity, discountApplied, discountCode, discountAmount, buyerInfoValid])
+  }, [selectedTier, buyer, total, ticket, quantity, discountApplied, discountCode, discountAmount, buyerInfoValid, breakoutsValid, selectedBreakouts])
 
   return (
     <>
@@ -659,7 +749,6 @@ export default function TicketCheckout() {
                   </label>
                   {quantity > 1 && (
                     <div className="flex flex-col gap-3 border-t border-[#E5E5E5] pt-4">
-                      {/* Header row */}
                       <div className="flex items-start justify-between gap-2">
                         <div>
                           <p className="font-display font-[500] text-[13px] text-[#1A1A1A]">
@@ -672,7 +761,6 @@ export default function TicketCheckout() {
                             }
                           </p>
                         </div>
-                        {/* Slot counter pills */}
                         <div className="flex gap-1 shrink-0 flex-wrap justify-end">
                           {Array.from({ length: maxAdditionalEmails }).map((_, i) => (
                             <span
@@ -684,7 +772,6 @@ export default function TicketCheckout() {
                         </div>
                       </div>
 
-                      {/* Email tags */}
                       {buyer.attendeeEmails.length > 0 && (
                         <div className="flex flex-wrap gap-2">
                           {buyer.attendeeEmails.map((email, i) => (
@@ -701,7 +788,6 @@ export default function TicketCheckout() {
                         </div>
                       )}
 
-                      {/* Input — hidden once all slots are filled */}
                       {!attendeeEmailsFull && (
                         <input type="email" value={attendeeEmailInput}
                           onChange={e => setAttendeeEmailInput(e.target.value)}
@@ -717,7 +803,6 @@ export default function TicketCheckout() {
                         />
                       )}
 
-                      {/* All filled confirmation */}
                       {attendeeEmailsFull && (
                         <div className="flex items-center gap-2 bg-[#F0FDF4] border border-green-100 rounded-[8px] px-3 py-2.5">
                           <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -730,15 +815,70 @@ export default function TicketCheckout() {
                       )}
                     </div>
                   )}
-                  {payError && (
-                    <p className="font-sans text-[12px] text-[#FF2035] bg-[#FFF5F5] border border-[#FFD5D5] rounded-[8px] px-3 py-2">
-                      {payError}
-                    </p>
-                  )}
                 </div>
               </div>
 
-              {/* Mobile-only: order summary + pay button at bottom of left column */}
+              {/* Mobile-only: continue to step 3 */}
+              {selectedTier && (
+                <div className="lg:hidden flex flex-col gap-3">
+                  <button type="button" onClick={() => setStep(3)} disabled={!buyerInfoValid}
+                    className="w-full py-4 rounded-[60px] font-sans text-[14px] font-semibold transition-all"
+                    style={{
+                      background: buyerInfoValid ? '#FF2035' : '#E5E5E5',
+                      color: buyerInfoValid ? '#fff' : '#999',
+                    }}>
+                    Continue
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ── STEP 3: Breakout selection ── */}
+          {step === 3 && (
+            <>
+              {/* Collapsed ticket chip */}
+              {selectedTier && (
+                <div className="bg-white rounded-[14px] md:rounded-[16px] border border-[#E5E5E5] px-4 md:px-5 py-3.5 md:py-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <StepBadge n={1} active={false} />
+                    <div>
+                      <p className="font-display font-[500] text-[13px] text-[#1A1A1A] leading-none">
+                        {TICKET_TYPES[selectedTier].name}
+                      </p>
+                      <p className="font-sans text-[11px] text-[#1A1A1A]/40 mt-0.5">
+                        {quantity} × {formatNaira(TICKET_TYPES[selectedTier].price)}
+                      </p>
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => setStep(1)}
+                    className="font-sans text-[12px] text-[#FF2035] hover:underline shrink-0">Change</button>
+                </div>
+              )}
+
+              {/* Collapsed buyer info chip */}
+              <div className="bg-white rounded-[14px] md:rounded-[16px] border border-[#E5E5E5] px-4 md:px-5 py-3.5 md:py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <StepBadge n={2} active={false} />
+                  <div>
+                    <p className="font-display font-[500] text-[13px] text-[#1A1A1A] leading-none">{buyer.name}</p>
+                    <p className="font-sans text-[11px] text-[#1A1A1A]/40 mt-0.5">{buyer.email}</p>
+                  </div>
+                </div>
+                <button type="button" onClick={() => setStep(2)}
+                  className="font-sans text-[12px] text-[#FF2035] hover:underline shrink-0">Change</button>
+              </div>
+
+              {/* Breakout picker */}
+              <BreakoutPicker selected={selectedBreakouts} onChange={setSelectedBreakouts} />
+
+              {payError && (
+                <p className="font-sans text-[12px] text-[#FF2035] bg-[#FFF5F5] border border-[#FFD5D5] rounded-[8px] px-3 py-2">
+                  {payError}
+                </p>
+              )}
+
+              {/* Mobile-only: order summary + pay button */}
               {selectedTier && (
                 <div className="lg:hidden flex flex-col gap-3">
                   <MobileOrderSummary
@@ -751,11 +891,11 @@ export default function TicketCheckout() {
                   {discountError && !discountApplied && (
                     <p className="font-sans text-[12px] text-[#FF2035] text-right">{discountError}</p>
                   )}
-                  <button type="button" onClick={handlePay} disabled={!buyerInfoValid || paying}
+                  <button type="button" onClick={handlePay} disabled={!breakoutsValid || paying}
                     className="w-full py-4 rounded-[60px] font-sans text-[14px] font-semibold transition-all"
                     style={{
-                      background: buyerInfoValid && !paying ? '#FF2035' : '#E5E5E5',
-                      color: buyerInfoValid && !paying ? '#fff' : '#999',
+                      background: breakoutsValid && !paying ? '#FF2035' : '#E5E5E5',
+                      color: breakoutsValid && !paying ? '#fff' : '#999',
                     }}>
                     {paying ? 'Opening payment…' : 'Proceed to Pay'}
                   </button>
@@ -780,8 +920,9 @@ export default function TicketCheckout() {
             discountCode={discountCode} discountApplied={discountApplied} discountPct={discountPct}
             onDiscountChange={handleRemoveDiscount} onApplyDiscount={handleApplyDiscount}
             applyingCoupon={applyingCoupon} step={step}
-            onContinue={() => setStep(2)} onPay={handlePay}
-            buyerInfoValid={buyerInfoValid} paying={paying}
+            onContinue={() => step === 1 ? setStep(2) : setStep(3)}
+            onPay={handlePay}
+            buyerInfoValid={buyerInfoValid} breakoutsValid={breakoutsValid} paying={paying}
           />
         </div>
 

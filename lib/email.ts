@@ -1,5 +1,6 @@
 import { Resend } from 'resend'
 import { TICKET_TYPES, type TicketTier } from './ticket-config'
+import { BREAKOUT_MAP } from './breakouts'
 
 function getResend() {
   if (!process.env.RESEND_API_KEY) {
@@ -31,6 +32,7 @@ export interface TicketConfirmationPayload {
   totalAmount: number
   paystackRef: string
   ticketCodes: string[]
+  breakouts?:  string[]
 }
 
 /* ── QR code URL — served by /api/qr/[code], works in all email clients ── */
@@ -75,6 +77,32 @@ function buildConfirmationHtml(p: TicketConfirmationPayload): string {
     </table>
     ${i < p.ticketCodes.length - 1 ? '<hr style="border:none;border-top:1px solid #E5E5E5;margin:0 0 24px;" />' : ''}
   `).join('')
+
+  const breakoutsSection = p.breakouts && p.breakouts.length > 0 ? `
+    <hr style="border:none;border-top:1px solid #E5E5E5;margin:0 0 24px;" />
+    <table width="100%" cellpadding="0" cellspacing="0"
+      style="background:#FFF5F5;border-radius:10px;border:1px solid #FFD5D5;margin-bottom:24px;">
+      <tr>
+        <td style="padding:20px 24px;">
+          <p style="margin:0 0 4px;font-size:11px;color:#FF2035;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">Your Breakout Sessions</p>
+          <p style="margin:0 0 14px;font-size:14px;color:#555555;line-height:1.6;">
+            You&rsquo;ve registered for these 2 breakout sessions on the day of the event:
+          </p>
+          ${p.breakouts.map((id, i) => `
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:${i < p.breakouts!.length - 1 ? '10px' : '0'};">
+              <tr>
+                <td style="background:white;border-radius:8px;border:1px solid #E5E5E5;padding:12px 16px;">
+                  <p style="margin:0 0 2px;font-size:11px;color:#FF2035;font-weight:700;text-transform:uppercase;letter-spacing:0.06em;">Session ${i + 1}</p>
+                  <p style="margin:0 0 4px;font-size:15px;font-weight:700;color:#1A1A1A;">${BREAKOUT_MAP[id]?.title ?? id}</p>
+                  <p style="margin:0;font-size:13px;color:#666666;line-height:1.5;">${BREAKOUT_MAP[id]?.description ?? ''}</p>
+                </td>
+              </tr>
+            </table>
+          `).join('')}
+        </td>
+      </tr>
+    </table>
+  ` : ''
 
   const cvSection = p.ticketType === 'silver' ? `
     <hr style="border:none;border-top:1px solid #E5E5E5;margin:0 0 24px;" />
@@ -173,6 +201,9 @@ function buildConfirmationHtml(p: TicketConfirmationPayload): string {
 
               <!-- QR + Download Ticket (one block per ticket) -->
               ${qrBlocks}
+
+              <!-- Breakout sessions -->
+              ${breakoutsSection}
 
               <!-- CV upload section — Silver ticket holders only -->
               ${cvSection}

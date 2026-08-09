@@ -33,6 +33,7 @@ export async function POST(req: NextRequest) {
       buyer_phone,
       discount_code,
       attendee_emails,
+      breakouts,
     } = await req.json() as {
       tier: TicketTier
       quantity: number
@@ -41,6 +42,7 @@ export async function POST(req: NextRequest) {
       buyer_phone?: string
       discount_code?: string
       attendee_emails?: string[]
+      breakouts?: string[]
     }
 
     // ── Validate inputs ────────────────────────────────────────────────────────
@@ -111,9 +113,10 @@ export async function POST(req: NextRequest) {
           discount_code:   discount_code ?? null,
           discount_amount: discountAmount,
           discount_pct:    discountPct,
-          // Seat emails stored in Paystack metadata so the webhook can access them
+          // Seat emails and breakouts stored in Paystack metadata so the webhook can access them
           // even if the browser crashes after payment (no session storage available)
           attendee_emails: Array.isArray(attendee_emails) ? attendee_emails : [],
+          breakouts: Array.isArray(breakouts) ? breakouts : [],
         },
         channels: ['card', 'bank', 'ussd', 'bank_transfer'],
       }),

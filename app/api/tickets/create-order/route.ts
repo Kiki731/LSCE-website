@@ -31,6 +31,7 @@ export async function POST(req: NextRequest) {
       total_amount,
       paystack_reference,
       attendee_emails,
+      breakouts,
     } = body
 
     if (!buyer_name || !buyer_email || !ticket_type || !quantity || !paystack_reference) {
@@ -142,11 +143,12 @@ export async function POST(req: NextRequest) {
 
     // Always create exactly `quantity` attendee rows, padding with buyer email
     const seatEmails = normaliseEmails(attendee_emails, quantity, buyer_email)
+    const breakoutList = Array.isArray(breakouts) ? breakouts : []
     const attendeeRows = seatEmails.map(email => ({
       order_id: order.id,
       email,
-      // Pre-fill buyer's own name — they don't need to "claim" their seat
       name: email.toLowerCase() === buyer_email.toLowerCase() ? buyer_name : null,
+      breakouts: breakoutList,
     }))
 
     console.log(`[create-order] fresh — inserting ${attendeeRows.length} attendee(s):`, seatEmails)
@@ -194,6 +196,7 @@ export async function POST(req: NextRequest) {
       totalAmount: total_amount,
       paystackRef: paystack_reference,
       ticketCodes,
+      breakouts:   breakoutList,
     })
 
     return NextResponse.json({
