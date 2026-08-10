@@ -41,7 +41,7 @@ export default function BrandsFueling() {
         </FadeUp>
 
         {/* Logo grid */}
-        <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-8 md:gap-x-10 md:gap-y-10 w-full">
+        <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-12 md:gap-x-10 md:gap-y-16 w-full">
           {LOGOS.map(({ name, src, width, height }) => (
             <div key={name} className="flex items-center justify-center shrink-0">
               <Image

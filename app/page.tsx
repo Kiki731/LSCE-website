@@ -8,6 +8,7 @@ import GalleryPreview from '@/components/sections/GalleryPreview'
 import Sponsors from '@/components/sections/Sponsors'
 import BrandsFueling from '@/components/sections/BrandsFueling'
 import FAQ from '@/components/sections/FAQ'
+import UniversityMarquee from '@/components/sections/UniversityMarquee'
 import Newsletter from '@/components/sections/Newsletter'
 
 export default function HomePage() {
@@ -23,6 +24,7 @@ export default function HomePage() {
         <Sponsors />
         <BrandsFueling />
         <FAQ />
+        <UniversityMarquee />
         <Newsletter />
       </main>
       <Footer />
