@@ -1,9 +1,10 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import FadeUp from '@/components/ui/FadeUp'
 
-const FAQS = [
+const FAQS: { question: string; answer: string }[] = [
   {
     question: "Who can attend the Lagos Students Career Expo?",
     answer:
@@ -40,36 +41,59 @@ export default function FAQ() {
   const [openIndex, setOpenIndex] = useState<number | null>(null)
 
   return (
-    <section className="bg-[#F7F5F2] py-[120px]">
-      <div className="section-container flex flex-col lg:flex-row gap-10 lg:gap-16 items-start">
+    /* negative top margin so BrandsFueling card overlaps this dark section */
+    <section className="relative overflow-hidden" style={{ marginTop: '-80px' }}>
+
+      {/* Background image — fixed height so accordion expansion doesn't shift the bg */}
+      <div className="absolute top-0 left-0 right-0 h-[900px] pointer-events-none overflow-hidden">
+        <Image
+          src="/gallery/FAQS BG.png"
+          alt=""
+          fill
+          className="object-cover object-center"
+        />
+        <div className="absolute inset-0" style={{ background: 'rgba(10,4,6,0.55)' }} />
+      </div>
+
+      {/* FAQ content — padded top generously to clear the overlapping BrandsFueling card */}
+      <div className="relative z-10 section-container pt-[160px] md:pt-[200px] pb-[80px] md:pb-[120px] flex flex-col lg:flex-row gap-10 lg:gap-16 items-start">
 
         {/* Left — label */}
-        <FadeUp className="flex flex-col gap-3 lg:w-[380px] shrink-0">
-          <h2 className="font-display text-[22px] md:text-[26px] text-[#1A1A1A] leading-[1.2] font-[500]">
-            Frequently{' '}
-            <span className="text-[#FF2035]">Asked</span>{' '}
-            Questions
-          </h2>
-          <p className="font-sans text-[15px] text-[#1A1A1A]/70 leading-[1.4]">
-            Your guide to navigating the Lagos Students Career Expo.
-          </p>
+        <FadeUp className="flex flex-col gap-5 lg:w-[380px] shrink-0">
+          <div className="flex flex-col gap-3">
+            <h2 className="font-display text-[22px] md:text-[26px] text-white leading-[1.2] font-[500]">
+              Frequently{' '}
+              <span className="text-[#FF2035]">Asked</span>{' '}
+              Questions
+            </h2>
+            <p className="font-sans text-[15px] text-white/60 leading-[1.4]">
+              Your guide to navigating the Lagos Students Career Expo.
+            </p>
+          </div>
+          <Image
+            src="/gallery/FAQ vector.png"
+            alt=""
+            width={320}
+            height={180}
+            className="hidden lg:block w-full max-w-[320px] h-auto"
+          />
         </FadeUp>
 
         {/* Right — accordion */}
         <div className="flex flex-col flex-1 min-w-0">
           {/* Always-visible intro */}
           <div className="pb-5">
-            <p className="font-display text-[16px] text-[#1A1A1A] font-[500] leading-[1.2]">
+            <p className="font-display text-[16px] text-white font-[500] leading-[1.2]">
               What is LSCE
             </p>
-            <p className="font-sans text-[13px] text-[#1A1A1A]/70 leading-[1.4] mt-2">
+            <p className="font-sans text-[13px] text-white/60 leading-[1.4] mt-2">
               The Lagos Students Career Expo (LSCE) is the largest
               student-organized career exposition in Lagos, bridging the gap
               between students and career opportunities through talks, workshops,
               and direct employer access.
             </p>
           </div>
-          <hr className="border-[#1A1A1A]/15 mb-1" />
+          <hr className="border-white/15 mb-1" />
 
           {FAQS.map((faq, i) => (
             <div key={i}>
@@ -77,29 +101,28 @@ export default function FAQ() {
                 onClick={() => setOpenIndex(openIndex === i ? null : i)}
                 className="flex items-center justify-between w-full py-4 text-left group"
               >
-                <span className="font-sans text-[16px] text-[#1A1A1A] leading-[1.3] pr-4 group-hover:text-[#FF2035] transition-colors">
+                <span className="font-sans text-[15px] text-white leading-[1.3] pr-4 group-hover:text-[#FF2035] transition-colors">
                   {faq.question}
                 </span>
                 <span
-                  className={`shrink-0 size-6 rounded-full border border-[#1A1A1A]/30 flex items-center justify-center text-[#1A1A1A] font-sans text-[16px] leading-none transition-transform duration-200 ${
+                  className={`shrink-0 size-6 rounded-full border border-white/30 flex items-center justify-center text-white font-sans text-[16px] leading-none transition-transform duration-200 ${
                     openIndex === i ? 'rotate-45' : ''
                   }`}
                 >
                   +
                 </span>
               </button>
-
               {openIndex === i && (
-                <p className="font-sans text-[13px] text-[#1A1A1A]/70 leading-[1.5] pb-4">
+                <p className="font-sans text-[13px] text-white/60 leading-[1.5] pb-4">
                   {faq.answer}
                 </p>
               )}
-              <hr className="border-[#1A1A1A]/15" />
+              <hr className="border-white/15" />
             </div>
           ))}
         </div>
-
       </div>
+
     </section>
   )
 }

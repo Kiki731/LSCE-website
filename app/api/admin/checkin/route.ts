@@ -31,7 +31,7 @@ export async function GET(req: NextRequest) {
   const db = supabase as any
 
   const ATTENDEE_SELECT = `
-    id, email, name, ticket_code, checked_in, checked_in_at, created_at,
+    id, email, name, ticket_code, checked_in, checked_in_at, created_at, breakouts,
     orders!inner(id, buyer_name, buyer_email, ticket_type, quantity, total_amount)
   `
 
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
     })
     .eq('ticket_code', ticket_code.toUpperCase())
     .select(`
-      id, email, name, ticket_code, checked_in, checked_in_at,
+      id, email, name, ticket_code, checked_in, checked_in_at, breakouts,
       orders!inner(buyer_name, buyer_email, ticket_type)
     `)
     .single()

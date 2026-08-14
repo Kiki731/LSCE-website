@@ -35,16 +35,27 @@ export default async function SpeakersPreview() {
   const speakers = await getSpeakers()
 
   return (
-    <section className="bg-[#1A1A1A] py-[120px]">
+    <section className="relative bg-white pt-[120px] pb-[180px] md:pb-[220px] overflow-x-hidden overflow-y-visible">
+      {/* Pink star — left side, overlapping Speakers + section below */}
+      <div className="absolute -left-4 md:left-0 bottom-[-80px] pointer-events-none z-20" aria-hidden>
+        <Image
+          src="/icons/LSCE 3.0 Assets (6) 4.png"
+          alt=""
+          width={200}
+          height={340}
+          className="w-[120px] md:w-[200px] h-auto"
+        />
+      </div>
+
       <div className="section-container flex flex-col gap-[69px] items-center">
         {/* Heading */}
         <FadeUp>
-          <div className="flex flex-col gap-3 items-center text-center max-w-[600px]">
-            <h2 className="font-display text-[22px] md:text-[26px] text-white leading-[1.2] font-[500]">
+          <div className="flex flex-col gap-3 items-center text-center max-w-[900px]">
+            <h2 className="font-display text-[22px] md:text-[32px] text-[#1A1A1A] leading-[1.2] font-[500]">
               Learn From Those Who Did It{' '}
               <span className="text-[#0cd56d]">First.</span>
             </h2>
-            <p className="font-sans text-[15px] text-white/80 leading-[1.4]">
+            <p className="font-sans text-[15px] text-[#1A1A1A]/70 leading-[1.4]">
               We&apos;ve curated a powerhouse roster of thought leaders, innovators,
               and disruptors. Get ready for insights and masterclasses that will
               completely shift your perspective.
@@ -52,15 +63,18 @@ export default async function SpeakersPreview() {
           </div>
         </FadeUp>
 
-        {/* Speaker cards — horizontal scroll on mobile */}
-        <div className="flex gap-6 overflow-x-auto pb-2 w-full scrollbar-hide">
+        {/* Speaker cards — horizontal scroll, right edge bleeds close to screen wall */}
+        <div
+          className="flex gap-6 overflow-x-auto pb-2 scrollbar-hide"
+          style={{ width: 'calc(100% + 80px)', paddingRight: '40px' }}
+        >
           {speakers.map((speaker) => (
             <div
               key={speaker.id}
-              className="group bg-[#c8c8c8] flex flex-col overflow-hidden rounded-[16px] shrink-0 w-[260px] md:w-[340px]"
+              className="group bg-[#c8c8c8] flex flex-col overflow-hidden rounded-[16px] shrink-0 w-[260px] md:w-[340px] h-[380px] md:h-[480px]"
             >
-              {/* Photo */}
-              <div className="relative h-[240px] md:h-[320px] bg-[#e5e5e5] overflow-hidden">
+              {/* Photo — flex-1 so it fills all space above the nameplate */}
+              <div className="relative flex-1 min-h-0 bg-[#e5e5e5] overflow-hidden">
                 {speaker.image_url ? (
                   <Image
                     src={speaker.image_url}
@@ -75,11 +89,11 @@ export default async function SpeakersPreview() {
               </div>
 
               {/* Name plate */}
-              <div className="flex flex-col items-center justify-center px-14 py-7 border-t-2 border-[#f7f5f2] bg-[#282828] group-hover:bg-[#2a2a2a] transition-colors duration-200">
+              <div className="flex flex-col items-center justify-center min-h-[90px] px-6 py-5 border-t-2 border-white/10 bg-[#1A1A1A]">
                 <p className="font-sans font-semibold text-[18px] text-white leading-[1.2] text-center w-full">
                   {speaker.name}
                 </p>
-                <p className="font-sans text-[13px] text-white leading-[1.2] text-center w-full opacity-80">
+                <p className="font-sans text-[13px] text-white/50 leading-[1.2] text-center w-full mt-1">
                   {speaker.role}
                 </p>
               </div>

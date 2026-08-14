@@ -17,6 +17,16 @@ const SOCIAL_LINKS = [
 export default function Footer() {
   return (
     <footer className="bg-[#1A1A1A] overflow-hidden relative">
+      {/* Halftone texture overlay */}
+      <div className="absolute inset-0 pointer-events-none z-0">
+        <Image
+          src="/gallery/HALTONE OVERLAY 1.png"
+          alt=""
+          fill
+          className="object-cover opacity-30 mix-blend-screen"
+        />
+      </div>
+
       <div className="section-container py-12 md:py-16 relative z-10">
         <div className="flex flex-col md:flex-row items-start justify-between gap-10 md:gap-16">
           {/* Left — brand + about */}

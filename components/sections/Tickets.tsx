@@ -5,14 +5,13 @@ import FadeUp from '@/components/ui/FadeUp'
 const TICKETS = [
   {
     tier: 'bronze' as const,
-    emoji: '🥉',
-    label: 'Bronze Pass',
-    starIcon: '/icons/Star Bronzilocks.png',
+    label: 'The Spark',
+    price: '₦4,000',
     description:
       'The essential pass to get you into the room. Perfect for students looking to explore opportunities and expand their network.',
-    borderColor: '#e6a87c',
-    headerGradient:
-      'linear-gradient(172.73deg, rgba(230,168,124,0.6) 22.105%, rgba(184,115,51,0.6) 77.918%, rgba(128,74,32,0.6) 177.94%)',
+    bg: '#BAFFBA',
+    border: '#00CF01',
+    starIcon: '/icons/Star Green.png',
     perks: [
       'Entry to all general panel discussions',
       'Digital LSCE event guide and floor map',
@@ -22,16 +21,15 @@ const TICKETS = [
   },
   {
     tier: 'silver' as const,
-    emoji: '🥈',
-    label: 'Silver Pass',
-    starIcon: '/icons/Star Silverlocks.png',
+    label: 'The Rise',
+    price: '₦8,000',
     description:
       'Level up your expo experience with hands-on career prep, priority access, and exclusive workshops.',
-    borderColor: '#fafafa',
-    headerGradient:
-      'linear-gradient(172.79deg, rgba(250,250,250,0.6) 22.105%, rgba(189,189,189,0.6) 77.918%, rgba(189,189,189,0.6) 177.94%)',
+    bg: '#FDF0D9',
+    border: '#FFBD4D',
+    starIcon: '/icons/Star Yellow.png',
     perks: [
-      'Everything in the Bronze Pass, plus:',
+      'Everything in The Spark, plus:',
       'Guaranteed spot in the CV Review Clinic',
       'Priority seating at all general panel sessions',
       'Access to 2 specialized skill masterclasses',
@@ -40,16 +38,15 @@ const TICKETS = [
   },
   {
     tier: 'gold' as const,
-    emoji: '🥇',
-    label: 'Gold Pass',
-    starIcon: '/icons/Star Goldilocks.png',
+    label: 'The Emergence',
+    price: 'Strictly by Invite',
     description:
-      'The ultimate all-access pass. Maximize your visibility and get one-on-one facetime with top industry recruiters.',
-    borderColor: '#fde047',
-    headerGradient:
-      'linear-gradient(106.35deg, rgba(253,224,71,0.2) 13.324%, rgba(245,158,11,0.2) 65.864%, rgba(217,119,6,0.2) 145.05%)',
+      'The ultimate all-access experience. Maximise your visibility and get one-on-one facetime with top industry recruiters.',
+    bg: '#FFE3E6',
+    border: '#F11429',
+    starIcon: '/icons/Star Red.png',
     perks: [
-      'Everything in the Silver Pass, plus:',
+      'Everything in The Rise, plus:',
       '1-on-1 Mock Interview session with an HR expert',
       'Invite to the exclusive VIP networking lunch with recruiters',
       'Fast-track priority check-in at the venue',
@@ -60,93 +57,113 @@ const TICKETS = [
 
 export default function Tickets() {
   return (
-    <section className="relative bg-[#1A1A1A] py-[120px]">
-      {/* Background decorative element */}
-      <div className="absolute -inset-x-0 -top-24 -bottom-24 pointer-events-none">
+    <section className="relative bg-white overflow-hidden rounded-tl-[120px] md:rounded-tl-[280px] py-[80px] md:py-[120px]">
+
+      {/* Decorative star — top right, overlapping Emergence card */}
+      <div className="absolute top-[100px] md:top-[140px] right-[80px] md:right-[100px] pointer-events-none z-20" aria-hidden>
         <Image
-          src="/images/tickets-bg.png"
+          src="/gallery/red star asset.png"
           alt=""
-          fill
-          className="object-cover opacity-50"
+          width={120}
+          height={120}
+          className="w-[80px] md:w-[130px] h-auto"
+        />
+      </div>
+
+      {/* Decorative image — bottom left, sitting below the wall/edge */}
+      <div className="absolute bottom-[-60px] md:bottom-[-80px] left-0 pointer-events-none z-0" aria-hidden>
+        <Image
+          src="/gallery/LSCE 3.0 Assets ! (11) 2.png"
+          alt=""
+          width={280}
+          height={280}
+          className="w-[160px] md:w-[280px] h-auto object-contain object-bottom"
         />
       </div>
 
       <div className="relative z-10 section-container flex flex-col gap-12 items-center">
         {/* Heading */}
         <FadeUp>
-          <div className="flex flex-col gap-2 items-center text-center max-w-[500px]">
-            <h2 className="font-display text-[22px] md:text-[26px] text-white leading-[1.2] font-[500]">
+          <div className="flex flex-col gap-2 items-center text-center max-w-[520px]">
+            <h2 className="font-display text-[22px] md:text-[28px] text-[#1A1A1A] leading-[1.2] font-[500]">
               Secure{' '}
               <span className="text-[#FF2035]">Your Spot</span>{' '}
               Before They&apos;re Gone.
             </h2>
-            <p className="font-sans text-[15px] text-white/70 leading-[1.3]">
+            <p className="font-sans text-[14px] text-[#1A1A1A]/60 leading-[1.3]">
               Your guide to navigating the Lagos Students Career Expo.
             </p>
           </div>
         </FadeUp>
 
         {/* Cards */}
-        <div className="flex flex-col md:flex-row gap-6 md:gap-4 w-full items-center md:items-stretch">
-          {TICKETS.map(({ tier, emoji, label, description, borderColor, headerGradient, perks, starIcon }) => (
+        <FadeUp delay={80} className="flex flex-col min-[1000px]:flex-row gap-6 min-[1000px]:gap-4 w-full items-center min-[1000px]:items-stretch">
+          {TICKETS.map(({ tier, label, price, description, bg, border, starIcon, perks }) => (
             <div
               key={tier}
-              className="flex-1 flex flex-col overflow-hidden rounded-[20px] w-full max-w-[360px]"
+              className="flex-1 flex flex-col overflow-hidden rounded-[9px] w-full max-w-[460px] min-[1000px]:max-w-none"
               style={{
-                background: 'rgba(255,255,255,0.07)',
-                border: `1px solid ${borderColor}`,
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
+                backgroundColor: bg,
+                border: `7px solid ${border}`,
               }}
             >
               {/* Header */}
-              <div
-                className="flex items-center justify-center py-5"
-                style={{ background: headerGradient }}
-              >
-                <span className="font-display text-[18px] text-white leading-[1.2] font-[500] text-center">
-                  {emoji} {label}
+              <div className="flex items-center justify-center py-5 border-b-4" style={{ borderColor: border + '60' }}>
+                <span className="font-display text-[20px] text-[#1A1A1A] leading-[1.2] font-[500] text-center">
+                  {label}
                 </span>
               </div>
 
               {/* Body */}
               <div className="flex flex-col gap-4 px-6 py-5 flex-1">
-                <p className="font-sans text-[13px] text-white/80 leading-[1.4]">
-                  {description}
-                </p>
+                <div className="flex flex-col gap-1">
+                  <p className={`text-[#1A1A1A] font-[500] leading-[1.2] ${tier === 'gold' ? 'font-sans text-[13px] opacity-60' : 'font-display text-[22px] md:text-[26px]'}`}>
+                    {price}
+                  </p>
+                  <p className="font-sans text-[13px] text-[#1A1A1A]/70 leading-[1.4]">
+                    {description}
+                  </p>
+                </div>
+
                 <div className="flex flex-col gap-3">
                   {perks.map((perk, i) => (
                     <div key={i} className="flex items-start gap-2">
                       <Image
                         src={starIcon}
                         alt=""
-                        width={14}
-                        height={14}
-                        className="size-[14px] shrink-0 mt-[2px]"
+                        width={16}
+                        height={16}
+                        className="size-[16px] shrink-0 mt-[1px]"
                       />
-                      <span className="font-sans text-[13px] text-white/80 leading-[1.4]">
+                      <span className="font-sans text-[13px] text-[#1A1A1A] leading-[1.4]">
                         {perk}
                       </span>
                     </div>
                   ))}
                 </div>
 
-                {/* Per-card CTA — links directly to checkout with tier pre-selected */}
+                {/* CTA */}
                 <div className="mt-auto pt-4">
-                  <Link
-                    href={`/tickets?tier=${tier}`}
-                    className="inline-flex items-center gap-1.5 bg-[#FF2035] text-white px-4 py-2.5 rounded-[24px] font-sans text-[13px] leading-none hover:opacity-90 transition-opacity"
-                  >
-                    Get {label}
-                    <Image src="/icons/Button star.svg" alt="" width={12} height={12} className="size-[12px]" />
-                  </Link>
+                  {tier === 'gold' ? (
+                    <span className="flex items-center justify-center gap-1.5 w-full bg-[#1A1A1A]/10 text-[#1A1A1A] px-4 py-3 rounded-[24px] font-sans text-[13px] leading-none">
+                      Strictly by Invite
+                    </span>
+                  ) : (
+                    <Link
+                      href={`/tickets?tier=${tier}`}
+                      className="flex items-center justify-center gap-2 w-full bg-[#FF2035] text-white px-5 py-3 rounded-[24px] font-sans text-[13px] leading-none hover:opacity-90 transition-opacity"
+                    >
+                      Get {label}
+                      <Image src="/icons/Button star.svg" alt="" width={12} height={12} className="size-[12px]" />
+                    </Link>
+                  )}
                 </div>
               </div>
             </div>
           ))}
-        </div>
+        </FadeUp>
 
-        {/* Bottom CTA — generic fallback */}
+        {/* Bottom CTA */}
         <Link
           href="/tickets"
           className="inline-flex items-center gap-1.5 bg-[#FF2035] text-white px-5 py-3 rounded-[24px] font-sans text-[15px] leading-none hover:opacity-90 transition-opacity"

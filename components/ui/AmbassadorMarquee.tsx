@@ -55,7 +55,7 @@ function Row({ items, animation }: Props) {
 
 export default function AmbassadorMarquee({ items }: { items: string[] }) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-10 md:gap-14">
       <Row items={items} animation="marquee-left 35s linear infinite" />
       <Row items={items} animation="marquee-right 42s linear infinite" />
       <Row items={items} animation="marquee-left 30s linear infinite" />

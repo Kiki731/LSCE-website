@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
 import Navbar from '@/components/ui/Navbar'
@@ -5,6 +6,11 @@ import Footer from '@/components/ui/Footer'
 import FadeUp from '@/components/ui/FadeUp'
 import AmbassadorFAQ from '@/components/ui/AmbassadorFAQ'
 import AmbassadorMarquee from '@/components/ui/AmbassadorMarquee'
+
+export const metadata: Metadata = {
+  title: 'Become a Campus Ambassador | LSCE 3.0 — Lagos Students Career Expo',
+  description: 'Represent LSCE 3.0 on your campus, grow your network and earn exclusive perks. Apply to become a Lagos Students Career Expo Campus Ambassador today.',
+}
 
 /* ── University list for marquee rows ── */
 const UNIVERSITIES_BASE = [

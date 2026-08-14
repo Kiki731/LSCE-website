@@ -8,6 +8,8 @@ import GalleryPreview from '@/components/sections/GalleryPreview'
 import Sponsors from '@/components/sections/Sponsors'
 import BrandsFueling from '@/components/sections/BrandsFueling'
 import FAQ from '@/components/sections/FAQ'
+import UniversityMarquee from '@/components/sections/UniversityMarquee'
+import Testimonials from '@/components/sections/Testimonials'
 import Newsletter from '@/components/sections/Newsletter'
 
 export default function HomePage() {
@@ -19,10 +21,12 @@ export default function HomePage() {
         <About />
         <Tickets />
         <SpeakersPreview />
-        <GalleryPreview />
         <Sponsors />
+        <GalleryPreview />
         <BrandsFueling />
         <FAQ />
+        <UniversityMarquee />
+        <Testimonials />
         <Newsletter />
       </main>
       <Footer />

@@ -74,8 +74,8 @@ html {
 }
 
 body {
-  background-color: #1A1A1A;
-  color: #FFFFFF;
+  background-color: #F7F5F2;
+  color: #1A1A1A;
   font-family: 'SharpGrotesk', sans-serif;
   font-weight: 400;
   -webkit-font-smoothing: antialiased;
@@ -178,6 +178,14 @@ body {
   margin: 0 auto;
   padding-left: 120px;
   padding-right: 120px;
+}
+
+/* narrow desktop: 1024–1199px (before full 120px padding kicks in) */
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .section-container {
+    padding-left: 72px;
+    padding-right: 72px;
+  }
 }
 
 /* tablet: 768–1023px */

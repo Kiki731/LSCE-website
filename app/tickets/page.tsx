@@ -1,8 +1,14 @@
+import type { Metadata } from 'next'
 import Image from 'next/image'
 import Navbar from '@/components/ui/Navbar'
 import Footer from '@/components/ui/Footer'
 import FadeUp from '@/components/ui/FadeUp'
 import TicketCheckout from '@/components/ui/TicketCheckout'
+
+export const metadata: Metadata = {
+  title: 'Get a Ticket | LSCE 3.0 — Lagos Students Career Expo 2026',
+  description: 'Secure your spot at LSCE 3.0 — Lagos Students Career Expo, October 3rd 2026 at Landmark Event Centre, Lagos. Bronze, Silver and Gold passes available.',
+}
 
 export default function TicketsPage() {
   return (

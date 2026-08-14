@@ -42,12 +42,14 @@ export default function Newsletter() {
                   spam, just the good stuff.
                 </p>
               </div>
-              <Link
-                href="/tickets"
+              <a
+                href="https://beehiiv.com"
+                target="_blank"
+                rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 bg-white text-[#440f15] px-5 py-3 rounded-[24px] font-sans text-[15px] leading-none hover:opacity-90 transition-opacity w-fit font-[500]"
               >
-                Get a Ticket
-              </Link>
+                Subscribe to our Newsletter
+              </a>
             </div>
           </div>
         </FadeUp>
