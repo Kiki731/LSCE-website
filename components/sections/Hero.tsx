@@ -41,11 +41,11 @@ export default function Hero() {
         />
       </div>
 
-      {/* Content */}
-      <div className="relative z-10 section-container flex flex-col pt-[120px] md:pt-[180px] pb-4 min-h-[90svh]">
+      {/* Content — section-container keeps text within readable bounds */}
+      <div className="relative z-10 section-container pt-[120px] md:pt-[180px] pb-[100px] md:pb-[120px] min-h-[90svh] flex flex-col justify-start">
         <div className="flex flex-col gap-4 max-w-[680px]">
 
-          {/* Headline — badge sits inline at end of "Career Expo" */}
+          {/* Headline */}
           <h1 className="hero-entry font-display text-[36px] md:text-[52px] text-white leading-[1.2] font-[500]">
             Lagos Students
             <br />
@@ -86,49 +86,41 @@ export default function Hero() {
           {/* Stats */}
           <div className="hero-entry-d3 flex items-center gap-8 mt-3">
             <div className="flex flex-col">
-              <span className="font-display text-[22px] text-white leading-[1.2] font-[500]">
-                2500+
-              </span>
-              <span className="font-sans text-[14px] text-white/80 leading-[1.2]">
-                Attendees
-              </span>
+              <span className="font-display text-[22px] text-white leading-[1.2] font-[500]">2500+</span>
+              <span className="font-sans text-[14px] text-white/80 leading-[1.2]">Attendees</span>
             </div>
             <div className="flex flex-col">
-              <span className="font-display text-[22px] text-white leading-[1.2] font-[500]">
-                15+
-              </span>
-              <span className="font-sans text-[14px] text-white/80 leading-[1.2]">
-                Speakers
-              </span>
+              <span className="font-display text-[22px] text-white leading-[1.2] font-[500]">15+</span>
+              <span className="font-sans text-[14px] text-white/80 leading-[1.2]">Speakers</span>
             </div>
           </div>
         </div>
+      </div>
 
-        {/* Partners strip — pinned to bottom */}
-        <div className="hero-entry-d4 absolute bottom-0 left-0 right-0">
-          <div className="flex items-stretch border-t border-white/10">
-            <div className="shrink-0 bg-[#FF2035] px-5 md:px-[80px] py-4 flex items-center">
-              <p className="font-display text-white text-[13px] leading-[1.3] font-[500] whitespace-nowrap">
-                Our 2026
-                <br />
-                Partners
-              </p>
-            </div>
-            <div className="flex-1 overflow-hidden bg-white/90 py-4 px-4">
-              <div className="flex animate-marquee gap-10 w-max items-center h-full">
-                {[...PARTNERS, ...PARTNERS].map((p, i) => (
-                  <div key={i} className="shrink-0 flex items-center">
-                    <Image
-                      src={p.logo}
-                      alt={p.name}
-                      width={p.width}
-                      height={p.height}
-                      className="object-contain"
-                      style={{ maxHeight: '32px', width: 'auto' }}
-                    />
-                  </div>
-                ))}
-              </div>
+      {/* Partners strip — full viewport width, outside section-container */}
+      <div className="hero-entry-d4 absolute bottom-0 left-0 right-0 z-10">
+        <div className="flex items-stretch border-t border-white/10">
+          <div className="shrink-0 bg-[#FF2035] px-5 md:px-16 py-4 flex items-center">
+            <p className="font-display text-white text-[13px] leading-[1.3] font-[500] whitespace-nowrap">
+              Our Past
+              <br />
+              Partners
+            </p>
+          </div>
+          <div className="flex-1 overflow-hidden bg-white/90 py-4 px-4">
+            <div className="flex animate-marquee gap-10 w-max items-center h-full">
+              {[...PARTNERS, ...PARTNERS].map((p, i) => (
+                <div key={i} className="shrink-0 flex items-center">
+                  <Image
+                    src={p.logo}
+                    alt={p.name}
+                    width={p.width}
+                    height={p.height}
+                    className="object-contain"
+                    style={{ maxHeight: '32px', width: 'auto' }}
+                  />
+                </div>
+              ))}
             </div>
           </div>
         </div>

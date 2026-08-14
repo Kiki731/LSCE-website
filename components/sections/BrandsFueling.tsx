@@ -22,16 +22,16 @@ const LOGOS = [
 export default function BrandsFueling() {
   return (
     /* relative + z-10 so this card sits on top of the FAQ dark background below */
-    <section className="relative z-10 bg-[#F7F5F2] py-[80px] md:py-[120px] rounded-br-[60px] md:rounded-br-[120px] rounded-bl-[60px] md:rounded-bl-[120px]">
+    <section className="relative z-10 bg-[#F7F5F2] py-[80px] md:py-[120px] rounded-br-[60px] md:rounded-br-[120px] rounded-bl-[60px] md:rounded-bl-[120px] overflow-hidden">
       <div className="section-container flex flex-col gap-14 items-center">
 
         {/* Heading */}
         <FadeUp>
           <div className="flex flex-col gap-3 items-center text-center max-w-[620px]">
             <h2 className="font-display text-[22px] md:text-[26px] text-[#1A1A1A] leading-[1.2] font-[500]">
-              The Brands{' '}
-              <span className="text-[#0cd56d]">Fueling</span>{' '}
-              the Future.
+              Brands we have{' '}
+              <span className="text-[#0cd56d]">worked</span>{' '}
+              with
             </h2>
             <p className="font-sans text-[15px] text-[#1A1A1A]/70 leading-[1.4]">
               Meet the industry heavyweights and forward-thinking brands powering
@@ -41,7 +41,7 @@ export default function BrandsFueling() {
         </FadeUp>
 
         {/* Logo grid */}
-        <div className="flex flex-wrap justify-center items-center gap-x-8 gap-y-12 md:gap-x-10 md:gap-y-16 w-full">
+        <div className="flex flex-wrap justify-center items-center gap-x-10 gap-y-16 md:gap-x-14 md:gap-y-24 w-full">
           {LOGOS.map(({ name, src, width, height }) => (
             <div key={name} className="flex items-center justify-center shrink-0">
               <Image

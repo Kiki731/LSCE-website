@@ -6,8 +6,9 @@ import { usePathname } from 'next/navigation'
 import { useState, useEffect } from 'react'
 
 const NAV_LINKS = [
-  { label: 'Speakers', href: '/speakers' },
-  { label: 'Our Teams', href: '/our-team' },
+  { label: 'Home', href: '/' },
+  // { label: 'Speakers', href: '/speakers' },
+  // { label: 'Our Teams', href: '/our-team' },
   { label: 'Gallery', href: '/gallery' },
   { label: 'Ambassadors', href: '/ambassadors' },
   { label: 'Contact Us', href: '/contact' },
@@ -42,7 +43,7 @@ export default function Navbar() {
     >
       {/* Desktop — only show at lg (1024px+) */}
       <nav
-        className={`hidden lg:flex items-center justify-between py-4 transition-all duration-300 ${
+        className={`hidden min-[1200px]:flex items-center py-4 transition-all duration-300 ${
           scrolled ? 'px-[120px]' : 'px-8 rounded-[40px]'
         } ${isDark ? 'bg-[#1E1E1E]' : 'bg-white'}`}
       >
@@ -57,13 +58,13 @@ export default function Navbar() {
           />
         </Link>
 
-        <div className="flex items-center gap-7">
+        <div className="flex-1 flex items-center justify-center gap-7">
           {NAV_LINKS.map(({ label, href }) => (
             <Link
               key={href}
               href={href}
               className={`font-sans text-[15px] leading-none transition-opacity hover:opacity-70 ${
-                pathname === href ? 'opacity-100' : 'opacity-80'
+                pathname === href || (href === '/' && pathname === '/') ? 'opacity-100' : 'opacity-80'
               } ${isDark ? 'text-white' : 'text-[#1E1E1E]'}`}
             >
               {label}
@@ -72,8 +73,10 @@ export default function Navbar() {
         </div>
 
         <div className="flex items-center gap-3 shrink-0">
-          <Link
-            href="/sponsor"
+          <a
+            href="https://wa.me/2348188276353?text=Hi%2C%20I%27m%20interested%20in%20sponsoring%20LSCE%203.0"
+            target="_blank"
+            rel="noopener noreferrer"
             className={`px-5 py-[10px] rounded-[24px] font-sans text-[15px] leading-none transition-opacity hover:opacity-80 ${
               isDark
                 ? 'bg-white text-[#FF2035]'
@@ -81,7 +84,7 @@ export default function Navbar() {
             }`}
           >
             Become a Sponsor
-          </Link>
+          </a>
           <Link
             href="/tickets"
             className="flex items-center gap-1.5 bg-[#FF2035] text-white px-5 py-[10px] rounded-[24px] font-sans text-[15px] leading-none transition-opacity hover:opacity-90"
@@ -100,7 +103,7 @@ export default function Navbar() {
 
       {/* Mobile + Tablet — show below lg (1024px) */}
       <nav
-        className={`lg:hidden flex items-center justify-between px-5 py-3 transition-all duration-300 ${
+        className={`min-[1200px]:hidden flex items-center justify-between px-5 py-3 transition-all duration-300 ${
           scrolled ? '' : 'rounded-[24px]'
         } ${isDark ? 'bg-[#1E1E1E]' : 'bg-white'}`}
       >
@@ -143,7 +146,7 @@ export default function Navbar() {
 
       {mobileOpen && (
         <div
-          className={`lg:hidden mt-2 rounded-[20px] px-5 py-5 flex flex-col gap-4 ${
+          className={`min-[1200px]:hidden mt-2 rounded-[20px] px-5 py-5 flex flex-col gap-4 ${
             isDark ? 'bg-[#1E1E1E]' : 'bg-white'
           }`}
         >
@@ -159,13 +162,15 @@ export default function Navbar() {
               {label}
             </Link>
           ))}
-          <Link
-            href="/sponsor"
+          <a
+            href="https://wa.me/2348188276353?text=Hi%2C%20I%27m%20interested%20in%20sponsoring%20LSCE%203.0"
+            target="_blank"
+            rel="noopener noreferrer"
             onClick={() => setMobileOpen(false)}
             className="font-sans text-[15px] text-[#FF2035]"
           >
             Become a Sponsor
-          </Link>
+          </a>
         </div>
       )}
     </header>

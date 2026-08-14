@@ -25,7 +25,7 @@ function StepTrail({ step }: { step: 1 | 2 | 3 }) {
         />
         <p className="font-display font-[500] text-[12px] md:text-[16px] leading-[1.2] whitespace-nowrap transition-colors"
           style={{ color: step >= 2 ? '#1A1A1A' : 'rgba(26,26,26,0.4)' }}>
-          Buyer Info
+          Breakouts
         </p>
       </div>
       <div className="flex-1 h-px bg-[#1A1A1A]/15" />
@@ -36,7 +36,7 @@ function StepTrail({ step }: { step: 1 | 2 | 3 }) {
         />
         <p className="font-display font-[500] text-[12px] md:text-[16px] leading-[1.2] whitespace-nowrap transition-colors"
           style={{ color: step >= 3 ? '#1A1A1A' : 'rgba(26,26,26,0.4)' }}>
-          Breakouts
+          Buyer Info
         </p>
       </div>
       <div className="flex-1 h-px bg-[#1A1A1A]/15" />
@@ -213,6 +213,7 @@ function OrderSummary({
   const total = subtotal - discountAmount
   const canContinue = !!tier && quantity > 0
   const canPay = canContinue && buyerInfoValid
+  const canContinueBreakouts = canContinue && breakoutsValid
 
   return (
     <div className="rounded-[16px] border border-[#E5E5E5] bg-white overflow-hidden lg:sticky lg:top-32">
@@ -277,18 +278,18 @@ function OrderSummary({
             Continue
           </button>
         ) : step === 2 ? (
-          <button type="button" onClick={onContinue} disabled={!canPay}
+          <button type="button" onClick={onContinue} disabled={!canContinueBreakouts}
             className="w-full py-3 rounded-[60px] font-sans text-[14px] font-semibold transition-all duration-150"
-            style={{ background: canPay ? '#FF2035' : '#E5E5E5', color: canPay ? '#fff' : '#999', cursor: canPay ? 'pointer' : 'not-allowed' }}>
+            style={{ background: canContinueBreakouts ? '#FF2035' : '#E5E5E5', color: canContinueBreakouts ? '#fff' : '#999', cursor: canContinueBreakouts ? 'pointer' : 'not-allowed' }}>
             Continue
           </button>
         ) : (
-          <button type="button" onClick={onPay} disabled={!canPay || !breakoutsValid || paying}
+          <button type="button" onClick={onPay} disabled={!canPay || paying}
             className="w-full py-3 rounded-[60px] font-sans text-[14px] font-semibold transition-all duration-150"
             style={{
-              background: canPay && breakoutsValid && !paying ? '#FF2035' : '#E5E5E5',
-              color: canPay && breakoutsValid && !paying ? '#fff' : '#999',
-              cursor: canPay && breakoutsValid && !paying ? 'pointer' : 'not-allowed',
+              background: canPay && !paying ? '#FF2035' : '#E5E5E5',
+              color: canPay && !paying ? '#fff' : '#999',
+              cursor: canPay && !paying ? 'pointer' : 'not-allowed',
             }}>
             {paying ? 'Opening payment…' : 'Proceed to Pay'}
           </button>
@@ -378,7 +379,7 @@ function BreakoutPicker({ selected, onChange }: {
   return (
     <div className="bg-white rounded-[14px] md:rounded-[16px] border border-[#E5E5E5] overflow-hidden">
       <div className="flex items-center gap-3 px-4 md:px-5 py-4 border-b border-[#E5E5E5]">
-        <StepBadge n={3} active />
+        <StepBadge n={2} active />
         <div>
           <h2 className="font-display font-[500] text-[14px] md:text-[15px] text-[#1A1A1A] leading-none">
             Choose Your Breakout Sessions
@@ -648,7 +649,7 @@ export default function TicketCheckout() {
             </div>
           )}
 
-          {/* ── STEP 2: Collapsed ticket + buyer form ── */}
+          {/* ── STEP 2: Breakout selection ── */}
           {step === 2 && (
             <>
               {/* Collapsed ticket chip */}
@@ -670,10 +671,68 @@ export default function TicketCheckout() {
                 </div>
               )}
 
+              {/* Breakout picker */}
+              <BreakoutPicker selected={selectedBreakouts} onChange={setSelectedBreakouts} />
+
+              {/* Mobile-only: continue to step 3 */}
+              {selectedTier && (
+                <div className="lg:hidden flex flex-col gap-3">
+                  <button type="button" onClick={() => setStep(3)} disabled={!breakoutsValid}
+                    className="w-full py-4 rounded-[60px] font-sans text-[14px] font-semibold transition-all"
+                    style={{
+                      background: breakoutsValid ? '#FF2035' : '#E5E5E5',
+                      color: breakoutsValid ? '#fff' : '#999',
+                    }}>
+                    Continue
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+
+          {/* ── STEP 3: Collapsed ticket + breakout chips + buyer form ── */}
+          {step === 3 && (
+            <>
+              {/* Collapsed ticket chip */}
+              {selectedTier && (
+                <div className="bg-white rounded-[14px] md:rounded-[16px] border border-[#E5E5E5] px-4 md:px-5 py-3.5 md:py-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <StepBadge n={1} active={false} />
+                    <div>
+                      <p className="font-display font-[500] text-[13px] text-[#1A1A1A] leading-none">
+                        {TICKET_TYPES[selectedTier].name}
+                      </p>
+                      <p className="font-sans text-[11px] text-[#1A1A1A]/40 mt-0.5">
+                        {quantity} × {formatNaira(TICKET_TYPES[selectedTier].price)}
+                      </p>
+                    </div>
+                  </div>
+                  <button type="button" onClick={() => setStep(1)}
+                    className="font-sans text-[12px] text-[#FF2035] hover:underline shrink-0">Change</button>
+                </div>
+              )}
+
+              {/* Collapsed breakout chip */}
+              <div className="bg-white rounded-[14px] md:rounded-[16px] border border-[#E5E5E5] px-4 md:px-5 py-3.5 md:py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <StepBadge n={2} active={false} />
+                  <div>
+                    <p className="font-display font-[500] text-[13px] text-[#1A1A1A] leading-none">Breakout Sessions</p>
+                    <p className="font-sans text-[11px] text-[#1A1A1A]/40 mt-0.5">
+                      {selectedBreakouts.length === 2
+                        ? selectedBreakouts.map(id => BREAKOUTS.find(b => b.id === id)?.title).join(' · ')
+                        : '2 sessions selected'}
+                    </p>
+                  </div>
+                </div>
+                <button type="button" onClick={() => setStep(2)}
+                  className="font-sans text-[12px] text-[#FF2035] hover:underline shrink-0">Change</button>
+              </div>
+
               {/* Buyer info form */}
               <div className="bg-white rounded-[14px] md:rounded-[16px] border border-[#E5E5E5] overflow-hidden">
                 <div className="flex items-center gap-3 px-4 md:px-5 py-4 border-b border-[#E5E5E5]">
-                  <StepBadge n={2} active />
+                  <StepBadge n={3} active />
                   <div>
                     <h2 className="font-display font-[500] text-[14px] md:text-[15px] text-[#1A1A1A] leading-none">
                       Buyer Information
@@ -818,60 +877,6 @@ export default function TicketCheckout() {
                 </div>
               </div>
 
-              {/* Mobile-only: continue to step 3 */}
-              {selectedTier && (
-                <div className="lg:hidden flex flex-col gap-3">
-                  <button type="button" onClick={() => setStep(3)} disabled={!buyerInfoValid}
-                    className="w-full py-4 rounded-[60px] font-sans text-[14px] font-semibold transition-all"
-                    style={{
-                      background: buyerInfoValid ? '#FF2035' : '#E5E5E5',
-                      color: buyerInfoValid ? '#fff' : '#999',
-                    }}>
-                    Continue
-                  </button>
-                </div>
-              )}
-            </>
-          )}
-
-          {/* ── STEP 3: Breakout selection ── */}
-          {step === 3 && (
-            <>
-              {/* Collapsed ticket chip */}
-              {selectedTier && (
-                <div className="bg-white rounded-[14px] md:rounded-[16px] border border-[#E5E5E5] px-4 md:px-5 py-3.5 md:py-4 flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <StepBadge n={1} active={false} />
-                    <div>
-                      <p className="font-display font-[500] text-[13px] text-[#1A1A1A] leading-none">
-                        {TICKET_TYPES[selectedTier].name}
-                      </p>
-                      <p className="font-sans text-[11px] text-[#1A1A1A]/40 mt-0.5">
-                        {quantity} × {formatNaira(TICKET_TYPES[selectedTier].price)}
-                      </p>
-                    </div>
-                  </div>
-                  <button type="button" onClick={() => setStep(1)}
-                    className="font-sans text-[12px] text-[#FF2035] hover:underline shrink-0">Change</button>
-                </div>
-              )}
-
-              {/* Collapsed buyer info chip */}
-              <div className="bg-white rounded-[14px] md:rounded-[16px] border border-[#E5E5E5] px-4 md:px-5 py-3.5 md:py-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <StepBadge n={2} active={false} />
-                  <div>
-                    <p className="font-display font-[500] text-[13px] text-[#1A1A1A] leading-none">{buyer.name}</p>
-                    <p className="font-sans text-[11px] text-[#1A1A1A]/40 mt-0.5">{buyer.email}</p>
-                  </div>
-                </div>
-                <button type="button" onClick={() => setStep(2)}
-                  className="font-sans text-[12px] text-[#FF2035] hover:underline shrink-0">Change</button>
-              </div>
-
-              {/* Breakout picker */}
-              <BreakoutPicker selected={selectedBreakouts} onChange={setSelectedBreakouts} />
-
               {payError && (
                 <p className="font-sans text-[12px] text-[#FF2035] bg-[#FFF5F5] border border-[#FFD5D5] rounded-[8px] px-3 py-2">
                   {payError}
@@ -891,11 +896,11 @@ export default function TicketCheckout() {
                   {discountError && !discountApplied && (
                     <p className="font-sans text-[12px] text-[#FF2035] text-right">{discountError}</p>
                   )}
-                  <button type="button" onClick={handlePay} disabled={!breakoutsValid || paying}
+                  <button type="button" onClick={handlePay} disabled={!buyerInfoValid || paying}
                     className="w-full py-4 rounded-[60px] font-sans text-[14px] font-semibold transition-all"
                     style={{
-                      background: breakoutsValid && !paying ? '#FF2035' : '#E5E5E5',
-                      color: breakoutsValid && !paying ? '#fff' : '#999',
+                      background: buyerInfoValid && !paying ? '#FF2035' : '#E5E5E5',
+                      color: buyerInfoValid && !paying ? '#fff' : '#999',
                     }}>
                     {paying ? 'Opening payment…' : 'Proceed to Pay'}
                   </button>

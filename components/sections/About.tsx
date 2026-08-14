@@ -25,10 +25,11 @@ export default function About() {
         <FadeUp className="flex flex-col lg:flex-row items-center justify-center gap-8 lg:gap-10 w-full">
           <div className="flex flex-col gap-8 w-full lg:max-w-[460px] lg:shrink-0">
             <div className="flex flex-col gap-3">
-              <h2 className="font-display text-[22px] md:text-[36px] text-[#1A1A1A] leading-[1.2] font-[500]">
+              <h2 className="font-display text-[24px] md:text-[34px] text-[#1A1A1A] leading-[1.15] font-[500]">
                 More Than a{' '}
-                <span className="text-[#FFBD4D]">Job Fair</span>. A Career
-                Revolution.
+                <span className="text-[#FFBD4D]">Job Fair</span>.
+                <br />
+                A Career Revolution.
               </h2>
               <p className="font-sans text-[15px] text-[#1A1A1A]/70 leading-[1.5]">
                 The Lagos Students Career Expo is the largest student-organized
@@ -40,15 +41,15 @@ export default function About() {
             </div>
 
             {/* Three Star Decoration icons */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {[0, 1, 2].map((i) => (
                 <Image
                   key={i}
                   src="/icons/Star Decoration.svg"
                   alt=""
-                  width={24}
-                  height={24}
-                  className="size-6"
+                  width={40}
+                  height={40}
+                  className="size-[40px]"
                 />
               ))}
             </div>
@@ -65,8 +66,9 @@ export default function About() {
           </div>
         </FadeUp>
 
-        {/* Pillars */}
-        <FadeUp delay={100} className="flex flex-col md:flex-row gap-2 w-full mt-4 md:mt-6">
+        {/* Pillars + event bar — constrained to match the text+image row above */}
+        <div className="max-w-[1020px] w-full mx-auto flex flex-col gap-2">
+        <FadeUp delay={100} className="flex flex-col md:flex-row gap-2 w-full">
           {PILLARS.map(({ label, gradient }) => (
             <div
               key={label}
@@ -111,6 +113,7 @@ export default function About() {
             </span>
           </div>
         </FadeUp>
+        </div>
 
       </div>
     </section>

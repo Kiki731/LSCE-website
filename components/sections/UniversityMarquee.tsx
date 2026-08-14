@@ -1,4 +1,7 @@
+import Link from 'next/link'
+import Image from 'next/image'
 import FadeUp from '@/components/ui/FadeUp'
+import AmbassadorMarquee from '@/components/ui/AmbassadorMarquee'
 
 const UNIVERSITIES_BASE = [
   'University of Lagos',
@@ -18,12 +21,12 @@ function buildMarqueeItems(base: string[]) {
   return [...half, ...half]
 }
 
-const ROW_ITEMS = buildMarqueeItems(UNIVERSITIES_BASE)
+const MARQUEE_ITEMS = buildMarqueeItems(UNIVERSITIES_BASE)
 
 export default function UniversityMarquee() {
   return (
-    <section className="bg-[#1A1A1A] py-[80px] md:py-[100px]">
-      <div className="section-container mb-10 md:mb-12">
+    <section className="bg-[#1A1A1A] pt-[80px] md:pt-[100px] pb-[100px] md:pb-[140px] overflow-hidden">
+      <div className="section-container pb-20 md:pb-28">
         <FadeUp>
           <div className="flex flex-col items-center text-center">
             <h2 className="font-display font-[500] text-[24px] md:text-[32px] text-white leading-[1.15]">
@@ -37,70 +40,16 @@ export default function UniversityMarquee() {
         </FadeUp>
       </div>
 
-      {/* Row 1 — left scroll */}
-      <div className="w-full overflow-hidden mb-3">
-        <div
-          style={{
-            display: 'flex',
-            gap: '32px',
-            width: 'max-content',
-            animation: 'marquee-left 32s linear infinite',
-          }}
-        >
-          {ROW_ITEMS.map((item, i) => (
-            <span key={i} className={
-              item === '★'
-                ? 'text-[#FF2035] text-[18px] shrink-0 self-center'
-                : 'font-sans text-[15px] md:text-[17px] text-white/80 shrink-0 whitespace-nowrap'
-            }>
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
+      <AmbassadorMarquee items={MARQUEE_ITEMS} />
 
-      {/* Row 2 — right scroll */}
-      <div className="w-full overflow-hidden mb-3">
-        <div
-          style={{
-            display: 'flex',
-            gap: '32px',
-            width: 'max-content',
-            animation: 'marquee-right 32s linear infinite',
-          }}
+      <div className="flex justify-center mt-14 md:mt-20">
+        <Link
+          href="/ambassadors"
+          className="inline-flex items-center gap-1.5 bg-[#FF2035] text-white px-5 py-3 rounded-[24px] font-sans text-[15px] leading-none hover:opacity-90 transition-opacity"
         >
-          {ROW_ITEMS.map((item, i) => (
-            <span key={i} className={
-              item === '★'
-                ? 'text-[#FF2035] text-[18px] shrink-0 self-center'
-                : 'font-sans text-[15px] md:text-[17px] text-white/80 shrink-0 whitespace-nowrap'
-            }>
-              {item}
-            </span>
-          ))}
-        </div>
-      </div>
-
-      {/* Row 3 — left scroll */}
-      <div className="w-full overflow-hidden">
-        <div
-          style={{
-            display: 'flex',
-            gap: '32px',
-            width: 'max-content',
-            animation: 'marquee-left 36s linear infinite',
-          }}
-        >
-          {ROW_ITEMS.map((item, i) => (
-            <span key={i} className={
-              item === '★'
-                ? 'text-[#FF2035] text-[18px] shrink-0 self-center'
-                : 'font-sans text-[15px] md:text-[17px] text-white/80 shrink-0 whitespace-nowrap'
-            }>
-              {item}
-            </span>
-          ))}
-        </div>
+          Become an Ambassador
+          <Image src="/icons/Button star.svg" alt="" width={14} height={14} className="size-[14px]" />
+        </Link>
       </div>
     </section>
   )

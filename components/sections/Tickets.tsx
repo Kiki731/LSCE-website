@@ -11,7 +11,7 @@ const TICKETS = [
       'The essential pass to get you into the room. Perfect for students looking to explore opportunities and expand their network.',
     bg: '#BAFFBA',
     border: '#00CF01',
-    starIcon: '/icons/Star Bronzilocks.png',
+    starIcon: '/icons/Star Green.png',
     perks: [
       'Entry to all general panel discussions',
       'Digital LSCE event guide and floor map',
@@ -27,7 +27,7 @@ const TICKETS = [
       'Level up your expo experience with hands-on career prep, priority access, and exclusive workshops.',
     bg: '#FDF0D9',
     border: '#FFBD4D',
-    starIcon: '/icons/Star Silverlocks.png',
+    starIcon: '/icons/Star Yellow.png',
     perks: [
       'Everything in The Spark, plus:',
       'Guaranteed spot in the CV Review Clinic',
@@ -44,7 +44,7 @@ const TICKETS = [
       'The ultimate all-access experience. Maximise your visibility and get one-on-one facetime with top industry recruiters.',
     bg: '#FFE3E6',
     border: '#F11429',
-    starIcon: '/icons/Star Goldilocks.png',
+    starIcon: '/icons/Star Red.png',
     perks: [
       'Everything in The Rise, plus:',
       '1-on-1 Mock Interview session with an HR expert',
@@ -59,25 +59,25 @@ export default function Tickets() {
   return (
     <section className="relative bg-white overflow-hidden rounded-tl-[120px] md:rounded-tl-[280px] py-[80px] md:py-[120px]">
 
-      {/* Decorative star — top right */}
-      <div className="absolute top-6 right-6 md:top-10 md:right-16 pointer-events-none z-0" aria-hidden>
+      {/* Decorative star — top right, overlapping Emergence card */}
+      <div className="absolute top-[100px] md:top-[140px] right-[80px] md:right-[100px] pointer-events-none z-20" aria-hidden>
         <Image
           src="/gallery/red star asset.png"
           alt=""
           width={120}
           height={120}
-          className="w-[80px] md:w-[120px] h-auto opacity-80"
+          className="w-[80px] md:w-[130px] h-auto"
         />
       </div>
 
-      {/* Decorative star — bottom left area, near cards */}
-      <div className="absolute bottom-20 left-4 md:left-12 pointer-events-none z-0 hidden md:block" aria-hidden>
+      {/* Decorative image — bottom left, sitting below the wall/edge */}
+      <div className="absolute bottom-[-60px] md:bottom-[-80px] left-0 pointer-events-none z-0" aria-hidden>
         <Image
-          src="/gallery/red star asset.png"
+          src="/gallery/LSCE 3.0 Assets ! (11) 2.png"
           alt=""
-          width={90}
-          height={90}
-          className="opacity-60 -rotate-[131deg] scale-y-[-1]"
+          width={280}
+          height={280}
+          className="w-[160px] md:w-[280px] h-auto object-contain object-bottom"
         />
       </div>
 
@@ -97,11 +97,11 @@ export default function Tickets() {
         </FadeUp>
 
         {/* Cards */}
-        <FadeUp delay={80} className="flex flex-col md:flex-row gap-6 md:gap-4 w-full items-center md:items-stretch">
+        <FadeUp delay={80} className="flex flex-col min-[1000px]:flex-row gap-6 min-[1000px]:gap-4 w-full items-center min-[1000px]:items-stretch">
           {TICKETS.map(({ tier, label, price, description, bg, border, starIcon, perks }) => (
             <div
               key={tier}
-              className="flex-1 flex flex-col overflow-hidden rounded-[9px] w-full max-w-[370px]"
+              className="flex-1 flex flex-col overflow-hidden rounded-[9px] w-full max-w-[460px] min-[1000px]:max-w-none"
               style={{
                 backgroundColor: bg,
                 border: `7px solid ${border}`,
@@ -117,7 +117,7 @@ export default function Tickets() {
               {/* Body */}
               <div className="flex flex-col gap-4 px-6 py-5 flex-1">
                 <div className="flex flex-col gap-1">
-                  <p className="font-display text-[15px] text-[#1A1A1A] font-[500] leading-[1.2]">
+                  <p className={`text-[#1A1A1A] font-[500] leading-[1.2] ${tier === 'gold' ? 'font-sans text-[13px] opacity-60' : 'font-display text-[22px] md:text-[26px]'}`}>
                     {price}
                   </p>
                   <p className="font-sans text-[13px] text-[#1A1A1A]/70 leading-[1.4]">
@@ -145,13 +145,13 @@ export default function Tickets() {
                 {/* CTA */}
                 <div className="mt-auto pt-4">
                   {tier === 'gold' ? (
-                    <span className="inline-flex items-center gap-1.5 bg-[#1A1A1A]/10 text-[#1A1A1A] px-4 py-2.5 rounded-[24px] font-sans text-[13px] leading-none">
+                    <span className="flex items-center justify-center gap-1.5 w-full bg-[#1A1A1A]/10 text-[#1A1A1A] px-4 py-3 rounded-[24px] font-sans text-[13px] leading-none">
                       Strictly by Invite
                     </span>
                   ) : (
                     <Link
                       href={`/tickets?tier=${tier}`}
-                      className="inline-flex items-center gap-1.5 bg-[#FF2035] text-white px-4 py-2.5 rounded-[24px] font-sans text-[13px] leading-none hover:opacity-90 transition-opacity"
+                      className="flex items-center justify-center gap-2 w-full bg-[#FF2035] text-white px-5 py-3 rounded-[24px] font-sans text-[13px] leading-none hover:opacity-90 transition-opacity"
                     >
                       Get {label}
                       <Image src="/icons/Button star.svg" alt="" width={12} height={12} className="size-[12px]" />

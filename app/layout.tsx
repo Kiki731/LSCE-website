@@ -10,8 +10,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: 'LSCE 3.0 | Lagos Students Career Expo 2026',
   description:
-    'More Than a Job Fair. A Career Revolution. Join the largest student-organised expo in Lagos — October 3rd 2026, Landmark Event Centre.',
-  keywords: ['LSCE', 'Lagos Students Career Expo', 'career', 'expo', 'Lagos', 'students', 'networking', '2026'],
+    'More Than a Job Fair. A Career Revolution. Join the largest student-organised expo in Lagos, October 3rd 2026.',
+  keywords: ['LSCE', 'Lagos Students Career Expo', 'career', 'expo', 'Lagos', 'students', 'networking', '2026','tech expo', 'tech jobs', 'tech careers', 'tech companies', 'tech startups', 'tech events', 'tech conferences', 'tech workshops', 'tech seminars', 'tech training', 'tech education', 'tech development', 'tech innovation', 'tech research', 'tech startups', 'tech companies', 'tech jobs', 'tech careers', 'tech events', 'tech conferences', 'tech workshops', 'tech seminars', 'tech training', 'tech education', 'tech development', 'tech innovation', 'tech research'],
 
   // ── Favicon / icons ──────────────────────────────────────────────────────────
   // app/icon.png and app/favicon.ico (both set to LSCE badge) are picked up
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     url:         SITE_URL,
     siteName:    'LSCE 2026',
     title:       'LSCE 3.0 | Lagos Students Career Expo 2026',
-    description: 'More Than a Job Fair. A Career Revolution. October 3rd 2026, Landmark Event Centre, Lagos.',
+    description: 'More Than a Job Fair. A Career Revolution. October 3rd 2026, Lagos.',
     // OG image is auto-generated from app/opengraph-image.tsx (1200×630)
     images: [
       {
@@ -50,10 +50,95 @@ export const metadata: Metadata = {
   },
 }
 
+const JSON_LD = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${SITE_URL}/#website`,
+      url: SITE_URL,
+      name: 'Lagos Students Career Expo',
+      alternateName: 'LSCE',
+      description: 'The largest student-organised career expo in Lagos. October 3rd 2026, Landmark Event Centre.',
+      potentialAction: {
+        '@type': 'SearchAction',
+        target: { '@type': 'EntryPoint', urlTemplate: `${SITE_URL}/?q={search_term_string}` },
+        'query-input': 'required name=search_term_string',
+      },
+    },
+    {
+      '@type': 'Event',
+      '@id': `${SITE_URL}/#event`,
+      name: 'Lagos Students Career Expo 3.0',
+      alternateName: 'LSCE 3.0',
+      description: 'More Than a Job Fair. A Career Revolution. Join the largest student-organised expo in Lagos.',
+      startDate: '2026-10-03',
+      eventStatus: 'https://schema.org/EventScheduled',
+      eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+      location: {
+        '@type': 'Place',
+        name: 'Landmark Event Centre',
+        address: { '@type': 'PostalAddress', addressLocality: 'Lagos', addressCountry: 'NG' },
+      },
+      organizer: { '@type': 'Organization', name: 'Lagos Students Career Expo', url: SITE_URL },
+      offers: {
+        '@type': 'Offer',
+        url: `${SITE_URL}/tickets`,
+        name: 'Get a Ticket',
+        availability: 'https://schema.org/InStock',
+        priceCurrency: 'NGN',
+      },
+      image: `${SITE_URL}/opengraph-image`,
+      url: SITE_URL,
+    },
+    {
+      '@type': 'ItemList',
+      name: 'Quick Links',
+      itemListElement: [
+        {
+          '@type': 'SiteLinksSearchBox',
+        },
+        {
+          '@type': 'ListItem',
+          position: 1,
+          name: 'Get a Ticket',
+          description: 'Secure your spot at LSCE 3.0 — Lagos Students Career Expo, October 3rd 2026.',
+          url: `${SITE_URL}/tickets`,
+        },
+        {
+          '@type': 'ListItem',
+          position: 2,
+          name: 'Become a Sponsor',
+          description: 'Partner with LSCE 3.0 and put your brand in front of thousands of ambitious students.',
+          url: `${SITE_URL}/#sponsors`,
+        },
+        {
+          '@type': 'ListItem',
+          position: 3,
+          name: 'Become a Campus Ambassador',
+          description: 'Represent LSCE on your campus and earn exclusive perks.',
+          url: `${SITE_URL}/ambassadors`,
+        },
+        {
+          '@type': 'ListItem',
+          position: 4,
+          name: 'Contact Us',
+          description: 'Reach out to the LSCE team for enquiries, partnerships, and media.',
+          url: `${SITE_URL}/contact`,
+        },
+      ],
+    },
+  ],
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="h-full">
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }}
+        />
         {/* Google Analytics — after-interactive so it never blocks render */}
         <Script
           src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}

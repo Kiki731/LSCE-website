@@ -180,6 +180,14 @@ body {
   padding-right: 120px;
 }
 
+/* narrow desktop: 1024–1199px (before full 120px padding kicks in) */
+@media (min-width: 1024px) and (max-width: 1199px) {
+  .section-container {
+    padding-left: 72px;
+    padding-right: 72px;
+  }
+}
+
 /* tablet: 768–1023px */
 @media (min-width: 768px) and (max-width: 1023px) {
   .section-container {

@@ -18,7 +18,7 @@ const EXHIBIT_PERKS = [
 
 export default function Sponsors() {
   return (
-    <section className="relative py-[60px] md:py-[80px] overflow-hidden">
+    <section className="relative pt-[160px] md:pt-[200px] pb-[60px] md:pb-[80px] overflow-hidden" style={{ marginTop: '-120px' }}>
       {/* Background image */}
       <div className="absolute inset-0 pointer-events-none">
         <Image
@@ -48,11 +48,11 @@ export default function Sponsors() {
         </FadeUp>
 
         {/* Cards row — stacked on mobile+tablet, side-by-side on desktop */}
-        <div className="flex flex-col gap-6 lg:flex-row lg:gap-0 items-start justify-center w-full">
+        <div className="flex flex-col gap-6 lg:flex-row lg:gap-0 items-center lg:items-start justify-center w-full">
 
           {/* Sponsor card */}
           <div
-            className="w-full lg:w-[450px] shrink-0 flex flex-col gap-6 rounded-[24px] p-8 pt-10"
+            className="w-full max-w-[500px] lg:w-[450px] lg:max-w-none shrink-0 flex flex-col gap-6 rounded-[24px] p-8 pt-10"
             style={{
               background: 'rgba(255, 32, 53,0.07)',
               backdropFilter: 'blur(20px)',
@@ -79,13 +79,15 @@ export default function Sponsors() {
               </div>
             </div>
 
-            <Link
-              href="/contact"
+            <a
+              href="https://wa.me/2348188276353?text=Hi%2C%20I%27m%20interested%20in%20sponsoring%20LSCE%203.0"
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center justify-center gap-1.5 bg-white text-[#FF2035] px-5 py-3 rounded-[24px] font-sans text-[15px] leading-none hover:opacity-90 transition-opacity mt-auto"
             >
               Become a Sponsor
               <Image src="/icons/Button star red.svg" alt="" width={14} height={14} className="size-[14px]" />
-            </Link>
+            </a>
           </div>
 
           {/* Arrow between cards — desktop only */}
@@ -101,7 +103,7 @@ export default function Sponsors() {
 
           {/* Exhibit card — offset lower on desktop */}
           <div
-            className="w-full lg:w-[450px] shrink-0 flex flex-col gap-6 rounded-[24px] p-8 lg:mt-20"
+            className="w-full max-w-[500px] lg:w-[450px] lg:max-w-none shrink-0 flex flex-col gap-6 rounded-[24px] p-8 lg:mt-20"
             style={{
               background: 'rgba(255, 32, 53,0.07)',
               backdropFilter: 'blur(20px)',
@@ -128,13 +130,15 @@ export default function Sponsors() {
               </div>
             </div>
 
-            <Link
-              href="/contact"
+            <a
+              href="https://wa.me/2348188276353?text=Hi%2C%20I%27m%20interested%20in%20exhibiting%20at%20LSCE%203.0"
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center justify-center gap-1.5 bg-[#FF2035] text-white px-5 py-3 rounded-[24px] font-sans text-[15px] leading-none hover:opacity-90 transition-opacity mt-auto"
             >
               Become an Exhibitor
               <Image src="/icons/Button star.svg" alt="" width={14} height={14} className="size-[14px]" />
-            </Link>
+            </a>
           </div>
 
         </div>

@@ -42,10 +42,10 @@ export default function FAQ() {
 
   return (
     /* negative top margin so BrandsFueling card overlaps this dark section */
-    <section className="relative" style={{ marginTop: '-80px' }}>
+    <section className="relative overflow-hidden" style={{ marginTop: '-80px' }}>
 
-      {/* Background image — fixed to section, not allowed to resize with content */}
-      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+      {/* Background image — fixed height so accordion expansion doesn't shift the bg */}
+      <div className="absolute top-0 left-0 right-0 h-[900px] pointer-events-none overflow-hidden">
         <Image
           src="/gallery/FAQS BG.png"
           alt=""
@@ -59,15 +59,24 @@ export default function FAQ() {
       <div className="relative z-10 section-container pt-[160px] md:pt-[200px] pb-[80px] md:pb-[120px] flex flex-col lg:flex-row gap-10 lg:gap-16 items-start">
 
         {/* Left — label */}
-        <FadeUp className="flex flex-col gap-3 lg:w-[380px] shrink-0">
-          <h2 className="font-display text-[22px] md:text-[26px] text-white leading-[1.2] font-[500]">
-            Frequently{' '}
-            <span className="text-[#FF2035]">Asked</span>{' '}
-            Questions
-          </h2>
-          <p className="font-sans text-[15px] text-white/60 leading-[1.4]">
-            Your guide to navigating the Lagos Students Career Expo.
-          </p>
+        <FadeUp className="flex flex-col gap-5 lg:w-[380px] shrink-0">
+          <div className="flex flex-col gap-3">
+            <h2 className="font-display text-[22px] md:text-[26px] text-white leading-[1.2] font-[500]">
+              Frequently{' '}
+              <span className="text-[#FF2035]">Asked</span>{' '}
+              Questions
+            </h2>
+            <p className="font-sans text-[15px] text-white/60 leading-[1.4]">
+              Your guide to navigating the Lagos Students Career Expo.
+            </p>
+          </div>
+          <Image
+            src="/gallery/FAQ vector.png"
+            alt=""
+            width={320}
+            height={180}
+            className="hidden lg:block w-full max-w-[320px] h-auto"
+          />
         </FadeUp>
 
         {/* Right — accordion */}
