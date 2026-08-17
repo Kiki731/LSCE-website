@@ -3,9 +3,6 @@ import Link from 'next/link'
 
 const PARTNERS = [
   { name: 'TechCabal', logo: '/partners/techcabal.png', width: 180, height: 40 },
-  { name: 'Cowrywise', logo: '/partners/cowrywise.png', width: 167, height: 31 },
-  { name: 'Paystack', logo: '/partners/paystack.png', width: 151, height: 27 },
-  { name: 'Moniepoint', logo: '/partners/moniepoint.png', width: 150, height: 37 },
   { name: 'Utiva', logo: '/partners/utiva.png', width: 98, height: 29 },
   { name: 'ALX', logo: '/partners/alx.png', width: 59, height: 30 },
   { name: 'AIESEC', logo: '/partners/Aiesec.png', width: 120, height: 32 },

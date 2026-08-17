@@ -55,6 +55,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid ticket type' }, { status: 400 })
     }
 
+    // Gold is strictly by invite — block any purchase attempt at the server
+    if (tier === 'gold') {
+      return NextResponse.json({ error: 'This ticket is strictly by invite only' }, { status: 403 })
+    }
+
     if (quantity < 1 || quantity > 10) {
       return NextResponse.json({ error: 'Quantity must be between 1 and 10' }, { status: 400 })
     }
