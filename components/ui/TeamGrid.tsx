@@ -7,11 +7,14 @@ import type { TeamMember } from '@/lib/types'
 
 const DEPARTMENTS = [
   { key: 'all',          label: 'All' },
-  { key: 'organizing',   label: 'Organizing' },
-  { key: 'partnerships', label: 'Partnerships' },
+  { key: 'management',   label: 'Management' },
+  { key: 'partnerships', label: 'Partnerships & Sponsorships' },
   { key: 'design',       label: 'Design' },
-  { key: 'social',       label: 'Social Media' },
   { key: 'programs',     label: 'Programs' },
+  { key: 'welfare',      label: 'Welfare' },
+  { key: 'technical',    label: 'Technical' },
+  { key: 'publicity',    label: 'Publicity and Campus Ambassadors' },
+  { key: 'social_media', label: 'Social Media' },
 ] as const
 
 type DeptKey = typeof DEPARTMENTS[number]['key']
