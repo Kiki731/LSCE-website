@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { sendCVUploadConfirmation } from '@/lib/email'
 
 function getAdminClient() {
   return createClient(
@@ -91,14 +92,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Upload failed — please try again' }, { status: 500 })
   }
 
-  // Save path to the attendee record
-  const { error: updateErr } = await db
+  // Save path to the attendee record and fetch attendee details for the confirmation email
+  const { data: updatedAttendee, error: updateErr } = await db
     .from('attendees')
     .update({ cv_url: uploaded.path })
     .eq('ticket_code', code)
+    .select('email, name')
+    .single()
 
   if (updateErr) {
     console.error('[upload-cv] Attendee update error:', updateErr)
+  }
+
+  if (updatedAttendee?.email) {
+    sendCVUploadConfirmation({
+      attendeeEmail: updatedAttendee.email,
+      attendeeName:  updatedAttendee.name ?? updatedAttendee.email.split('@')[0],
+      ticketCode:    code,
+    }).catch(err => console.error('[upload-cv] confirmation email failed:', err))
   }
 
   return NextResponse.json({ success: true, path: uploaded.path })

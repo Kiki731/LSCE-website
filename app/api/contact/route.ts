@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { Resend } from 'resend'
+import { sendContactAutoReply, sendContactTeamNotification } from '@/lib/email'
 
 function getAdminClient() {
   return createClient(
@@ -8,9 +8,6 @@ function getAdminClient() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
   )
 }
-
-const TEAM_EMAIL   = 'lagosstudentcareerexpo@gmail.com'
-const FROM_ADDRESS = process.env.RESEND_FROM ?? 'onboarding@resend.dev'
 
 export async function POST(req: NextRequest) {
   try {
@@ -42,25 +39,12 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to send message. Please try again.' }, { status: 500 })
     }
 
-    // Notify team
-    const resendKey = process.env.RESEND_API_KEY
-    if (resendKey) {
-      const resend = new Resend(resendKey)
-      await resend.emails.send({
-        from:    FROM_ADDRESS,
-        to:      [TEAM_EMAIL],
-        replyTo: email,
-        subject: `New Contact Message — ${subject}`,
-        text: `
-New contact message from thelscexpo.com
+    const payload = { name: name.trim(), email: email.toLowerCase().trim(), subject: subject.trim(), message: message.trim() }
 
-From:    ${name} <${email}>
-Subject: ${subject}
-
-${message}
-        `.trim(),
-      }).catch(err => console.error('[contact] notification email failed:', err))
-    }
+    await Promise.allSettled([
+      sendContactAutoReply(payload),
+      sendContactTeamNotification(payload),
+    ])
 
     return NextResponse.json({ success: true })
   } catch (err) {

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { Resend } from 'resend'
+import { sendAmbassadorApplicationConfirmation, sendAmbassadorTeamNotification } from '@/lib/email'
 
 function getAdminClient() {
   return createClient(
@@ -8,9 +8,6 @@ function getAdminClient() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
   )
 }
-
-const TEAM_EMAIL  = 'lagosstudentcareerexpo@gmail.com'
-const FROM_ADDRESS = process.env.RESEND_FROM ?? 'onboarding@resend.dev'
 
 export async function POST(req: NextRequest) {
   try {
@@ -58,32 +55,23 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Failed to submit application. Please try again.' }, { status: 500 })
     }
 
-    // Send notification email to team
-    const resendKey = process.env.RESEND_API_KEY
-    if (resendKey) {
-      const resend = new Resend(resendKey)
-      await resend.emails.send({
-        from:    FROM_ADDRESS,
-        to:      [TEAM_EMAIL],
-        subject: `New Ambassador Application — ${full_name}`,
-        text: `
-New ambassador application received.
-
-Name:        ${full_name}
-Email:       ${email}
-Phone:       ${phone}
-University:  ${university}
-Course:      ${course}
-Year:        ${year}
-Instagram:   ${instagram || '—'}
-
-Why they want to apply:
-${why_apply}
-
-View all applications in the admin portal.
-        `.trim(),
-      }).catch(err => console.error('[ambassadors/apply] notification email failed:', err))
-    }
+    await Promise.allSettled([
+      sendAmbassadorApplicationConfirmation({
+        applicantName:  full_name.trim(),
+        applicantEmail: email.toLowerCase().trim(),
+        university:     university.trim(),
+      }),
+      sendAmbassadorTeamNotification({
+        applicantName:  full_name.trim(),
+        applicantEmail: email.toLowerCase().trim(),
+        phone:          phone.trim(),
+        university:     university.trim(),
+        course:         course.trim(),
+        year,
+        instagram:      instagram?.trim() || null,
+        whyApply:       why_apply.trim(),
+      }),
+    ])
 
     return NextResponse.json({ success: true })
   } catch (err) {
