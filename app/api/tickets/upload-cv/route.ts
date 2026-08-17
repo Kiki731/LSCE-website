@@ -90,10 +90,21 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'CV upload is only available for The Rise ticket holders' }, { status: 403 })
   }
 
-  // Upload to Cloudflare R2
-  const ext    = file.name.split('.').pop() ?? 'pdf'
-  const key    = `${code}.${ext}`
-  const bytes  = await file.arrayBuffer()
+  const bytes = await file.arrayBuffer()
+
+  // Validate file contents by magic bytes — client-supplied MIME type is untrusted
+  const magic = new Uint8Array(bytes.slice(0, 8))
+  const isPDF  = magic[0] === 0x25 && magic[1] === 0x50 && magic[2] === 0x44 && magic[3] === 0x46  // %PDF
+  const isDOCX = magic[0] === 0x50 && magic[1] === 0x4B && magic[2] === 0x03 && magic[3] === 0x04  // PK (ZIP — DOCX)
+  const isDOC  = magic[0] === 0xD0 && magic[1] === 0xCF && magic[2] === 0x11 && magic[3] === 0xE0  // OLE (DOC)
+  if (!isPDF && !isDOCX && !isDOC) {
+    return NextResponse.json({ error: 'File contents do not match a PDF or Word document' }, { status: 400 })
+  }
+
+  // Sanitise extension to an explicit allowlist — never trust file.name
+  const rawExt = file.name.split('.').pop()?.toLowerCase() ?? ''
+  const ext = ['pdf', 'doc', 'docx'].includes(rawExt) ? rawExt : isPDF ? 'pdf' : isDOC ? 'doc' : 'docx'
+  const key = `${code}.${ext}`
 
   try {
     const r2 = getR2Client()
@@ -101,7 +112,7 @@ export async function POST(req: NextRequest) {
       Bucket:      BUCKET,
       Key:         key,
       Body:        Buffer.from(bytes),
-      ContentType: file.type,
+      ContentType: isPDF ? 'application/pdf' : isDOC ? 'application/msword' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     }))
   } catch (err) {
     console.error('[upload-cv] R2 upload error:', err)

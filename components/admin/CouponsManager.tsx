@@ -157,18 +157,22 @@ function CouponFormFields({
       {/* Tier restriction */}
       <Field label="Applies to" hint="Leave all unselected to apply to every tier">
         <div className="flex gap-2 flex-wrap">
-          {['bronze', 'silver', 'gold'].map(tier => (
+          {([
+            { id: 'bronze', label: 'The Spark' },
+            { id: 'silver', label: 'The Rise' },
+            { id: 'gold',   label: 'The Emergence' },
+          ] as const).map(({ id, label }) => (
             <button
-              key={tier} type="button"
-              onClick={() => toggleTier(tier)}
-              className="px-3 py-1.5 rounded-[8px] font-sans text-[12px] font-semibold capitalize transition-colors border"
+              key={id} type="button"
+              onClick={() => toggleTier(id)}
+              className="px-3 py-1.5 rounded-[8px] font-sans text-[12px] font-semibold transition-colors border"
               style={{
-                background:  form.ticket_types.includes(tier) ? '#FF2035' : 'transparent',
-                borderColor: form.ticket_types.includes(tier) ? '#FF2035' : 'rgba(255,255,255,0.15)',
-                color:       form.ticket_types.includes(tier) ? 'white'   : 'rgba(255,255,255,0.5)',
+                background:  form.ticket_types.includes(id) ? '#FF2035' : 'transparent',
+                borderColor: form.ticket_types.includes(id) ? '#FF2035' : 'rgba(255,255,255,0.15)',
+                color:       form.ticket_types.includes(id) ? 'white'   : 'rgba(255,255,255,0.5)',
               }}
             >
-              {tier}
+              {label}
             </button>
           ))}
         </div>

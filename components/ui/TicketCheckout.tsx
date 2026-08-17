@@ -612,7 +612,7 @@ export default function TicketCheckout() {
         }),
       })
       const data = await res.json()
-      if (!res.ok || !data.access_code) {
+      if (!res.ok || (!data.access_code && !data.free)) {
         setPayError(data.error ?? 'Could not initialise payment. Please try again.')
         setPaying(false)
         return
@@ -627,6 +627,14 @@ export default function TicketCheckout() {
           : buyer.attendeeEmails.slice(0, quantity),
         breakouts: selectedBreakouts,
       }))
+      // Free ticket — flag reference in sessionStorage so the success page knows
+      // to skip Paystack verify. Never put this in the URL — URL params are
+      // attacker-controllable.
+      if (data.free) {
+        sessionStorage.setItem('lsce_free_ref', data.reference as string)
+        window.location.href = `/tickets/success?reference=${data.reference}`
+        return
+      }
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const PaystackPop = (window as any).PaystackPop
       if (!PaystackPop) {

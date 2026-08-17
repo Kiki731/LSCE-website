@@ -68,18 +68,25 @@ export default function TicketSuccessClient() {
       }
 
       try {
-        // 1 — Verify with Paystack server-side
-        const verifyRes  = await fetch('/api/tickets/verify-payment', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ reference }),
-        })
-        const verifyData = await verifyRes.json()
+        // A free order stores its reference in sessionStorage (set by TicketCheckout
+        // before redirecting). Checking the URL param is not safe — it's attacker-controllable.
+        const isFree = sessionStorage.getItem('lsce_free_ref') === reference
 
-        if (!verifyData.valid) {
-          setErrorMsg('Payment could not be verified. Reference: ' + reference)
-          setState('error')
-          return
+        // 1 — Verify with Paystack server-side (skipped for 100%-off free orders)
+        let verifyData: { valid: boolean; email?: string; amountNaira?: number; metadata?: Record<string, unknown> } = { valid: true }
+        if (!isFree) {
+          const verifyRes = await fetch('/api/tickets/verify-payment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ reference }),
+          })
+          verifyData = await verifyRes.json()
+
+          if (!verifyData.valid) {
+            setErrorMsg('Payment could not be verified. Reference: ' + reference)
+            setState('error')
+            return
+          }
         }
 
         // 2 — Retrieve buyer info stored before the popup opened
@@ -94,10 +101,10 @@ export default function TicketSuccessClient() {
           buyer_phone:     meta.buyer_phone  ?? null,
           ticket_type:     meta.ticket_type  ?? 'bronze',
           quantity:        meta.quantity     ?? 1,
-          unit_price:      Math.round(verifyData.amountNaira / (meta.quantity ?? 1)),
+          unit_price:      Math.round((verifyData.amountNaira ?? 0) / (meta.quantity as number ?? 1)),
           discount_code:   meta.discount_code   ?? null,
           discount_amount: meta.discount_amount ?? 0,
-          total_amount:    verifyData.amountNaira,
+          total_amount:    verifyData.amountNaira ?? 0,
           attendee_emails: [verifyData.email],
         }
 
@@ -110,6 +117,7 @@ export default function TicketSuccessClient() {
 
         if (orderData.success || orderData.duplicate) {
           sessionStorage.removeItem('lsce_pending_order')
+          sessionStorage.removeItem('lsce_free_ref')
 
           setDetails({
             orderId:     orderData.orderId,

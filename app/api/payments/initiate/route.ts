@@ -97,6 +97,11 @@ export async function POST(req: NextRequest) {
 
     const reference = generateRef()
 
+    // ── Free order (100% coupon) — skip Paystack entirely ─────────────────────
+    if (totalNaira === 0) {
+      return NextResponse.json({ free: true, reference, amountNaira: 0 })
+    }
+
     // ── Call Paystack Initialize ───────────────────────────────────────────────
     const paystackRes = await fetch('https://api.paystack.co/transaction/initialize', {
       method: 'POST',

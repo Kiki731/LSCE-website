@@ -19,6 +19,15 @@ const TEAM_EMAIL  = 'lagosstudentcareerexpo@gmail.com'
 const FROM_ADDRESS = process.env.RESEND_FROM ?? 'onboarding@resend.dev'
 const SITE_URL     = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://thelscexpo.com').replace(/\/$/, '')
 
+function escHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 function assetUrl(path: string): string {
   return `${SITE_URL}${path}`
 }
@@ -404,7 +413,7 @@ export async function sendContactAutoReply(p: ContactAutoReplyPayload): Promise<
   const resend = getResend()
   if (!resend) return
 
-  const firstName = p.name.split(' ')[0]
+  const firstName = escHtml(p.name.split(' ')[0])
 
   const body = `
     <p style="margin:0 0 20px;font-size:19px;font-weight:700;color:#000000;">We got your message, ${firstName}.</p>
@@ -418,9 +427,9 @@ export async function sendContactAutoReply(p: ContactAutoReplyPayload): Promise<
 
     ${infoBox(`
       <p style="margin:0 0 4px;font-size:11px;color:#999;text-transform:uppercase;letter-spacing:0.07em;font-weight:600;">Subject</p>
-      <p style="margin:0 0 16px;font-size:15px;font-weight:700;color:#1A1A1A;">${p.subject}</p>
+      <p style="margin:0 0 16px;font-size:15px;font-weight:700;color:#1A1A1A;">${escHtml(p.subject)}</p>
       <p style="margin:0 0 4px;font-size:11px;color:#999;text-transform:uppercase;letter-spacing:0.07em;font-weight:600;">Message</p>
-      <p style="margin:0;font-size:14px;color:#555555;line-height:1.7;white-space:pre-wrap;">${p.message}</p>
+      <p style="margin:0;font-size:14px;color:#555555;line-height:1.7;white-space:pre-wrap;">${escHtml(p.message)}</p>
     `)}
 
     ${divider()}
@@ -475,15 +484,15 @@ export async function sendContactTeamNotification(p: ContactAutoReplyPayload): P
 
     ${infoBox(`
       <table width="100%" cellpadding="0" cellspacing="0">
-        ${fieldRow('Name', p.name)}
-        ${fieldRow('Email', `<a href="mailto:${p.email}" style="color:${BRAND_RED};text-decoration:none;">${p.email}</a>`)}
-        ${fieldRow('Subject', p.subject)}
+        ${fieldRow('Name', escHtml(p.name))}
+        ${fieldRow('Email', `<a href="mailto:${encodeURIComponent(p.email)}" style="color:${BRAND_RED};text-decoration:none;">${escHtml(p.email)}</a>`)}
+        ${fieldRow('Subject', escHtml(p.subject))}
       </table>
     `)}
 
     <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#1A1A1A;text-transform:uppercase;letter-spacing:0.06em;">Message</p>
     ${infoBox(`
-      <p style="margin:0;font-size:14px;color:#555555;line-height:1.8;white-space:pre-wrap;">${p.message}</p>
+      <p style="margin:0;font-size:14px;color:#555555;line-height:1.8;white-space:pre-wrap;">${escHtml(p.message)}</p>
     `, 'neutral')}
 
     ${ctaButton('Reply via Email', `mailto:${p.email}?subject=Re: ${encodeURIComponent(p.subject)}`)}
@@ -595,7 +604,7 @@ export async function sendAmbassadorApplicationConfirmation(p: AmbassadorApplica
   const resend = getResend()
   if (!resend) return
 
-  const firstName = p.applicantName.split(' ')[0]
+  const firstName = escHtml(p.applicantName.split(' ')[0])
 
   const body = `
     <p style="margin:0 0 20px;font-size:19px;font-weight:700;color:#000000;">Application received, ${firstName}! 🙌</p>
@@ -607,8 +616,8 @@ export async function sendAmbassadorApplicationConfirmation(p: AmbassadorApplica
 
     ${infoBox(`
       <table width="100%" cellpadding="0" cellspacing="0">
-        ${fieldRow('Applicant', p.applicantName)}
-        ${fieldRow('University', p.university)}
+        ${fieldRow('Applicant', escHtml(p.applicantName))}
+        ${fieldRow('University', escHtml(p.university))}
         ${fieldRow('Event', EVENT_NAME)}
       </table>
     `)}
@@ -684,23 +693,23 @@ export async function sendAmbassadorTeamNotification(p: AmbassadorTeamNotificati
 
   const body = `
     <p style="margin:0 0 6px;font-size:12px;color:#999;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;">New ambassador application</p>
-    <p style="margin:0 0 24px;font-size:19px;font-weight:700;color:#000000;">${p.applicantName} applied from ${p.university}.</p>
+    <p style="margin:0 0 24px;font-size:19px;font-weight:700;color:#000000;">${escHtml(p.applicantName)} applied from ${escHtml(p.university)}.</p>
 
     ${infoBox(`
       <table width="100%" cellpadding="0" cellspacing="0">
-        ${fieldRow('Name', p.applicantName)}
-        ${fieldRow('Email', `<a href="mailto:${p.applicantEmail}" style="color:${BRAND_RED};text-decoration:none;">${p.applicantEmail}</a>`)}
-        ${fieldRow('Phone', p.phone)}
-        ${fieldRow('University', p.university)}
-        ${fieldRow('Course', p.course)}
-        ${fieldRow('Year', p.year)}
-        ${p.instagram ? fieldRow('Instagram', p.instagram) : ''}
+        ${fieldRow('Name', escHtml(p.applicantName))}
+        ${fieldRow('Email', `<a href="mailto:${encodeURIComponent(p.applicantEmail)}" style="color:${BRAND_RED};text-decoration:none;">${escHtml(p.applicantEmail)}</a>`)}
+        ${fieldRow('Phone', escHtml(p.phone))}
+        ${fieldRow('University', escHtml(p.university))}
+        ${fieldRow('Course', escHtml(p.course))}
+        ${fieldRow('Year', escHtml(p.year))}
+        ${p.instagram ? fieldRow('Instagram', escHtml(p.instagram)) : ''}
       </table>
     `)}
 
     <p style="margin:0 0 10px;font-size:13px;font-weight:700;color:#1A1A1A;text-transform:uppercase;letter-spacing:0.06em;">Why they want to apply</p>
     ${infoBox(`
-      <p style="margin:0;font-size:14px;color:#555555;line-height:1.8;white-space:pre-wrap;">${p.whyApply}</p>
+      <p style="margin:0;font-size:14px;color:#555555;line-height:1.8;white-space:pre-wrap;">${escHtml(p.whyApply)}</p>
     `, 'neutral')}
 
     ${ctaButton('Review in Admin Portal', `${SITE_URL}/admin/applications`)}

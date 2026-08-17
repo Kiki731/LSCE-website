@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { sendTicketConfirmation, sendGuestTicketClaim } from '@/lib/email'
-import type { TicketTier } from '@/lib/ticket-config'
+import { TICKET_TYPES, type TicketTier } from '@/lib/ticket-config'
 
 function getAdminClient() {
   return createClient(
@@ -38,8 +38,71 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
+    // ── Validate ticket type & compute expected amounts server-side ────────────
+    const ticket = TICKET_TYPES[ticket_type as TicketTier]
+    if (!ticket) {
+      return NextResponse.json({ error: 'Invalid ticket type' }, { status: 400 })
+    }
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = getAdminClient() as any
+
+    const expectedSubtotal = ticket.price * quantity
+    let expectedTotal = expectedSubtotal
+    let verifiedDiscountAmount = 0
+    let couponWasValid = false
+
+    if (discount_code) {
+      const { data: coupon } = await db
+        .from('coupons')
+        .select('discount_pct, is_active, max_uses, times_used, valid_from, valid_until, ticket_types')
+        .eq('code', String(discount_code).toUpperCase().trim())
+        .single()
+
+      const now = new Date()
+      couponWasValid = !!(coupon &&
+        coupon.is_active &&
+        (!coupon.max_uses || coupon.times_used < coupon.max_uses) &&
+        (!coupon.valid_from  || new Date(coupon.valid_from)  <= now) &&
+        (!coupon.valid_until || new Date(coupon.valid_until) >= now) &&
+        (!coupon.ticket_types?.length || coupon.ticket_types.includes(ticket_type)))
+
+      if (couponWasValid) {
+        verifiedDiscountAmount = Math.round(expectedSubtotal * (coupon.discount_pct / 100))
+        expectedTotal = expectedSubtotal - verifiedDiscountAmount
+      }
+    }
+
+    // ── Payment verification ───────────────────────────────────────────────────
+    // Zero total without a valid 100% coupon — reject outright
+    if (expectedTotal === 0 && !couponWasValid) {
+      return NextResponse.json({ error: 'Payment verification failed' }, { status: 400 })
+    }
+
+    if (expectedTotal > 0) {
+      const paystackRes = await fetch(
+        `https://api.paystack.co/transaction/verify/${encodeURIComponent(paystack_reference)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          cache: 'no-store',
+        },
+      )
+      const paystackJson = await paystackRes.json()
+
+      if (!paystackJson.status || paystackJson.data?.status !== 'success') {
+        console.error('[create-order] Paystack verification failed:', JSON.stringify(paystackJson))
+        return NextResponse.json({ error: 'Payment not verified' }, { status: 400 })
+      }
+
+      const paidNaira = (paystackJson.data.amount as number) / 100
+      if (Math.abs(paidNaira - expectedTotal) > 1) {
+        console.error('[create-order] Amount mismatch — expected', expectedTotal, 'paid', paidNaira)
+        return NextResponse.json({ error: 'Payment amount mismatch' }, { status: 400 })
+      }
+    }
 
     // ── Idempotency: order may already exist if webhook fired first ────────────
     const { data: existing } = await db
@@ -112,7 +175,7 @@ export async function POST(req: NextRequest) {
         buyerEmail:  buyer_email,
         ticketType:  ticket_type,
         quantity,
-        totalAmount: total_amount,
+        totalAmount: expectedTotal,
         ticketCodes,
       })
     }
@@ -126,10 +189,10 @@ export async function POST(req: NextRequest) {
         buyer_phone:     buyer_phone || null,
         ticket_type,
         quantity,
-        unit_price,
-        discount_code:   discount_code || null,
-        discount_amount: discount_amount || 0,
-        total_amount,
+        unit_price:      ticket.price,          // server-side price, never trust client
+        discount_code:   couponWasValid ? String(discount_code).toUpperCase().trim() : null,
+        discount_amount: verifiedDiscountAmount, // server-computed
+        total_amount:    expectedTotal,          // server-computed
         paystack_reference,
         payment_status: 'completed',
       })
@@ -193,7 +256,7 @@ export async function POST(req: NextRequest) {
       buyerEmail:  buyer_email,
       ticketType:  ticket_type as TicketTier,
       quantity,
-      totalAmount: total_amount,
+      totalAmount: expectedTotal,
       paystackRef: paystack_reference,
       ticketCodes,
       breakouts:   breakoutList,
@@ -206,7 +269,7 @@ export async function POST(req: NextRequest) {
       buyerEmail:  buyer_email,
       ticketType:  ticket_type,
       quantity,
-      totalAmount: total_amount,
+      totalAmount: expectedTotal,
       ticketCodes,
     })
   } catch (err) {
