@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS team_members (
   linkedin_url TEXT,
   twitter_url TEXT,
   quote TEXT,
-  department TEXT DEFAULT 'management' CHECK (department IN ('management', 'partnerships', 'design', 'programs', 'welfare', 'technical', 'publicity', 'social_media')),
+  department TEXT DEFAULT 'management' CHECK (department IN ('management', 'partnerships', 'design', 'programs', 'welfare', 'technical', 'publicity', 'social_media', 'community')),
   display_order INTEGER DEFAULT 0,
   is_visible BOOLEAN DEFAULT true,
   created_at TIMESTAMPTZ DEFAULT now()

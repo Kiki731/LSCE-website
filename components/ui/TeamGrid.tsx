@@ -15,6 +15,7 @@ const DEPARTMENTS = [
   { key: 'technical',    label: 'Technical' },
   { key: 'publicity',    label: 'Publicity and Campus Ambassadors' },
   { key: 'social_media', label: 'Social Media' },
+  { key: 'community',    label: 'Community Management' },
 ] as const
 
 type DeptKey = typeof DEPARTMENTS[number]['key']
