@@ -45,7 +45,7 @@ export const metadata: Metadata = {
   twitter: {
     card:        'summary_large_image',
     title:       'LSCE 3.0 | Lagos Students Career Expo 2026',
-    description: 'More Than a Job Fair. A Career Revolution. October 3rd 2026, Landmark Event Centre, Lagos.',
+    description: 'More Than a Job Fair. A Career Revolution. October 3rd 2026, Daystar Christian Centre, Ikeja, Lagos.',
     images:      ['/opengraph-image'],
   },
 }
@@ -59,7 +59,7 @@ const JSON_LD = {
       url: SITE_URL,
       name: 'Lagos Students Career Expo',
       alternateName: 'LSCE',
-      description: 'The largest student-organised career expo in Lagos. October 3rd 2026, Landmark Event Centre.',
+      description: 'The largest student-organised career expo in Lagos. October 3rd 2026, Daystar Christian Centre, Ikeja.',
       potentialAction: {
         '@type': 'SearchAction',
         target: { '@type': 'EntryPoint', urlTemplate: `${SITE_URL}/?q={search_term_string}` },
@@ -77,8 +77,8 @@ const JSON_LD = {
       eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
       location: {
         '@type': 'Place',
-        name: 'Landmark Event Centre',
-        address: { '@type': 'PostalAddress', addressLocality: 'Lagos', addressCountry: 'NG' },
+        name: 'Daystar Christian Centre',
+        address: { '@type': 'PostalAddress', addressLocality: 'Ikeja, Lagos', addressCountry: 'NG' },
       },
       organizer: { '@type': 'Organization', name: 'Lagos Students Career Expo', url: SITE_URL },
       offers: {

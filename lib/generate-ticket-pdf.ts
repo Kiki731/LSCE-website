@@ -259,7 +259,7 @@ export function generateTicketPDF(params: {
     <!-- Event info -->
     <div class="event-bar">
       <p>📅 <strong>Saturday, October 3rd, 2026</strong></p>
-      <p>📍 <strong>Landmark Event Centre, Victoria Island, Lagos</strong></p>
+      <p>📍 <strong>Daystar Christian Centre, Ikeja, Lagos</strong></p>
     </div>
 
     <!-- Ticket blocks -->

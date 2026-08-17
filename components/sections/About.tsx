@@ -99,7 +99,7 @@ export default function About() {
               className="size-3.5"
             />
             <span className="font-display text-[13px] md:text-[15px] text-white leading-[1.2] font-[500] whitespace-nowrap">
-              Landmark Event Center
+              Daystar Christian Centre, Ikeja
             </span>
             <Image
               src="/icons/Star Decoration.svg"

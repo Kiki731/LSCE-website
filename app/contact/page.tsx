@@ -235,8 +235,8 @@ export default function ContactPage() {
                   <p className="font-display font-[500] text-[14px] text-[#1A1A1A] mb-2">Event Details</p>
                   <p className="font-sans text-[13px] text-[#1A1A1A]/55 leading-[1.7]">
                     📅 Saturday, October 3rd, 2026<br />
-                    📍 Landmark Event Centre,<br />
-                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Victoria Island, Lagos
+                    📍 Daystar Christian Centre,<br />
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ikeja, Lagos
                   </p>
                 </div>
 

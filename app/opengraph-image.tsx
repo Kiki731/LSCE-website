@@ -160,7 +160,7 @@ export default function Image() {
               marginTop: 8,
             }}
           >
-            Landmark Event Centre, Victoria Island, Lagos
+            Daystar Christian Centre, Ikeja, Lagos
           </span>
         </div>
 

@@ -148,7 +148,7 @@ export default function TicketViewPage() {
               <div className="bg-[#F7F5F2] rounded-[10px] p-4 text-center">
                 <p className="font-sans text-[13px] text-[#1A1A1A]/70 leading-[1.7]">
                   📅 Saturday, October 3rd, 2026<br />
-                  📍 Landmark Event Centre, Victoria Island, Lagos
+                  📍 Daystar Christian Centre, Ikeja, Lagos
                 </p>
               </div>
 

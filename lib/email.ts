@@ -12,7 +12,7 @@ function getResend() {
 
 const EVENT_NAME  = 'Lagos Students Career Expo 2026'
 const EVENT_DATE  = 'Saturday, October 3rd, 2026'
-const EVENT_VENUE = 'Landmark Event Centre, Victoria Island, Lagos'
+const EVENT_VENUE = 'Daystar Christian Centre, Ikeja, Lagos'
 const BRAND_RED   = '#FF2035'
 const REPLY_TO    = 'lagosstudentcareerexpo@gmail.com'
 const TEAM_EMAIL  = 'lagosstudentcareerexpo@gmail.com'
