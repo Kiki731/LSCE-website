@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { createClient } from '@supabase/supabase-js'
 import QRCode from 'qrcode'
 
 /**
@@ -21,12 +22,30 @@ export async function GET(
     return new NextResponse('Invalid code', { status: 400 })
   }
 
+  const upperCode = code.toUpperCase()
+
+  // Only generate QR codes for real ticket codes — prevents arbitrary string encoding
+  const db = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ) as any
+  const { data: attendee } = await db
+    .from('attendees')
+    .select('id')
+    .eq('ticket_code', upperCode)
+    .maybeSingle()
+
+  if (!attendee) {
+    return new NextResponse('Not found', { status: 404 })
+  }
+
   try {
-    const pngBuffer = await QRCode.toBuffer(code.toUpperCase(), {
-      type:   'png',
-      width:  300,
-      margin: 2,
-      color:  { dark: '#1A1A1A', light: '#FFFFFF' },
+    const pngBuffer = await QRCode.toBuffer(upperCode, {
+      type:                 'png',
+      width:                300,
+      margin:               2,
+      color:                { dark: '#1A1A1A', light: '#FFFFFF' },
       errorCorrectionLevel: 'M',
     })
 

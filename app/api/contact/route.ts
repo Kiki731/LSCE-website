@@ -18,9 +18,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Please fill in all fields' }, { status: 400 })
     }
 
-    if (message.trim().length < 10) {
-      return NextResponse.json({ error: 'Message is too short' }, { status: 400 })
+    // Basic email format check
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) {
+      return NextResponse.json({ error: 'Please enter a valid email address' }, { status: 400 })
     }
+
+    // Length limits — prevent DB bloat and Resend oversized payloads
+    if (String(name).trim().length > 100)    return NextResponse.json({ error: 'Name is too long' }, { status: 400 })
+    if (String(subject).trim().length > 200) return NextResponse.json({ error: 'Subject is too long' }, { status: 400 })
+    if (String(message).trim().length < 10)  return NextResponse.json({ error: 'Message is too short' }, { status: 400 })
+    if (String(message).trim().length > 5000) return NextResponse.json({ error: 'Message is too long (max 5000 characters)' }, { status: 400 })
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = getAdminClient() as any

@@ -14,13 +14,22 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const { id } = await params
-  const body = await req.json()
+  const raw = await req.json()
+
+  // Allowlist — never pass the raw body to update() (mass-assignment risk)
+  const allowed = ['is_active', 'code', 'description', 'discount_pct', 'max_uses', 'valid_from', 'valid_until', 'ticket_types'] as const
+  const updates = Object.fromEntries(
+    allowed.filter(k => raw[k] !== undefined).map(k => [k, raw[k]])
+  )
+  if (Object.keys(updates).length === 0) {
+    return NextResponse.json({ error: 'No valid fields to update' }, { status: 400 })
+  }
 
   const supabase = await createSupabaseAdminClient()
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase as any)
     .from('coupons')
-    .update(body)
+    .update(updates)
     .eq('id', id)
     .select()
     .single()

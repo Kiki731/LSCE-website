@@ -23,15 +23,13 @@ export async function GET(req: NextRequest) {
 
   const { data } = await db
     .from('orders')
-    .select('id, ticket_type, quantity')
+    .select('id')
     .eq('buyer_email', email)
     .eq('payment_status', 'completed')
     .limit(1)
     .maybeSingle()
 
-  return NextResponse.json({
-    used:        !!data,
-    ticketType:  data?.ticket_type ?? null,
-    quantity:    data?.quantity    ?? null,
-  })
+  // Return only whether the email has an order — never expose tier or quantity
+  // to avoid leaking purchase details for arbitrary email addresses.
+  return NextResponse.json({ used: !!data })
 }

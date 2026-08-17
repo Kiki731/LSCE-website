@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
 import { createHmac } from 'crypto'
 import { sendTicketConfirmation, sendGuestTicketClaim } from '@/lib/email'
-import type { TicketTier } from '@/lib/ticket-config'
+import { TICKET_TYPES, type TicketTier } from '@/lib/ticket-config'
 
 /**
  * Paystack Webhook Handler
@@ -65,11 +65,13 @@ export async function POST(req: NextRequest) {
   const buyerEmail = (data.customer as Record<string, string>)?.email ?? ''
   const meta = (data.metadata ?? {}) as Record<string, unknown>
 
-  const buyerName      = (meta.buyer_name      as string)   ?? 'Attendee'
-  const buyerPhone     = (meta.buyer_phone     as string)   ?? null
-  const ticketType     = (meta.ticket_type     as TicketTier) ?? null
-  const quantity       = (meta.quantity        as number)   ?? 1
-  const attendeeEmails = (meta.attendee_emails as string[]) ?? []
+  const buyerName      = (meta.buyer_name      as string)        ?? 'Attendee'
+  const buyerPhone     = (meta.buyer_phone     as string)        ?? null
+  const ticketType     = (meta.ticket_type     as TicketTier)    ?? null
+  const quantity       = (meta.quantity        as number)        ?? 1
+  const discountCode   = (meta.discount_code   as string | null) ?? null
+  const discountAmount = (meta.discount_amount as number)        ?? 0
+  const attendeeEmails = (meta.attendee_emails as string[])      ?? []
   const breakouts      = Array.isArray(meta.breakouts) ? (meta.breakouts as string[]) : []
 
   if (!reference || !ticketType) {
@@ -100,8 +102,9 @@ export async function POST(req: NextRequest) {
       buyer_phone:        buyerPhone,
       ticket_type:        ticketType,
       quantity,
-      unit_price:         Math.round(amountNaira / quantity),
-      discount_amount:    0,
+      unit_price:         TICKET_TYPES[ticketType]?.price ?? Math.round(amountNaira / quantity),
+      discount_code:      discountCode,
+      discount_amount:    discountAmount,
       total_amount:       amountNaira,
       paystack_reference: reference,
       payment_status:     'completed',

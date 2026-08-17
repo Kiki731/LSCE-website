@@ -18,9 +18,18 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Please fill in all required fields' }, { status: 400 })
     }
 
-    if (why_apply.trim().length < 50) {
-      return NextResponse.json({ error: 'Please tell us a bit more about why you want to apply (at least 50 characters)' }, { status: 400 })
+    // Basic email format check
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email))) {
+      return NextResponse.json({ error: 'Please enter a valid email address' }, { status: 400 })
     }
+
+    // Length limits
+    if (String(full_name).trim().length > 100)   return NextResponse.json({ error: 'Name is too long' }, { status: 400 })
+    if (String(phone).trim().length > 20)         return NextResponse.json({ error: 'Phone number is too long' }, { status: 400 })
+    if (String(university).trim().length > 200)   return NextResponse.json({ error: 'University name is too long' }, { status: 400 })
+    if (String(course).trim().length > 200)       return NextResponse.json({ error: 'Course name is too long' }, { status: 400 })
+    if (String(why_apply).trim().length < 50)     return NextResponse.json({ error: 'Please tell us a bit more about why you want to apply (at least 50 characters)' }, { status: 400 })
+    if (String(why_apply).trim().length > 3000)   return NextResponse.json({ error: 'Response is too long (max 3000 characters)' }, { status: 400 })
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const db = getAdminClient() as any

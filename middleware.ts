@@ -101,6 +101,7 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     '/admin/:path*',
+    '/api/admin/:path*',      // belt-and-suspenders: middleware also guards admin API routes
     '/api/payments/initiate',
     '/api/tickets/apply-coupon',
     '/api/contact',

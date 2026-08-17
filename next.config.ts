@@ -24,7 +24,7 @@ const nextConfig: NextConfig = {
         headers: [
           // Only your own origin can call these API routes
           { key: 'Access-Control-Allow-Origin', value: process.env.NEXT_PUBLIC_SITE_URL ?? '' },
-          { key: 'Access-Control-Allow-Methods', value: 'POST, OPTIONS' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET, POST, PATCH, DELETE, OPTIONS' },
           { key: 'Access-Control-Allow-Headers', value: 'Content-Type' },
           // Prevent caching of API responses
           { key: 'Cache-Control', value: 'no-store' },
