@@ -26,9 +26,36 @@ interface Stats {
 type Filter = 'all' | 'pending' | 'approved' | 'rejected'
 
 const STATUS_COLORS: Record<string, string> = {
-  pending:  'bg-yellow-100 text-yellow-800',
-  approved: 'bg-green-100 text-green-800',
-  rejected: 'bg-red-100 text-red-800',
+  pending:  '#D4AF37',
+  approved: '#22c55e',
+  rejected: '#FF2035',
+}
+
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+function StatusBadge({ status }: { status: string }) {
+  const color = STATUS_COLORS[status] ?? '#fff'
+  return (
+    <span className="inline-flex items-center gap-1.5 font-sans text-[11px] font-semibold capitalize"
+      style={{ color }}>
+      <span className="w-1.5 h-1.5 rounded-full" style={{ background: color }} />
+      {status}
+    </span>
+  )
+}
+
+function SkeletonRow() {
+  return (
+    <tr className="border-b border-white/4">
+      {[160, 120, 60, 80, 70, 100].map((w, i) => (
+        <td key={i} className="px-5 py-4">
+          <div className="h-3 rounded-full bg-white/8 animate-pulse" style={{ width: w }} />
+        </td>
+      ))}
+    </tr>
+  )
 }
 
 export default function ApplicationsManager() {
@@ -61,22 +88,16 @@ export default function ApplicationsManager() {
   async function updateStatus(id: string, status: 'pending' | 'approved' | 'rejected') {
     setUpdating(id)
     try {
-      const res  = await fetch(`/api/admin/applications/${id}`, {
+      const res = await fetch(`/api/admin/applications/${id}`, {
         method:  'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ status }),
       })
       if (!res.ok) throw new Error('Failed to update')
-      setApplications(prev =>
-        prev.map(a => a.id === id ? { ...a, status } : a)
-      )
+      setApplications(prev => prev.map(a => a.id === id ? { ...a, status } : a))
       setStats(prev => {
         const old = applications.find(a => a.id === id)?.status ?? 'pending'
-        return {
-          ...prev,
-          [old]:   Math.max(0, prev[old] - 1),
-          [status]: prev[status] + 1,
-        }
+        return { ...prev, [old]: Math.max(0, prev[old] - 1), [status]: prev[status] + 1 }
       })
     } catch {
       alert('Failed to update status. Please try again.')
@@ -93,148 +114,153 @@ export default function ApplicationsManager() {
   ]
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold text-gray-900">Ambassador Applications</h1>
-        <p className="text-sm text-gray-500 mt-1">Review and manage campus ambassador applications</p>
+        <h1 className="font-display font-[500] text-white text-[22px] leading-none">Ambassador Applications</h1>
+        <p className="font-sans text-[13px] text-white/40 mt-1">Review and manage campus ambassador applications</p>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {[
-          { label: 'Total',    value: stats.total,    color: 'text-gray-900' },
-          { label: 'Pending',  value: stats.pending,  color: 'text-yellow-600' },
-          { label: 'Approved', value: stats.approved, color: 'text-green-600' },
-          { label: 'Rejected', value: stats.rejected, color: 'text-red-600' },
+          { label: 'Total',    value: stats.total,    color: 'text-white' },
+          { label: 'Pending',  value: stats.pending,  color: 'text-[#D4AF37]' },
+          { label: 'Approved', value: stats.approved, color: 'text-[#22c55e]' },
+          { label: 'Rejected', value: stats.rejected, color: 'text-[#FF2035]' },
         ].map(({ label, value, color }) => (
-          <div key={label} className="bg-white border border-gray-200 rounded-xl p-4">
-            <p className="text-xs text-gray-500 uppercase tracking-wide font-medium">{label}</p>
-            <p className={`text-3xl font-bold mt-1 ${color}`}>{value}</p>
+          <div key={label} className="bg-white/4 border border-white/6 rounded-[12px] px-4 py-4">
+            <p className="font-sans text-[10px] text-white/35 uppercase tracking-wider">{label}</p>
+            <p className={`font-display font-[500] text-[28px] mt-1 leading-none ${color}`}>{value}</p>
           </div>
         ))}
       </div>
 
       {/* Filter tabs */}
-      <div className="flex gap-1 bg-gray-100 rounded-lg p-1 w-fit">
+      <div className="flex gap-1 bg-white/4 border border-white/6 rounded-[10px] p-1 w-fit">
         {FILTERS.map(({ label, value, count }) => (
           <button
             key={value}
             onClick={() => setFilter(value)}
-            className={`px-4 py-2 rounded-md text-sm font-medium transition-all ${
-              filter === value ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'
-            }`}
+            className="px-4 py-2 rounded-[8px] font-sans text-[12px] transition-all"
+            style={{
+              background: filter === value ? 'rgba(255,255,255,0.1)' : 'transparent',
+              color: filter === value ? '#fff' : 'rgba(255,255,255,0.35)',
+            }}
           >
             {label}
-            <span className={`ml-1.5 text-xs ${filter === value ? 'text-gray-500' : 'text-gray-400'}`}>
-              {count}
-            </span>
+            <span className="ml-1.5 text-[10px] opacity-60">{count}</span>
           </button>
         ))}
       </div>
 
       {/* Table */}
       {error ? (
-        <div className="bg-red-50 text-red-700 rounded-xl p-4 text-sm">{error}</div>
-      ) : loading ? (
-        <div className="text-center py-16 text-gray-400 text-sm">Loading…</div>
-      ) : applications.length === 0 ? (
-        <div className="text-center py-16 text-gray-400 text-sm">No applications yet.</div>
+        <div className="bg-[#FF2035]/10 border border-[#FF2035]/20 text-[#FF2035] rounded-[10px] p-4 font-sans text-[13px]">
+          {error}
+        </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="bg-[#111111] border border-white/6 rounded-[12px] overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="border-b border-white/6">
               <tr>
                 {['Applicant', 'University', 'Year', 'Applied', 'Status', 'Actions'].map(h => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  <th key={h} className="px-5 py-3.5 text-left font-sans text-[10px] text-white/35 uppercase tracking-wider">
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
-              {applications.map(app => (
-                <>
-                  <tr
-                    key={app.id}
-                    className="hover:bg-gray-50 cursor-pointer"
-                    onClick={() => setExpandedId(expandedId === app.id ? null : app.id)}
-                  >
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-gray-900">{app.full_name}</p>
-                      <p className="text-xs text-gray-500">{app.email}</p>
-                    </td>
-                    <td className="px-4 py-3 text-gray-600">{app.university}</td>
-                    <td className="px-4 py-3 text-gray-600 whitespace-nowrap">{app.year}</td>
-                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                      {new Date(app.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${STATUS_COLORS[app.status]}`}>
-                        {app.status}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
-                        {app.status !== 'approved' && (
-                          <button
-                            onClick={() => updateStatus(app.id, 'approved')}
-                            disabled={updating === app.id}
-                            className="text-xs text-green-700 bg-green-50 hover:bg-green-100 px-2.5 py-1.5 rounded-md font-medium disabled:opacity-50"
-                          >
-                            Approve
-                          </button>
-                        )}
-                        {app.status !== 'rejected' && (
-                          <button
-                            onClick={() => updateStatus(app.id, 'rejected')}
-                            disabled={updating === app.id}
-                            className="text-xs text-red-700 bg-red-50 hover:bg-red-100 px-2.5 py-1.5 rounded-md font-medium disabled:opacity-50"
-                          >
-                            Reject
-                          </button>
-                        )}
-                        {app.status !== 'pending' && (
-                          <button
-                            onClick={() => updateStatus(app.id, 'pending')}
-                            disabled={updating === app.id}
-                            className="text-xs text-yellow-700 bg-yellow-50 hover:bg-yellow-100 px-2.5 py-1.5 rounded-md font-medium disabled:opacity-50"
-                          >
-                            Reset
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-
-                  {expandedId === app.id && (
-                    <tr key={`${app.id}-expanded`} className="bg-gray-50">
-                      <td colSpan={6} className="px-4 py-4">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                          <div>
-                            <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Course</p>
-                            <p className="text-gray-800">{app.course}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Phone</p>
-                            <p className="text-gray-800">{app.phone}</p>
-                          </div>
-                          {app.instagram && (
-                            <div>
-                              <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Instagram</p>
-                              <p className="text-gray-800">{app.instagram}</p>
-                            </div>
+            <tbody>
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+              ) : applications.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="px-5 py-16 text-center font-sans text-[13px] text-white/25">
+                    No applications yet.
+                  </td>
+                </tr>
+              ) : (
+                applications.map(app => (
+                  <>
+                    <tr
+                      key={app.id}
+                      className="border-b border-white/4 cursor-pointer transition-colors hover:bg-white/3"
+                      onClick={() => setExpandedId(expandedId === app.id ? null : app.id)}
+                    >
+                      <td className="px-5 py-4">
+                        <p className="font-sans text-[13px] text-white font-semibold leading-none">{app.full_name}</p>
+                        <p className="font-sans text-[11px] text-white/40 mt-0.5">{app.email}</p>
+                      </td>
+                      <td className="px-5 py-4 font-sans text-[13px] text-white/60">{app.university}</td>
+                      <td className="px-5 py-4 font-sans text-[13px] text-white/60 whitespace-nowrap">{app.year}</td>
+                      <td className="px-5 py-4 font-sans text-[12px] text-white/35 whitespace-nowrap">{fmtDate(app.created_at)}</td>
+                      <td className="px-5 py-4"><StatusBadge status={app.status} /></td>
+                      <td className="px-5 py-4">
+                        <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
+                          {app.status !== 'approved' && (
+                            <button
+                              onClick={() => updateStatus(app.id, 'approved')}
+                              disabled={updating === app.id}
+                              className="font-sans text-[11px] px-2.5 py-1.5 rounded-[6px] transition-colors disabled:opacity-40"
+                              style={{ background: 'rgba(34,197,94,0.12)', color: '#22c55e' }}
+                            >
+                              Approve
+                            </button>
                           )}
-                          <div className="md:col-span-2">
-                            <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-1">Why they want to apply</p>
-                            <p className="text-gray-800 leading-relaxed whitespace-pre-wrap">{app.why_apply}</p>
-                          </div>
+                          {app.status !== 'rejected' && (
+                            <button
+                              onClick={() => updateStatus(app.id, 'rejected')}
+                              disabled={updating === app.id}
+                              className="font-sans text-[11px] px-2.5 py-1.5 rounded-[6px] transition-colors disabled:opacity-40"
+                              style={{ background: 'rgba(255,32,53,0.12)', color: '#FF2035' }}
+                            >
+                              Reject
+                            </button>
+                          )}
+                          {app.status !== 'pending' && (
+                            <button
+                              onClick={() => updateStatus(app.id, 'pending')}
+                              disabled={updating === app.id}
+                              className="font-sans text-[11px] px-2.5 py-1.5 rounded-[6px] transition-colors disabled:opacity-40"
+                              style={{ background: 'rgba(212,175,55,0.12)', color: '#D4AF37' }}
+                            >
+                              Reset
+                            </button>
+                          )}
                         </div>
                       </td>
                     </tr>
-                  )}
-                </>
-              ))}
+
+                    {expandedId === app.id && (
+                      <tr key={`${app.id}-expanded`}>
+                        <td colSpan={6} className="px-5 py-5 bg-white/3 border-b border-white/4">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <p className="font-sans text-[10px] text-white/35 uppercase tracking-wider mb-1">Course</p>
+                              <p className="font-sans text-[13px] text-white/70">{app.course}</p>
+                            </div>
+                            <div>
+                              <p className="font-sans text-[10px] text-white/35 uppercase tracking-wider mb-1">Phone</p>
+                              <p className="font-sans text-[13px] text-white/70">{app.phone}</p>
+                            </div>
+                            {app.instagram && (
+                              <div>
+                                <p className="font-sans text-[10px] text-white/35 uppercase tracking-wider mb-1">Instagram</p>
+                                <p className="font-sans text-[13px] text-white/70">{app.instagram}</p>
+                              </div>
+                            )}
+                            <div className="md:col-span-2">
+                              <p className="font-sans text-[10px] text-white/35 uppercase tracking-wider mb-1">Why they want to apply</p>
+                              <p className="font-sans text-[13px] text-white/60 leading-relaxed whitespace-pre-wrap">{app.why_apply}</p>
+                            </div>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                ))
+              )}
             </tbody>
           </table>
         </div>

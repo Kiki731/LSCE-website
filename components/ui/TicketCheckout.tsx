@@ -75,6 +75,39 @@ function TicketCard({ tier, selected, onSelect, quantity, onQuantityChange }: {
   quantity: number; onQuantityChange: (q: number) => void
 }) {
   const t = TICKET_TYPES[tier]
+  const isInviteOnly = tier === 'gold'
+
+  if (isInviteOnly) {
+    return (
+      <div
+        className="w-full text-left rounded-[16px] border-2 p-5 flex flex-col gap-3 opacity-50 cursor-not-allowed select-none"
+        style={{ borderColor: '#E5E5E5', backgroundColor: '#F9F9F9' }}
+      >
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-col gap-0.5">
+            <span className="font-display font-[500] text-[16px] text-[#1A1A1A] leading-[1.2]">{t.name}</span>
+            <span className="font-sans text-[12px] text-[#1A1A1A]/50 leading-none">{t.tagline}</span>
+          </div>
+          <span className="inline-flex items-center gap-1.5 bg-[#E5E5E5] text-[#999] px-3 py-1 rounded-full font-sans text-[11px] shrink-0">
+            🔒 Invite Only
+          </span>
+        </div>
+        <p className="font-sans text-[12px] text-[#1A1A1A]/60 leading-[1.5]">{t.description}</p>
+        <ul className="flex flex-col gap-1.5">
+          {t.perks.map((perk, i) => (
+            <li key={i} className="flex items-center gap-2">
+              <Image src="/icons/Button Star red.svg" alt="" width={10} height={10} className="shrink-0" />
+              <span className="font-sans text-[12px] text-[#1A1A1A]/70">{perk}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="flex items-center justify-center gap-1.5 w-full bg-[#E5E5E5] text-[#999] px-4 py-3 rounded-[24px] font-sans text-[13px] leading-none mt-auto">
+          This ticket is not purchasable
+        </div>
+      </div>
+    )
+  }
+
   return (
     <button type="button" onClick={onSelect}
       className="w-full text-left rounded-[16px] border-2 p-5 flex flex-col gap-3 transition-all duration-150"
@@ -130,6 +163,28 @@ function MobileTicketRow({ tier, selected, onSelect, quantity, onQuantityChange 
   quantity: number; onQuantityChange: (q: number) => void
 }) {
   const t = TICKET_TYPES[tier]
+  const isInviteOnly = tier === 'gold'
+
+  if (isInviteOnly) {
+    return (
+      <div className="rounded-[14px] border-2 overflow-hidden opacity-50 cursor-not-allowed select-none"
+        style={{ borderColor: '#E5E5E5', background: '#F9F9F9' }}>
+        <div className="w-full flex items-center justify-between px-4 py-3.5">
+          <div className="flex items-center gap-3">
+            <span className="w-4 h-4 rounded-full border-2 shrink-0" style={{ borderColor: '#CCCCCC' }} />
+            <div>
+              <p className="font-display font-[500] text-[14px] text-[#1A1A1A] leading-none">{t.name}</p>
+              <p className="font-sans text-[11px] text-[#1A1A1A]/40 mt-0.5">{t.tagline}</p>
+            </div>
+          </div>
+          <span className="font-sans text-[11px] text-[#999] bg-[#E5E5E5] px-2 py-1 rounded-full shrink-0">
+            🔒 Invite Only
+          </span>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div
       className="rounded-[14px] border-2 overflow-hidden transition-all duration-200"
@@ -494,7 +549,7 @@ export default function TicketCheckout() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const tier = params.get('tier') as TicketTier | null
-    if (tier && ['bronze', 'silver', 'gold'].includes(tier)) setSelectedTier(tier)
+    if (tier && ['bronze', 'silver'].includes(tier)) setSelectedTier(tier)
   }, [])
 
   const maxAdditionalEmails = buyer.belongsToMe ? quantity - 1 : quantity

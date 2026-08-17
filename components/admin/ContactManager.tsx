@@ -11,6 +11,22 @@ interface Message {
   created_at: string
 }
 
+function fmtDate(iso: string) {
+  return new Date(iso).toLocaleDateString('en-NG', { day: 'numeric', month: 'short', year: 'numeric' })
+}
+
+function SkeletonRow() {
+  return (
+    <tr className="border-b border-white/4">
+      {[160, 200, 80, 40].map((w, i) => (
+        <td key={i} className="px-5 py-4">
+          <div className="h-3 rounded-full bg-white/8 animate-pulse" style={{ width: w }} />
+        </td>
+      ))}
+    </tr>
+  )
+}
+
 export default function ContactManager() {
   const [messages, setMessages]     = useState<Message[]>([])
   const [total, setTotal]           = useState(0)
@@ -37,88 +53,104 @@ export default function ContactManager() {
   useEffect(() => { load() }, [load])
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-gray-900">Contact Messages</h1>
-          <p className="text-sm text-gray-500 mt-1">Messages sent via the contact form</p>
+          <h1 className="font-display font-[500] text-white text-[22px] leading-none">Contact Messages</h1>
+          <p className="font-sans text-[13px] text-white/40 mt-1">Messages sent via the contact form</p>
         </div>
         {!loading && (
-          <span className="text-sm text-gray-500 bg-gray-100 px-3 py-1.5 rounded-full">
-            {total} {total === 1 ? 'message' : 'messages'}
-          </span>
+          <div className="bg-white/4 border border-white/6 rounded-[10px] px-4 py-3 text-center">
+            <p className="font-display font-[500] text-white text-[24px] leading-none">{total}</p>
+            <p className="font-sans text-[10px] text-white/35 uppercase tracking-wider mt-1">
+              {total === 1 ? 'Message' : 'Messages'}
+            </p>
+          </div>
         )}
       </div>
 
+      {/* Table */}
       {error ? (
-        <div className="bg-red-50 text-red-700 rounded-xl p-4 text-sm">{error}</div>
-      ) : loading ? (
-        <div className="text-center py-16 text-gray-400 text-sm">Loading…</div>
-      ) : messages.length === 0 ? (
-        <div className="text-center py-16 text-gray-400 text-sm">No messages yet.</div>
+        <div className="bg-[#FF2035]/10 border border-[#FF2035]/20 text-[#FF2035] rounded-[10px] p-4 font-sans text-[13px]">
+          {error}
+        </div>
       ) : (
-        <div className="bg-white border border-gray-200 rounded-xl overflow-hidden">
+        <div className="bg-[#111111] border border-white/6 rounded-[12px] overflow-hidden">
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200">
+            <thead className="border-b border-white/6">
               <tr>
                 {['Sender', 'Subject', 'Received', ''].map(h => (
-                  <th key={h} className="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wide">
+                  <th key={h} className="px-5 py-3.5 text-left font-sans text-[10px] text-white/35 uppercase tracking-wider">
                     {h}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-100">
-              {messages.map(msg => (
-                <>
-                  <tr
-                    key={msg.id}
-                    className="hover:bg-gray-50 cursor-pointer"
-                    onClick={() => setExpandedId(expandedId === msg.id ? null : msg.id)}
-                  >
-                    <td className="px-4 py-3">
-                      <p className="font-medium text-gray-900">{msg.name}</p>
-                      <a
-                        href={`mailto:${msg.email}`}
-                        onClick={e => e.stopPropagation()}
-                        className="text-xs text-blue-600 hover:underline"
-                      >
-                        {msg.email}
-                      </a>
-                    </td>
-                    <td className="px-4 py-3 text-gray-700 max-w-[260px] truncate">{msg.subject}</td>
-                    <td className="px-4 py-3 text-gray-500 whitespace-nowrap">
-                      {new Date(msg.created_at).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <span className="text-xs text-gray-400">
-                        {expandedId === msg.id ? 'Hide ▲' : 'View ▼'}
-                      </span>
-                    </td>
-                  </tr>
-
-                  {expandedId === msg.id && (
-                    <tr key={`${msg.id}-expanded`} className="bg-gray-50">
-                      <td colSpan={4} className="px-4 py-4">
-                        <div className="flex items-start justify-between gap-6">
-                          <div className="flex-1">
-                            <p className="text-xs text-gray-500 font-medium uppercase tracking-wide mb-2">Message</p>
-                            <p className="text-gray-800 text-sm leading-relaxed whitespace-pre-wrap">{msg.message}</p>
-                          </div>
-                          <a
-                            href={`mailto:${msg.email}?subject=Re: ${encodeURIComponent(msg.subject)}`}
-                            onClick={e => e.stopPropagation()}
-                            className="shrink-0 text-xs bg-[#1A1A1A] text-white px-3 py-2 rounded-lg hover:opacity-80 transition-opacity"
-                          >
-                            Reply via email →
-                          </a>
-                        </div>
+            <tbody>
+              {loading ? (
+                Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)
+              ) : messages.length === 0 ? (
+                <tr>
+                  <td colSpan={4} className="px-5 py-16 text-center font-sans text-[13px] text-white/25">
+                    No messages yet.
+                  </td>
+                </tr>
+              ) : (
+                messages.map(msg => (
+                  <>
+                    <tr
+                      key={msg.id}
+                      className="border-b border-white/4 cursor-pointer transition-colors hover:bg-white/3"
+                      onClick={() => setExpandedId(expandedId === msg.id ? null : msg.id)}
+                    >
+                      <td className="px-5 py-4">
+                        <p className="font-sans text-[13px] text-white font-semibold leading-none">{msg.name}</p>
+                        <a
+                          href={`mailto:${msg.email}`}
+                          onClick={e => e.stopPropagation()}
+                          className="font-sans text-[11px] text-white/40 hover:text-white/70 transition-colors"
+                        >
+                          {msg.email}
+                        </a>
+                      </td>
+                      <td className="px-5 py-4 font-sans text-[13px] text-white/60 max-w-[260px] truncate">
+                        {msg.subject}
+                      </td>
+                      <td className="px-5 py-4 font-sans text-[12px] text-white/35 whitespace-nowrap">
+                        {fmtDate(msg.created_at)}
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        <span className="font-sans text-[11px] text-white/25">
+                          {expandedId === msg.id ? '▲' : '▼'}
+                        </span>
                       </td>
                     </tr>
-                  )}
-                </>
-              ))}
+
+                    {expandedId === msg.id && (
+                      <tr key={`${msg.id}-expanded`}>
+                        <td colSpan={4} className="px-5 py-5 bg-white/3 border-b border-white/4">
+                          <div className="flex items-start justify-between gap-6">
+                            <div className="flex-1">
+                              <p className="font-sans text-[10px] text-white/35 uppercase tracking-wider mb-2">Message</p>
+                              <p className="font-sans text-[13px] text-white/60 leading-relaxed whitespace-pre-wrap">
+                                {msg.message}
+                              </p>
+                            </div>
+                            <a
+                              href={`mailto:${msg.email}?subject=Re: ${encodeURIComponent(msg.subject)}`}
+                              onClick={e => e.stopPropagation()}
+                              className="shrink-0 font-sans text-[12px] bg-white/8 hover:bg-white/12 text-white px-4 py-2.5 rounded-[8px] transition-colors whitespace-nowrap"
+                            >
+                              Reply via email →
+                            </a>
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </>
+                ))
+              )}
             </tbody>
           </table>
         </div>
