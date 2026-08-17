@@ -6,6 +6,7 @@ const TICKETS = [
   {
     tier: 'bronze' as const,
     label: 'The Spark',
+    ticketImage: '/gallery/The Spark.png',
     price: '₦4,000',
     description:
       'The essential pass to get you into the room. Perfect for students looking to explore opportunities and expand their network.',
@@ -22,6 +23,7 @@ const TICKETS = [
   {
     tier: 'silver' as const,
     label: 'The Rise',
+    ticketImage: '/gallery/The Rise.png',
     price: '₦8,000',
     description:
       'Level up your expo experience with hands-on career prep, priority access, and exclusive workshops.',
@@ -39,6 +41,7 @@ const TICKETS = [
   {
     tier: 'gold' as const,
     label: 'The Emergence',
+    ticketImage: '/gallery/The Emergence.png',
     price: 'Strictly by Invite',
     description:
       'The ultimate all-access experience. Maximise your visibility and get one-on-one facetime with top industry recruiters.',
@@ -98,7 +101,7 @@ export default function Tickets() {
 
         {/* Cards */}
         <FadeUp delay={80} className="flex flex-col min-[1000px]:flex-row gap-6 min-[1000px]:gap-4 w-full items-center min-[1000px]:items-stretch">
-          {TICKETS.map(({ tier, label, price, description, bg, border, starIcon, perks }) => (
+          {TICKETS.map(({ tier, label, ticketImage, price, description, bg, border, starIcon, perks }) => (
             <div
               key={tier}
               className="flex-1 flex flex-col overflow-hidden rounded-[9px] w-full max-w-[460px] min-[1000px]:max-w-none"
@@ -107,11 +110,15 @@ export default function Tickets() {
                 border: `7px solid ${border}`,
               }}
             >
-              {/* Header */}
-              <div className="flex items-center justify-center py-5 border-b-4" style={{ borderColor: border + '60' }}>
-                <span className="font-display text-[20px] text-[#1A1A1A] leading-[1.2] font-[500] text-center">
-                  {label}
-                </span>
+              {/* Header — ticket image */}
+              <div className="flex items-center justify-center px-6 py-4 border-b-4" style={{ borderColor: border + '60' }}>
+                <Image
+                  src={ticketImage}
+                  alt={label}
+                  width={480}
+                  height={180}
+                  className="w-full max-w-[260px] h-auto object-contain"
+                />
               </div>
 
               {/* Body */}

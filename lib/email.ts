@@ -19,6 +19,12 @@ const TEAM_EMAIL  = 'lagosstudentcareerexpo@gmail.com'
 const FROM_ADDRESS = process.env.RESEND_FROM ?? 'onboarding@resend.dev'
 const SITE_URL     = (process.env.NEXT_PUBLIC_SITE_URL ?? 'https://thelscexpo.com').replace(/\/$/, '')
 
+const TICKET_IMAGES: Record<string, string> = {
+  bronze: `${(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://thelscexpo.com').replace(/\/$/, '')}/gallery/The%20Spark.png`,
+  silver: `${(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://thelscexpo.com').replace(/\/$/, '')}/gallery/The%20Rise.png`,
+  gold:   `${(process.env.NEXT_PUBLIC_SITE_URL ?? 'https://thelscexpo.com').replace(/\/$/, '')}/gallery/The%20Emergence.png`,
+}
+
 function escHtml(s: string): string {
   return s
     .replace(/&/g, '&amp;')
@@ -218,12 +224,25 @@ function buildConfirmationHtml(p: TicketConfirmationPayload): string {
     `, 'red')}
   ` : ''
 
+  const ticketImageUrl = TICKET_IMAGES[p.ticketType]
+
   const body = `
     <p style="margin:0 0 10px;font-size:19px;font-weight:700;color:#000000;">You are in, ${firstName}! 🎉</p>
-    <p style="margin:0 0 28px;font-size:14px;color:#444444;line-height:1.7;">
+    <p style="margin:0 0 20px;font-size:14px;color:#444444;line-height:1.7;">
       Your ${ticket.name} for the <strong>Lagos Students Career Expo 2026</strong> is confirmed.
       Show the QR code or Ticket ID at the entrance.
     </p>
+
+    ${ticketImageUrl ? `
+    <div style="text-align:center;margin-bottom:24px;">
+      <img
+        src="${ticketImageUrl}"
+        alt="${ticket.name}"
+        width="460"
+        style="max-width:100%;height:auto;border-radius:12px;display:inline-block;"
+      />
+    </div>
+    ` : ''}
 
     ${divider()}
 
