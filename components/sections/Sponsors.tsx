@@ -130,15 +130,25 @@ export default function Sponsors() {
               </div>
             </div>
 
-            <a
-              href="https://wa.me/2348188276353?text=Hi%2C%20I%27m%20interested%20in%20exhibiting%20at%20LSCE%203.0"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center justify-center gap-1.5 bg-[#FF2035] text-white px-5 py-3 rounded-[24px] font-sans text-[15px] leading-none hover:opacity-90 transition-opacity mt-auto"
-            >
-              Become an Exhibitor
-              <Image src="/icons/Button star.svg" alt="" width={14} height={14} className="size-[14px]" />
-            </a>
+            <div className="flex gap-3 mt-auto">
+              <a
+                href="/LSCE-3.0-Sponsorship-Deck.pdf"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-1.5 bg-white/15 text-white border border-white/25 px-4 py-3 rounded-[24px] font-sans text-[14px] leading-none hover:bg-white/25 transition-colors"
+              >
+                View Brochure
+              </a>
+              <a
+                href="https://wa.me/2348188276353?text=Hi%2C%20I%27m%20interested%20in%20exhibiting%20at%20LSCE%203.0"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex-1 flex items-center justify-center gap-1.5 bg-[#FF2035] text-white px-4 py-3 rounded-[24px] font-sans text-[14px] leading-none hover:opacity-90 transition-opacity"
+              >
+                Become an Exhibitor
+                <Image src="/icons/Button star.svg" alt="" width={14} height={14} className="size-[14px]" />
+              </a>
+            </div>
           </div>
 
         </div>
