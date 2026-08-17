@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3'
 import { sendCVUploadConfirmation } from '@/lib/email'
 
 function getAdminClient() {
@@ -8,6 +9,19 @@ function getAdminClient() {
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
   )
 }
+
+function getR2Client() {
+  return new S3Client({
+    region: 'auto',
+    endpoint: `https://${process.env.CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+    credentials: {
+      accessKeyId:     process.env.CLOUDFLARE_R2_ACCESS_KEY_ID!,
+      secretAccessKey: process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY!,
+    },
+  })
+}
+
+const BUCKET = process.env.CLOUDFLARE_R2_BUCKET_NAME ?? 'lsce-cvs'
 
 const ALLOWED_TYPES = [
   'application/pdf',
@@ -61,10 +75,10 @@ export async function POST(req: NextRequest) {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const db = getAdminClient() as any
 
-  // Verify ticket exists and is silver
+  // Verify ticket exists and is a Rise (silver) ticket
   const { data: attendee, error: lookupErr } = await db
     .from('attendees')
-    .select('id, orders(ticket_type)')
+    .select('id, email, name, orders(ticket_type)')
     .eq('ticket_code', code)
     .single()
 
@@ -73,29 +87,31 @@ export async function POST(req: NextRequest) {
   }
 
   if (attendee.orders?.ticket_type !== 'silver') {
-    return NextResponse.json({ error: 'CV upload is only available for Silver Pass holders' }, { status: 403 })
+    return NextResponse.json({ error: 'CV upload is only available for The Rise ticket holders' }, { status: 403 })
   }
 
-  // Upload to Supabase Storage — overwrite any existing CV for this ticket
-  const ext  = file.name.split('.').pop() ?? 'pdf'
-  const path = `${code}.${ext}`
-
+  // Upload to Cloudflare R2
+  const ext    = file.name.split('.').pop() ?? 'pdf'
+  const key    = `${code}.${ext}`
   const bytes  = await file.arrayBuffer()
-  const buffer = Buffer.from(bytes)
 
-  const { data: uploaded, error: uploadErr } = await db.storage
-    .from('cvs')
-    .upload(path, buffer, { contentType: file.type, upsert: true })
-
-  if (uploadErr) {
-    console.error('[upload-cv] Storage error:', uploadErr)
+  try {
+    const r2 = getR2Client()
+    await r2.send(new PutObjectCommand({
+      Bucket:      BUCKET,
+      Key:         key,
+      Body:        Buffer.from(bytes),
+      ContentType: file.type,
+    }))
+  } catch (err) {
+    console.error('[upload-cv] R2 upload error:', err)
     return NextResponse.json({ error: 'Upload failed — please try again' }, { status: 500 })
   }
 
-  // Save path to the attendee record and fetch attendee details for the confirmation email
+  // Save the R2 key to the attendee record
   const { data: updatedAttendee, error: updateErr } = await db
     .from('attendees')
-    .update({ cv_url: uploaded.path })
+    .update({ cv_url: key })
     .eq('ticket_code', code)
     .select('email, name')
     .single()
@@ -112,5 +128,5 @@ export async function POST(req: NextRequest) {
     }).catch(err => console.error('[upload-cv] confirmation email failed:', err))
   }
 
-  return NextResponse.json({ success: true, path: uploaded.path })
+  return NextResponse.json({ success: true, key })
 }
