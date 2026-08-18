@@ -61,9 +61,9 @@ Migration for coupons table: `lib/migration_004_coupons.sql` (run in Supabase SQ
 ## Tickets
 
 Three tiers defined in `lib/ticket-config.ts`:
-- **Bronze Pass** — ₦5,000 (`priceKobo`: 500000)
-- **Silver Pass** — ₦15,000 (`priceKobo`: 1,500,000)
-- **Gold Pass** — ₦30,000 (`priceKobo`: 3,000,000)
+- **The Spark** (bronze) — ₦4,000 (`priceKobo`: 400000)
+- **The Rise** (silver) — ₦8,000 (`priceKobo`: 800000)
+- **The Emergence** (gold) — Invite only (price: 0)
 
 Discount codes live in `.env.local` as `DISCOUNT_CODES=CODE:PCT,CODE:PCT` — **never in client code**. Validated server-side only via `POST /api/tickets/apply-coupon` which now checks the `coupons` Supabase table.
 

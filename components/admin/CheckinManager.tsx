@@ -28,9 +28,9 @@ const TIER_COLORS: Record<string, string> = {
 }
 
 const TIER_LABELS: Record<string, string> = {
-  bronze: 'Bronze Pass',
-  silver: 'Silver Pass',
-  gold:   'Gold Pass',
+  bronze: 'The Spark',
+  silver: 'The Rise',
+  gold:   'The Emergence',
 }
 
 function fmtTime(iso: string | null) {

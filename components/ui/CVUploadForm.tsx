@@ -129,7 +129,7 @@ export default function CVUploadForm({ code }: { code: string }) {
         <div>
           <h1 className="font-display font-[500] text-[22px] text-[#1A1A1A]">CV upload not available</h1>
           <p className="font-sans text-[14px] text-[#1A1A1A]/55 mt-2 leading-[1.6]">
-            CV submission is only available for <strong>Silver Pass</strong> holders. Your ticket does not include this feature.
+            CV submission is only available for <strong>The Rise</strong> ticket holders. Your ticket does not include this feature.
           </p>
         </div>
         <Link href="/" className="font-sans text-[13px] text-[#FF2035] hover:underline">Back to thelscexpo.com →</Link>
@@ -193,7 +193,7 @@ export default function CVUploadForm({ code }: { code: string }) {
         </div>
         <div>
           <p className="font-sans text-[13px] text-[#FF2035] font-semibold uppercase tracking-wider mb-1">
-            Silver Pass — CV Submission
+            The Rise — CV Submission
           </p>
           <h1 className="font-display font-[500] text-[26px] md:text-[32px] text-[#1A1A1A] leading-[1.2]">
             Upload Your CV
@@ -209,7 +209,7 @@ export default function CVUploadForm({ code }: { code: string }) {
         <div className="flex items-center gap-3">
           <span className="inline-flex items-center px-2.5 py-1 rounded-[6px] font-sans text-[12px] font-semibold"
             style={{ background: '#A8A9AD22', color: '#A8A9AD' }}>
-            Silver Pass
+            The Rise
           </span>
           <div>
             <p className="font-sans text-[12px] text-[#1A1A1A]/60">{attendee?.name ?? attendee?.email}</p>

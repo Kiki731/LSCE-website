@@ -223,9 +223,9 @@ export default function AttendeesManager() {
           className="bg-[#161616] border border-white/12 rounded-[10px] px-3 py-2.5 font-sans text-[13px] text-white/70 outline-none focus:border-white/30 transition-colors"
         >
           <option value="">All tiers</option>
-          <option value="bronze">Bronze</option>
-          <option value="silver">Silver</option>
-          <option value="gold">Gold</option>
+          <option value="bronze">The Spark</option>
+          <option value="silver">The Rise</option>
+          <option value="gold">The Emergence</option>
         </select>
       </div>
 

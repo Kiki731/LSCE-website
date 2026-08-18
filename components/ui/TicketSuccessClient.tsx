@@ -8,9 +8,21 @@ import { TICKET_TYPES } from '@/lib/ticket-config'
 type State = 'verifying' | 'success' | 'error'
 
 const TIER_COLORS: Record<string, string> = {
-  bronze: '#CD7F32',
-  silver: '#A8A9AD',
-  gold:   '#D4AF37',
+  bronze: '#00CF01',
+  silver: '#FFBD4D',
+  gold:   '#F11429',
+}
+
+const TIER_BG: Record<string, string> = {
+  bronze: '#BAFFBA',
+  silver: '#FDF0D9',
+  gold:   '#FFE3E6',
+}
+
+const TICKET_IMAGES: Record<string, string> = {
+  bronze: '/gallery/The Spark.png',
+  silver: '/gallery/The Rise.png',
+  gold:   '/gallery/The Emergence.png',
 }
 
 interface OrderDetails {
@@ -29,15 +41,14 @@ function formatNaira(n: number) {
 }
 
 export default function TicketSuccessClient() {
-  const [state, setState]       = useState<State>('verifying')
-  const [details, setDetails]   = useState<OrderDetails | null>(null)
-  const [errorMsg, setErrorMsg] = useState('')
+  const [state, setState]           = useState<State>('verifying')
+  const [details, setDetails]       = useState<OrderDetails | null>(null)
+  const [errorMsg, setErrorMsg]     = useState('')
   const [downloading, setDownloading] = useState(false)
 
   function handleDownload(d: OrderDetails) {
     setDownloading(true)
     try {
-      // Opens a print-ready ticket page in a new window — no jsPDF, works everywhere
       const { generateTicketPDF } = require('@/lib/generate-ticket-pdf')
       generateTicketPDF({
         buyerName:   d.buyerName,
@@ -68,11 +79,8 @@ export default function TicketSuccessClient() {
       }
 
       try {
-        // A free order stores its reference in sessionStorage (set by TicketCheckout
-        // before redirecting). Checking the URL param is not safe — it's attacker-controllable.
         const isFree = sessionStorage.getItem('lsce_free_ref') === reference
 
-        // 1 — Verify with Paystack server-side (skipped for 100%-off free orders)
         let verifyData: { valid: boolean; email?: string; amountNaira?: number; metadata?: Record<string, unknown> } = { valid: true }
         if (!isFree) {
           const verifyRes = await fetch('/api/tickets/verify-payment', {
@@ -89,11 +97,9 @@ export default function TicketSuccessClient() {
           }
         }
 
-        // 2 — Retrieve buyer info stored before the popup opened
         const pendingRaw = sessionStorage.getItem('lsce_pending_order')
         const pending    = pendingRaw ? JSON.parse(pendingRaw) : null
 
-        // 3 — Save order to database
         const meta = verifyData.metadata ?? {}
         const orderPayload = pending ?? {
           buyer_name:      meta.buyer_name   ?? verifyData.email,
@@ -146,7 +152,7 @@ export default function TicketSuccessClient() {
   /* ── Verifying ── */
   if (state === 'verifying') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4 px-5 pt-[160px]">
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4 px-5">
         <div className="w-10 h-10 rounded-full border-2 border-[#FF2035] border-t-transparent animate-spin" />
         <p className="font-sans text-[14px] text-[#1A1A1A]/60">Confirming your payment…</p>
       </div>
@@ -156,7 +162,7 @@ export default function TicketSuccessClient() {
   /* ── Error ── */
   if (state === 'error') {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-6 px-5 pt-[160px] text-center">
+      <div className="flex flex-col items-center justify-center min-h-screen gap-6 px-5 text-center">
         <div className="w-14 h-14 rounded-full bg-[#FF2035]/10 flex items-center justify-center">
           <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
             <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" stroke="#FF2035" strokeWidth="2" strokeLinecap="round"/>
@@ -177,81 +183,99 @@ export default function TicketSuccessClient() {
   }
 
   /* ── Success ── */
-  const d = details!
-  const ticket     = TICKET_TYPES[d.ticketType as keyof typeof TICKET_TYPES]
-  const tierColor  = TIER_COLORS[d.ticketType] ?? '#FF2035'
-  const firstName  = d.buyerName.split(' ')[0]
+  const d           = details!
+  const ticket      = TICKET_TYPES[d.ticketType as keyof typeof TICKET_TYPES]
+  const tierColor   = TIER_COLORS[d.ticketType] ?? '#FF2035'
+  const tierBg      = TIER_BG[d.ticketType] ?? '#F7F5F2'
+  const ticketImage = TICKET_IMAGES[d.ticketType]
+  const firstName   = d.buyerName.split(' ')[0]
 
   return (
-    <div className="relative overflow-hidden">
+    <div className="min-h-screen bg-[#F7F5F2]">
 
-      {/* Decorative stars */}
-      <div aria-hidden className="pointer-events-none absolute top-10 right-[-130px] md:right-[-180px]" style={{ width: 600, height: 600, zIndex: 0 }}>
-        <Image src="/icons/Star 4 top right.png" alt="" fill className="object-contain" />
+      {/* ── Full-width event banner — sits flush under the navbar ── */}
+      <div className="w-full" style={{ paddingTop: 72 }}>
+        <Image
+          src="/images/EMERGE Themee Reveal Header.png"
+          alt="Lagos Students Career Expo 3.0 — Emerge Beyond"
+          width={1440}
+          height={480}
+          className="w-full h-auto block"
+          priority
+        />
       </div>
-      <div aria-hidden className="pointer-events-none absolute bottom-0 left-[-180px]" style={{ width: 600, height: 600, zIndex: 0 }}>
-        <Image src="/icons/Star Mid left.png" alt="" fill className="object-contain" />
-      </div>
 
-      <div className="relative z-10 flex flex-col items-center gap-8 pt-[140px] pb-[120px] px-5">
+      {/* ── Main content ── */}
+      <div className="flex flex-col items-center gap-8 px-5 py-[60px] md:py-[80px]">
 
-        {/* Check icon */}
+        {/* Success badge + headline */}
+        <div className="flex flex-col items-center gap-4 text-center max-w-[520px]">
+          <div
+            className="flex items-center justify-center w-[60px] h-[60px] rounded-full"
+            style={{ background: 'linear-gradient(135deg, #FF2035 0%, #CC001A 100%)' }}
+          >
+            <svg width="26" height="26" viewBox="0 0 28 28" fill="none" aria-hidden>
+              <path d="M5 14L11 20L23 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <h1 className="font-display font-[500] text-[36px] md:text-[52px] text-[#1A1A1A] leading-[1.1]">
+              You&apos;re{' '}
+              <span className="text-[#FF2035]">in,</span>{' '}
+              {firstName}.
+            </h1>
+            <p className="font-sans text-[14px] md:text-[15px] text-[#1A1A1A]/60 leading-[1.6] mt-2">
+              Payment confirmed. Your confirmation and QR code have been sent to{' '}
+              <span className="font-semibold text-[#1A1A1A]">{d.buyerEmail}</span>.
+            </p>
+          </div>
+        </div>
+
+        {/* ── Ticket card ── */}
         <div
-          className="flex items-center justify-center w-16 h-16 rounded-full"
-          style={{ background: 'linear-gradient(135deg, #FF2035 0%, #CC001A 100%)' }}
+          className="w-full max-w-[460px] bg-white rounded-[20px] overflow-hidden"
+          style={{ border: `2px solid ${tierColor}60`, boxShadow: `0 4px 32px ${tierColor}18` }}
         >
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none" aria-hidden>
-            <path d="M5 14L11 20L23 8" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </div>
 
-        {/* Headline */}
-        <div className="flex flex-col gap-3 max-w-[500px] text-center">
-          <h1 className="font-display font-[500] text-[32px] md:text-[48px] text-[#1A1A1A] leading-[1.15]">
-            You&apos;re{' '}
-            <span className="text-[#FF2035]">in,</span>{' '}
-            {firstName}.
-          </h1>
-          <p className="font-sans text-[15px] md:text-[16px] text-[#1A1A1A]/60 leading-[1.6]">
-            Payment confirmed. Your ticket details are below and a full confirmation — with your QR code — has been sent to{' '}
-            <span className="font-semibold text-[#1A1A1A]">{d.buyerEmail}</span>.
-          </p>
-        </div>
-
-        {/* Ticket card */}
-        <div className="w-full max-w-[480px] bg-white border border-[#E5E5E5] rounded-[20px] overflow-hidden shadow-sm">
-
-          {/* Coloured top stripe */}
-          <div className="h-1.5 w-full" style={{ background: tierColor }} />
+          {/* Ticket type image header */}
+          <div
+            className="flex items-center justify-center px-8 py-6"
+            style={{ backgroundColor: tierBg, borderBottom: `2px solid ${tierColor}40` }}
+          >
+            {ticketImage && (
+              <Image
+                src={ticketImage}
+                alt={ticket?.name ?? d.ticketType}
+                width={320}
+                height={120}
+                className="w-full max-w-[260px] h-auto object-contain"
+              />
+            )}
+          </div>
 
           <div className="p-6 flex flex-col gap-5">
 
-            {/* Buyer info */}
-            <div className="flex flex-col gap-1">
+            {/* Buyer */}
+            <div>
               <p className="font-display font-[500] text-[20px] text-[#1A1A1A] leading-none">{d.buyerName}</p>
-              <p className="font-sans text-[13px] text-[#1A1A1A]/50">{d.buyerEmail}</p>
+              <p className="font-sans text-[13px] text-[#1A1A1A]/50 mt-1">{d.buyerEmail}</p>
             </div>
 
             <div className="h-px bg-[#E5E5E5]" />
 
-            {/* Ticket type + qty */}
+            {/* Stats row */}
             <div className="grid grid-cols-3 gap-4">
               <div>
-                <p className="font-sans text-[10px] text-[#1A1A1A]/40 uppercase tracking-wider mb-1">Ticket Type</p>
-                <span
-                  className="inline-flex items-center px-2.5 py-1 rounded-[6px] font-sans text-[12px] font-semibold"
-                  style={{ background: tierColor + '22', color: tierColor }}
-                >
-                  {ticket?.name ?? d.ticketType}
-                </span>
+                <p className="font-sans text-[10px] text-[#1A1A1A]/40 uppercase tracking-wider mb-1">Ticket</p>
+                <p className="font-display font-[500] text-[15px] text-[#1A1A1A]">{ticket?.name ?? d.ticketType}</p>
               </div>
               <div>
                 <p className="font-sans text-[10px] text-[#1A1A1A]/40 uppercase tracking-wider mb-1">Seats</p>
-                <p className="font-display font-[500] text-[18px] text-[#1A1A1A]">{d.quantity}</p>
+                <p className="font-display font-[500] text-[15px] text-[#1A1A1A]">{d.quantity}</p>
               </div>
               <div>
                 <p className="font-sans text-[10px] text-[#1A1A1A]/40 uppercase tracking-wider mb-1">Total Paid</p>
-                <p className="font-display font-[500] text-[18px] text-[#1A1A1A]">{formatNaira(d.totalAmount)}</p>
+                <p className="font-display font-[500] text-[15px] text-[#1A1A1A]">{formatNaira(d.totalAmount)}</p>
               </div>
             </div>
 
@@ -265,17 +289,17 @@ export default function TicketSuccessClient() {
               <div className="flex flex-col gap-2">
                 {d.ticketCodes.length > 0 ? (
                   d.ticketCodes.map((code, i) => (
-                    <div key={code} className="flex items-center justify-between bg-[#F7F5F2] rounded-[10px] px-4 py-3">
+                    <div key={code} className="flex items-center bg-[#F7F5F2] rounded-[10px] px-4 py-3">
                       {d.ticketCodes.length > 1 && (
-                        <span className="font-sans text-[11px] text-[#1A1A1A]/40 mr-3">Seat {i + 1}</span>
+                        <span className="font-sans text-[11px] text-[#1A1A1A]/40 mr-3 shrink-0">Seat {i + 1}</span>
                       )}
-                      <code className="font-mono font-semibold text-[18px] text-[#1A1A1A] tracking-[0.15em] flex-1">
+                      <code className="font-mono font-semibold text-[18px] text-[#1A1A1A] tracking-[0.12em] flex-1 min-w-0">
                         {code}
                       </code>
                       <button
                         onClick={() => navigator.clipboard?.writeText(code)}
                         className="ml-3 text-[#1A1A1A]/30 hover:text-[#FF2035] transition-colors shrink-0"
-                        title="Copy"
+                        title="Copy code"
                       >
                         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
                           <rect x="1" y="3" width="9" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.3"/>
@@ -285,7 +309,6 @@ export default function TicketSuccessClient() {
                     </div>
                   ))
                 ) : (
-                  /* Fallback — codes not in response (e.g. duplicate order) */
                   <p className="font-sans text-[12px] text-[#1A1A1A]/40">
                     Check your email — your ticket ID(s) are in the confirmation we just sent.
                   </p>
@@ -295,18 +318,24 @@ export default function TicketSuccessClient() {
 
             <div className="h-px bg-[#E5E5E5]" />
 
-            {/* Email sent notice */}
+            {/* Event info */}
+            <div className="flex flex-col gap-1.5">
+              <p className="font-sans text-[13px] text-[#1A1A1A]/70">📅 Saturday, October 3rd, 2026</p>
+              <p className="font-sans text-[13px] text-[#1A1A1A]/70">📍 Daystar Christian Centre, Ikeja, Lagos</p>
+            </div>
+
+            {/* Email notice */}
             <div className="flex items-start gap-3 bg-[#F0FDF4] rounded-[10px] px-4 py-3.5 border border-green-100">
               <svg className="shrink-0 mt-0.5" width="16" height="16" viewBox="0 0 16 16" fill="none">
                 <path d="M1.5 4.5l6.5 5 6.5-5" stroke="#22c55e" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
                 <rect x="1" y="3" width="14" height="10" rx="2" stroke="#22c55e" strokeWidth="1.4"/>
               </svg>
               <p className="font-sans text-[12px] text-green-700 leading-[1.5]">
-                A confirmation with your full ticket(s) and QR code has been sent to <strong>{d.buyerEmail}</strong>. Check your inbox — and your spam folder just in case.
+                Full confirmation with QR code sent to <strong>{d.buyerEmail}</strong>. Check your inbox and spam folder.
               </p>
             </div>
 
-            {/* Payment ref — secondary */}
+            {/* Payment ref */}
             <div className="flex items-center justify-between">
               <p className="font-sans text-[11px] text-[#1A1A1A]/35 uppercase tracking-wider">Payment Ref</p>
               <p className="font-mono text-[11px] text-[#1A1A1A]/40">{d.reference}</p>
@@ -315,9 +344,8 @@ export default function TicketSuccessClient() {
           </div>
         </div>
 
-        {/* CTAs */}
+        {/* ── CTAs ── */}
         <div className="flex flex-col sm:flex-row items-center gap-3 flex-wrap justify-center">
-          {/* Download ticket PDF */}
           <button
             onClick={() => handleDownload(d)}
             disabled={downloading}
@@ -326,7 +354,7 @@ export default function TicketSuccessClient() {
             {downloading ? (
               <>
                 <span className="w-4 h-4 rounded-full border-2 border-white/30 border-t-white animate-spin shrink-0" />
-                Generating PDF…
+                Generating…
               </>
             ) : (
               <>
@@ -346,6 +374,7 @@ export default function TicketSuccessClient() {
             Back to Home
             <Image src="/icons/Button star.svg" alt="" width={12} height={12} className="size-[12px]" />
           </Link>
+
           <Link
             href="/gallery"
             className="inline-flex items-center gap-1.5 bg-[#1A1A1A]/8 text-[#1A1A1A] px-6 py-3 rounded-[24px] font-sans text-[14px] leading-none hover:bg-[#1A1A1A]/15 transition-colors"

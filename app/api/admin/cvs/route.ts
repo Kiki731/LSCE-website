@@ -47,12 +47,12 @@ export async function GET(req: NextRequest) {
   // Stats (always across all silver, regardless of filter)
   const { count: totalSilver } = await db
     .from('attendees')
-    .select('id', { count: 'exact', head: true })
+    .select('id, orders!inner(ticket_type)', { count: 'exact', head: true })
     .eq('orders.ticket_type', 'silver')
 
   const { count: uploaded } = await db
     .from('attendees')
-    .select('id', { count: 'exact', head: true })
+    .select('id, orders!inner(ticket_type)', { count: 'exact', head: true })
     .eq('orders.ticket_type', 'silver')
     .not('cv_url', 'is', null)
 

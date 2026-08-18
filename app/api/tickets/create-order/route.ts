@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { sendTicketConfirmation, sendGuestTicketClaim } from '@/lib/email'
+import { sendTicketConfirmation, sendGuestTicketClaim, sendAdminSaleNotification } from '@/lib/email'
 import { TICKET_TYPES, type TicketTier } from '@/lib/ticket-config'
 
 function getAdminClient() {
@@ -249,18 +249,32 @@ export async function POST(req: NextRequest) {
       )
     )
 
-    // Buyer confirmation
-    await sendTicketConfirmation({
-      orderId:     order.id,
-      buyerName:   buyer_name,
-      buyerEmail:  buyer_email,
-      ticketType:  ticket_type as TicketTier,
-      quantity,
-      totalAmount: expectedTotal,
-      paystackRef: paystack_reference,
-      ticketCodes,
-      breakouts:   breakoutList,
-    })
+    // Buyer confirmation + admin sale notification (fire in parallel)
+    await Promise.allSettled([
+      sendTicketConfirmation({
+        orderId:     order.id,
+        buyerName:   buyer_name,
+        buyerEmail:  buyer_email,
+        ticketType:  ticket_type as TicketTier,
+        quantity,
+        totalAmount: expectedTotal,
+        paystackRef: paystack_reference,
+        ticketCodes,
+        breakouts:   breakoutList,
+      }),
+      sendAdminSaleNotification({
+        orderId:        order.id,
+        buyerName:      buyer_name,
+        buyerEmail:     buyer_email,
+        buyerPhone:     buyer_phone ?? null,
+        ticketType:     ticket_type as TicketTier,
+        quantity,
+        totalAmount:    expectedTotal,
+        discountCode:   couponWasValid ? String(discount_code).toUpperCase().trim() : null,
+        discountAmount: verifiedDiscountAmount,
+        paystackRef:    paystack_reference,
+      }),
+    ])
 
     return NextResponse.json({
       orderId:     order.id,

@@ -276,7 +276,7 @@ function buildConfirmationHtml(p: TicketConfirmationPayload): string {
 
     <p style="margin:0 0 12px;font-size:15px;font-weight:700;color:#000000;">What to bring on the day</p>
     <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:12px;">
-      ${['This email on your phone or printed', 'A valid student ID or government-issued ID', 'Your Ticket ID as a backup if the QR code cannot be scanned'].map(item => `
+      ${['This email on your phone or printed', 'Note-taking materials — a pen, notepad, or phone for notes', 'Your Ticket ID as a backup if the QR code cannot be scanned'].map(item => `
         <tr>
           <td style="padding:6px 0;font-size:14px;color:#444444;line-height:1.6;">
             <span style="display:inline-block;width:6px;height:6px;background:${BRAND_RED};border-radius:50%;vertical-align:middle;margin-right:10px;"></span>
@@ -611,7 +611,68 @@ ${REPLY_TO}
 
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   6. AMBASSADOR APPLICATION — confirmation to the applicant
+   6. ADMIN — new ticket sale notification
+───────────────────────────────────────────────────────────────────────────── */
+export interface AdminSaleNotificationPayload {
+  orderId:        string
+  buyerName:      string
+  buyerEmail:     string
+  buyerPhone:     string | null
+  ticketType:     TicketTier
+  quantity:       number
+  totalAmount:    number
+  discountCode:   string | null
+  discountAmount: number
+  paystackRef:    string
+}
+
+export async function sendAdminSaleNotification(p: AdminSaleNotificationPayload): Promise<void> {
+  const resend = getResend()
+  if (!resend) return
+
+  const ticket     = TICKET_TYPES[p.ticketType]
+  const totalStr   = '₦' + p.totalAmount.toLocaleString('en-NG')
+  const subtotal   = ticket.price * p.quantity
+  const subtotalStr = '₦' + subtotal.toLocaleString('en-NG')
+
+  const body = `
+    <p style="margin:0 0 6px;font-size:12px;color:#999;text-transform:uppercase;letter-spacing:0.08em;font-weight:600;">New Ticket Sale 🎟️</p>
+    <p style="margin:0 0 24px;font-size:19px;font-weight:700;color:#000000;">
+      ${escHtml(p.buyerName)} just bought ${p.quantity} × ${ticket.name}
+    </p>
+
+    ${infoBox(`
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${fieldRow('Buyer', escHtml(p.buyerName))}
+        ${fieldRow('Email', `<a href="mailto:${encodeURIComponent(p.buyerEmail)}" style="color:${BRAND_RED};text-decoration:none;">${escHtml(p.buyerEmail)}</a>`)}
+        ${p.buyerPhone ? fieldRow('Phone', escHtml(p.buyerPhone)) : ''}
+        ${fieldRow('Ticket', ticket.name)}
+        ${fieldRow('Quantity', String(p.quantity) + ' seat' + (p.quantity > 1 ? 's' : ''))}
+        ${p.discountCode ? fieldRow('Coupon', `${escHtml(p.discountCode)} (−₦${p.discountAmount.toLocaleString('en-NG')})`) : ''}
+        ${fieldRow('Subtotal', subtotalStr)}
+        ${fieldRow('Total Collected', `<strong style="color:#1A1A1A;">${totalStr}</strong>`)}
+        ${fieldRow('Paystack Ref', `<span style="font-family:monospace;font-size:12px;color:#666;">${escHtml(p.paystackRef)}</span>`)}
+      </table>
+    `)}
+
+    ${ctaButton('View in Admin Portal', `${SITE_URL}/admin/orders`)}
+  `
+
+  const { error } = await resend.emails.send({
+    from:    FROM_ADDRESS,
+    replyTo: REPLY_TO,
+    to:      [TEAM_EMAIL],
+    subject: `New sale: ${p.quantity}× ${ticket.name} — ${totalStr}`,
+    html:    wrapEmail(body),
+    text:    `New ticket sale!\n\nBuyer: ${p.buyerName} (${p.buyerEmail})\nTicket: ${ticket.name} × ${p.quantity}\nTotal: ${totalStr}\nRef: ${p.paystackRef}`,
+  })
+
+  if (error) console.error('[email] Failed to send admin sale notification:', error)
+}
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   7. AMBASSADOR APPLICATION — confirmation to the applicant
 ───────────────────────────────────────────────────────────────────────────── */
 export interface AmbassadorApplicationPayload {
   applicantName:  string

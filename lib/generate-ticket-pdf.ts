@@ -1,12 +1,3 @@
-/**
- * Opens a print-ready ticket receipt in a new browser window and triggers the
- * system print dialog (where users can "Save as PDF").
- *
- * Why not jsPDF? It has bundling issues in Next.js production — the dynamic
- * import fails silently in certain environments. A browser print window
- * requires zero dependencies and works in every browser.
- */
-
 import { TICKET_TYPES, type TicketTier } from './ticket-config'
 
 const SITE_URL = (
@@ -16,9 +7,21 @@ const SITE_URL = (
 )
 
 const TIER_COLORS: Record<string, string> = {
-  bronze: '#CD7F32',
-  silver: '#A8A9AD',
-  gold:   '#D4AF37',
+  bronze: '#00CF01',
+  silver: '#FFBD4D',
+  gold:   '#F11429',
+}
+
+const TIER_BG: Record<string, string> = {
+  bronze: '#BAFFBA',
+  silver: '#FDF0D9',
+  gold:   '#FFE3E6',
+}
+
+const TICKET_IMAGES: Record<string, string> = {
+  bronze: '/gallery/The%20Spark.png',
+  silver: '/gallery/The%20Rise.png',
+  gold:   '/gallery/The%20Emergence.png',
 }
 
 export function generateTicketPDF(params: {
@@ -31,32 +34,62 @@ export function generateTicketPDF(params: {
   reference:   string
 }): void {
   const { buyerName, buyerEmail, ticketType, quantity, totalAmount, ticketCodes, reference } = params
-  const ticket    = TICKET_TYPES[ticketType as TicketTier]
-  const tierColor = TIER_COLORS[ticketType] ?? '#FF2035'
-  const totalStr  = '₦' + totalAmount.toLocaleString('en-NG')
-  const logoUrl   = `${SITE_URL}/images/Lsce red.png`
+  const ticket     = TICKET_TYPES[ticketType as TicketTier]
+  const tierColor  = TIER_COLORS[ticketType] ?? '#FF2035'
+  const tierBg     = TIER_BG[ticketType] ?? '#F7F5F2'
+  const totalStr   = '₦' + totalAmount.toLocaleString('en-NG')
+  const ticketImgUrl = `${SITE_URL}${TICKET_IMAGES[ticketType] ?? '/gallery/The%20Spark.png'}`
+  const flyerUrl   = `${SITE_URL}/gallery/EMERGE%20BEYOND%202.png`
+  const logoUrl    = `${SITE_URL}/images/Lsce red.png`
 
-  // Build one ticket block per seat
+  // One ticket block per seat — ticket image + details + QR side-by-side
   const ticketBlocks = ticketCodes.map((code, i) => `
     <div class="ticket-block">
-      <div class="ticket-stripe" style="background:${tierColor}"></div>
-      <div class="ticket-body">
+      <!-- Perforated left edge strip -->
+      <div class="ticket-strip" style="background:${tierColor};"></div>
+
+      <div class="ticket-inner">
+        <!-- Left: ticket image + event details -->
         <div class="ticket-left">
-          ${ticketCodes.length > 1 ? `<p class="seat-label">SEAT ${i + 1} OF ${ticketCodes.length}</p>` : ''}
-          <p class="field-label">TICKET ID</p>
-          <p class="ticket-code">${code}</p>
-          <p class="ticket-name">${ticket?.name ?? ticketType}</p>
-          <p class="ticket-hint">Show this QR code or Ticket ID at the entrance. Bring a valid ID.</p>
-        </div>
-        <div class="ticket-right">
           <img
-            src="${SITE_URL}/api/qr/${encodeURIComponent(code)}"
-            width="130"
-            height="130"
-            alt="QR Code"
-            class="qr-img"
+            src="${ticketImgUrl}"
+            alt="${ticket?.name ?? ticketType}"
+            class="ticket-type-img"
+            onerror="this.style.display='none'"
           />
-          <p class="qr-label">${code}</p>
+          <div class="ticket-event-info">
+            <p class="event-label">LSCE 2026</p>
+            <p class="event-detail">📅 Oct 3rd, 2026</p>
+            <p class="event-detail">📍 Daystar Christian Centre</p>
+            <p class="event-detail" style="color:#999;">Ikeja, Lagos</p>
+          </div>
+          ${quantity > 1 ? `<p class="seat-tag" style="background:${tierColor}22;color:${tierColor};">SEAT ${i + 1} OF ${quantity}</p>` : ''}
+        </div>
+
+        <!-- Dotted separator -->
+        <div class="ticket-perf"></div>
+
+        <!-- Right: attendee details + QR -->
+        <div class="ticket-right">
+          <div>
+            <p class="field-label">ATTENDEE</p>
+            <p class="attendee-name">${escapeHtml(buyerName)}</p>
+            <p class="attendee-email">${escapeHtml(buyerEmail)}</p>
+          </div>
+          <div style="margin-top:14px;">
+            <p class="field-label">TICKET ID</p>
+            <p class="ticket-code" style="color:${tierColor};">${code}</p>
+          </div>
+          <div style="margin-top:14px;text-align:center;">
+            <img
+              src="${SITE_URL}/api/qr/${encodeURIComponent(code)}"
+              width="120"
+              height="120"
+              alt="QR Code"
+              class="qr-img"
+            />
+            <p class="qr-hint">Scan at entrance</p>
+          </div>
         </div>
       </div>
     </div>
@@ -67,145 +100,176 @@ export function generateTicketPDF(params: {
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LSCE 2026 — Ticket Receipt</title>
+  <title>LSCE 2026 — Ticket</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
 
     body {
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      background: #F7F5F2;
+      background: #F0EDEA;
       color: #1A1A1A;
-      padding: 32px 24px;
+      padding: 24px 20px 40px;
     }
 
-    .page { max-width: 600px; margin: 0 auto; }
+    .page { max-width: 620px; margin: 0 auto; }
 
-    /* ── Header ── */
+    /* ── Event flyer ── */
+    .flyer-wrap {
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 16px;
+      line-height: 0;
+    }
+    .flyer-wrap img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    /* ── Header bar ── */
     .header {
       background: #1A1A1A;
-      border-radius: 14px;
-      padding: 20px 24px;
+      border-radius: 12px;
+      padding: 14px 20px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 16px;
+      margin-bottom: 10px;
     }
-    .header img { height: 32px; width: auto; }
+    .header img { height: 26px; width: auto; }
     .header-right { text-align: right; }
-    .header-right p { font-size: 11px; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 0.08em; }
-    .header-right strong { font-size: 13px; color: white; letter-spacing: 0.04em; }
+    .header-right p { font-size: 10px; color: rgba(255,255,255,0.45); text-transform: uppercase; letter-spacing: 0.08em; }
+    .header-right strong { font-size: 12px; color: white; }
 
-    /* ── Buyer card ── */
-    .buyer-card {
+    /* ── Buyer summary strip ── */
+    .buyer-strip {
       background: white;
-      border-radius: 14px;
-      border: 1px solid #E5E5E5;
-      padding: 20px 24px;
-      margin-bottom: 12px;
+      border-radius: 12px;
+      padding: 14px 18px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      gap: 16px;
+      margin-bottom: 10px;
+      border: 1px solid #E5E5E5;
     }
-    .buyer-name { font-size: 18px; font-weight: 700; color: #1A1A1A; }
-    .buyer-email { font-size: 12px; color: #888; margin-top: 2px; }
-    .buyer-meta { text-align: right; }
+    .buyer-name { font-size: 16px; font-weight: 700; }
+    .buyer-email { font-size: 11px; color: #888; margin-top: 2px; }
+    .buyer-right { text-align: right; }
     .tier-pill {
       display: inline-block;
-      padding: 4px 10px;
-      border-radius: 6px;
-      font-size: 11px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.06em;
-      background: ${tierColor}22;
+      background: ${tierBg};
       color: ${tierColor};
-      margin-bottom: 6px;
+      margin-bottom: 4px;
     }
-    .buyer-total { font-size: 20px; font-weight: 700; color: #1A1A1A; }
-    .buyer-total-label { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 0.06em; }
+    .buyer-total { font-size: 18px; font-weight: 700; }
+    .buyer-total-label { font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 0.05em; }
 
-    /* ── Event info bar ── */
-    .event-bar {
-      background: #FFF5F5;
-      border: 1px solid #FFD5D5;
-      border-radius: 10px;
-      padding: 12px 20px;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 20px;
-    }
-    .event-bar p { font-size: 12px; color: #555; }
-    .event-bar strong { color: #1A1A1A; }
-
-    /* ── Ticket blocks ── */
+    /* ── Ticket block ── */
     .ticket-block {
       background: white;
       border-radius: 14px;
-      border: 1px solid #E5E5E5;
+      overflow: hidden;
       margin-bottom: 10px;
       display: flex;
-      overflow: hidden;
+      border: 1px solid #E5E5E5;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
     }
-    .ticket-stripe { width: 5px; flex-shrink: 0; }
-    .ticket-body {
+    .ticket-strip { width: 6px; flex-shrink: 0; }
+    .ticket-inner {
       flex: 1;
-      padding: 20px;
       display: flex;
-      align-items: center;
-      gap: 20px;
+      align-items: stretch;
     }
-    .ticket-left { flex: 1; }
-    .ticket-right { text-align: center; flex-shrink: 0; }
 
-    .seat-label {
-      font-size: 10px; color: #aaa;
-      text-transform: uppercase; letter-spacing: 0.08em;
-      margin-bottom: 8px;
+    /* Left panel */
+    .ticket-left {
+      flex: 1;
+      padding: 18px 16px 18px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-right: 2px dashed #E5E5E5;
     }
+    .ticket-type-img {
+      width: 100%;
+      max-width: 180px;
+      height: auto;
+      object-fit: contain;
+    }
+    .ticket-event-info { display: flex; flex-direction: column; gap: 3px; }
+    .event-label { font-size: 11px; font-weight: 700; color: #1A1A1A; text-transform: uppercase; letter-spacing: 0.06em; }
+    .event-detail { font-size: 11px; color: #555; line-height: 1.5; }
+    .seat-tag {
+      display: inline-block;
+      padding: 3px 8px;
+      border-radius: 20px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      width: fit-content;
+    }
+
+    /* Dotted separator handle circles */
+    .ticket-perf {
+      width: 0;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    /* Right panel */
+    .ticket-right {
+      width: 180px;
+      flex-shrink: 0;
+      padding: 18px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
     .field-label {
-      font-size: 10px; color: #999;
-      text-transform: uppercase; letter-spacing: 0.06em;
-      margin-bottom: 4px;
+      font-size: 9px;
+      color: #bbb;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 3px;
     }
+    .attendee-name { font-size: 13px; font-weight: 700; color: #1A1A1A; line-height: 1.3; }
+    .attendee-email { font-size: 10px; color: #999; margin-top: 2px; word-break: break-all; }
     .ticket-code {
       font-family: monospace;
-      font-size: 26px;
+      font-size: 16px;
       font-weight: 700;
-      letter-spacing: 0.12em;
-      color: #1A1A1A;
-      margin-bottom: 6px;
+      letter-spacing: 0.1em;
+      line-height: 1.2;
+      word-break: break-all;
     }
-    .ticket-name { font-size: 13px; color: #666; margin-bottom: 10px; }
-    .ticket-hint { font-size: 11px; color: #aaa; line-height: 1.5; }
-
     .qr-img {
       border-radius: 8px;
-      border: 4px solid #F7F5F2;
+      border: 3px solid #F0EDEA;
       display: block;
+      margin: 0 auto;
     }
-    .qr-label {
-      font-family: monospace;
-      font-size: 10px;
-      color: #bbb;
-      margin-top: 5px;
-      letter-spacing: 0.08em;
-    }
+    .qr-hint { font-size: 9px; color: #bbb; text-align: center; margin-top: 5px; text-transform: uppercase; letter-spacing: 0.05em; }
 
     /* ── Footer ── */
     .footer {
-      margin-top: 16px;
-      border-top: 1px solid #E5E5E5;
-      padding-top: 14px;
+      margin-top: 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 0 4px;
     }
-    .footer p { font-size: 11px; color: #aaa; }
+    .footer p { font-size: 10px; color: #bbb; }
     .footer a { color: #FF2035; text-decoration: none; }
 
-    /* ── Print button (hidden when printing) ── */
+    /* ── Print button ── */
     .print-btn {
       display: flex;
       align-items: center;
@@ -220,79 +284,74 @@ export function generateTicketPDF(params: {
       font-weight: 600;
       cursor: pointer;
       width: fit-content;
+      gap: 8px;
     }
 
-    /* ── Print media — hide UI chrome ── */
     @media print {
       body { background: white; padding: 0; }
       .print-btn { display: none !important; }
-      .ticket-block { break-inside: avoid; }
+      .ticket-block { break-inside: avoid; box-shadow: none; }
+      .flyer-wrap { break-inside: avoid; }
     }
   </style>
 </head>
 <body>
   <div class="page">
 
-    <!-- Header -->
+    <!-- Event flyer -->
+    <div class="flyer-wrap">
+      <img src="${flyerUrl}" alt="LSCE 2026 — Emerge Beyond" onerror="this.parentElement.style.display='none'" />
+    </div>
+
+    <!-- LSCE header -->
     <div class="header">
-      <img src="${logoUrl}" alt="LSCE 2026" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
-      <span style="display:none;color:white;font-size:18px;font-weight:700;">LSCE 2026</span>
+      <img src="${logoUrl}" alt="LSCE" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+      <span style="display:none;color:white;font-size:16px;font-weight:700;">LSCE</span>
       <div class="header-right">
-        <p>Ticket Receipt</p>
-        <strong>LSCE 2026</strong>
+        <p>Official Ticket Receipt</p>
+        <strong>Lagos Students Career Expo 2026</strong>
       </div>
     </div>
 
-    <!-- Buyer -->
-    <div class="buyer-card">
+    <!-- Buyer strip -->
+    <div class="buyer-strip">
       <div>
         <p class="buyer-name">${escapeHtml(buyerName)}</p>
         <p class="buyer-email">${escapeHtml(buyerEmail)}</p>
       </div>
-      <div class="buyer-meta">
+      <div class="buyer-right">
         <div class="tier-pill">${ticket?.name ?? ticketType}</div>
-        <p class="buyer-total-label">${quantity} seat${quantity !== 1 ? 's' : ''} · Total Paid</p>
+        <p class="buyer-total-label">${quantity} seat${quantity !== 1 ? 's' : ''} · Total paid</p>
         <p class="buyer-total">${totalStr}</p>
       </div>
     </div>
 
-    <!-- Event info -->
-    <div class="event-bar">
-      <p>📅 <strong>Saturday, October 3rd, 2026</strong></p>
-      <p>📍 <strong>Daystar Christian Centre, Ikeja, Lagos</strong></p>
-    </div>
-
-    <!-- Ticket blocks -->
+    <!-- Ticket block(s) -->
     ${ticketBlocks}
 
     <!-- Footer -->
     <div class="footer">
       <p>Ref: <span style="font-family:monospace">${escapeHtml(reference)}</span></p>
-      <p>
-        Questions? <a href="mailto:lagosstudentcareerexpo@gmail.com">lagosstudentcareerexpo@gmail.com</a>
-      </p>
+      <p>Questions? <a href="mailto:lagosstudentcareerexpo@gmail.com">lagosstudentcareerexpo@gmail.com</a></p>
     </div>
 
-    <!-- Print button -->
+    <!-- Print / Save as PDF button -->
     <button class="print-btn" onclick="window.print()">
-      🖨 Save as PDF / Print
+      🖨&nbsp; Save as PDF / Print
     </button>
 
   </div>
 
   <script>
-    // Auto-trigger print after QR images load
     window.addEventListener('load', function() {
-      // Small delay to ensure QR images are rendered
-      setTimeout(function() { window.print() }, 800)
+      setTimeout(function() { window.print() }, 900)
     })
   </script>
 </body>
 </html>`
 
-  const win = window.open('', '_blank', 'width=700,height=900,scrollbars=yes')
+  const win = window.open('', '_blank', 'width=700,height=960,scrollbars=yes')
   if (!win) {
-    // Pop-up blocked — fall back to a data URL
     const blob = new Blob([html], { type: 'text/html' })
     const url  = URL.createObjectURL(blob)
     const a    = document.createElement('a')

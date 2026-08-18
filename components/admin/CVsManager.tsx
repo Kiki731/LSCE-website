@@ -50,6 +50,7 @@ export default function CVsManager() {
   const [total, setTotal]         = useState(0)
   const [totalPages, setTotalPages] = useState(1)
   const [downloading, setDownloading] = useState<string | null>(null)
+  const [previewing, setPreviewing]   = useState<string | null>(null)
 
   const load = useCallback(async (p: number, f: Filter) => {
     setLoading(true)
@@ -79,6 +80,18 @@ export default function CVsManager() {
     load(p, filter)
   }
 
+  async function handlePreview(attendee: CVAttendee) {
+    if (!attendee.cv_url) return
+    setPreviewing(attendee.id)
+    try {
+      const res  = await fetch(`/api/admin/cvs/download?path=${encodeURIComponent(attendee.cv_url)}`)
+      const data = await res.json()
+      if (data.url) window.open(data.url, '_blank', 'noopener')
+    } finally {
+      setPreviewing(null)
+    }
+  }
+
   async function handleDownload(attendee: CVAttendee) {
     if (!attendee.cv_url) return
     setDownloading(attendee.id)
@@ -106,14 +119,14 @@ export default function CVsManager() {
       <div className="px-6 py-5 border-b border-white/6 flex items-center justify-between gap-4 shrink-0">
         <div>
           <h1 className="font-display font-[500] text-[18px] text-white">CV Submissions</h1>
-          <p className="font-sans text-[12px] text-white/35 mt-0.5">Silver Pass holders only</p>
+          <p className="font-sans text-[12px] text-white/35 mt-0.5">The Rise ticket holders only</p>
         </div>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 px-6 py-4 border-b border-white/6 shrink-0">
         <div className="bg-white/4 rounded-[12px] p-4">
-          <p className="font-sans text-[11px] text-white/35 uppercase tracking-wider mb-1">Total Silver</p>
+          <p className="font-sans text-[11px] text-white/35 uppercase tracking-wider mb-1">Total The Rise</p>
           <p className="font-display font-[500] text-[26px] text-white">{stats.total}</p>
         </div>
         <div className="bg-white/4 rounded-[12px] p-4">
@@ -177,7 +190,7 @@ export default function CVsManager() {
             ) : attendees.length === 0 ? (
               <tr>
                 <td colSpan={5} className="px-5 py-14 text-center font-sans text-[13px] text-white/25">
-                  {filter === 'uploaded' ? 'No CVs uploaded yet' : filter === 'pending' ? 'Everyone has uploaded their CV 🎉' : 'No Silver Pass holders yet'}
+                  {filter === 'uploaded' ? 'No CVs uploaded yet' : filter === 'pending' ? 'Everyone has uploaded their CV 🎉' : 'No The Rise ticket holders yet'}
                 </td>
               </tr>
             ) : (
@@ -224,25 +237,51 @@ export default function CVsManager() {
                   {/* Actions */}
                   <td className="px-5 py-4">
                     {a.cv_url ? (
-                      <button
-                        onClick={() => handleDownload(a)}
-                        disabled={downloading === a.id}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] font-sans text-[12px] font-semibold transition-all"
-                        style={{
-                          background: 'rgba(255,32,53,0.12)',
-                          color:      '#FF2035',
-                          opacity:    downloading === a.id ? 0.5 : 1,
-                        }}
-                      >
-                        {downloading === a.id ? (
-                          <span className="w-3 h-3 rounded-full border border-[#FF2035] border-t-transparent animate-spin" />
-                        ) : (
-                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-                            <path d="M6 1v7M3 5l3 3 3-3M1 10h10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
-                          </svg>
-                        )}
-                        Download
-                      </button>
+                      <div className="flex items-center gap-2">
+                        {/* Preview */}
+                        <button
+                          onClick={() => handlePreview(a)}
+                          disabled={previewing === a.id}
+                          title="Preview CV"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] font-sans text-[12px] font-semibold transition-all"
+                          style={{
+                            background: 'rgba(255,255,255,0.07)',
+                            color:      'rgba(255,255,255,0.55)',
+                            opacity:    previewing === a.id ? 0.5 : 1,
+                          }}
+                        >
+                          {previewing === a.id ? (
+                            <span className="w-3 h-3 rounded-full border border-white/40 border-t-transparent animate-spin" />
+                          ) : (
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                              <path d="M1 6s2-4 5-4 5 4 5 4-2 4-5 4-5-4-5-4z" stroke="currentColor" strokeWidth="1.3"/>
+                              <circle cx="6" cy="6" r="1.5" stroke="currentColor" strokeWidth="1.3"/>
+                            </svg>
+                          )}
+                          Preview
+                        </button>
+                        {/* Download */}
+                        <button
+                          onClick={() => handleDownload(a)}
+                          disabled={downloading === a.id}
+                          title="Download CV"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] font-sans text-[12px] font-semibold transition-all"
+                          style={{
+                            background: 'rgba(255,32,53,0.12)',
+                            color:      '#FF2035',
+                            opacity:    downloading === a.id ? 0.5 : 1,
+                          }}
+                        >
+                          {downloading === a.id ? (
+                            <span className="w-3 h-3 rounded-full border border-[#FF2035] border-t-transparent animate-spin" />
+                          ) : (
+                            <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                              <path d="M6 1v7M3 5l3 3 3-3M1 10h10" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+                            </svg>
+                          )}
+                          Download
+                        </button>
+                      </div>
                     ) : (
                       <span className="font-sans text-[11px] text-white/15">—</span>
                     )}
