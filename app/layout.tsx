@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import Script from 'next/script'
 import { Analytics } from '@vercel/analytics/next'
-import PresenceTracker from '@/components/ui/PresenceTracker'
 import './globals.css'
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://thelscexpo.com'
@@ -173,7 +172,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             src="https://www.facebook.com/tr?id=3592377590922340&ev=PageView&noscript=1"
           />
         </noscript>
-        <PresenceTracker />
         {children}
         <Analytics />
       </body>
