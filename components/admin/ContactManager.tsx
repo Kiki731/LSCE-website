@@ -53,7 +53,7 @@ export default function ContactManager() {
   useEffect(() => { load() }, [load])
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="p-6 md:p-8 flex flex-col gap-6">
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>

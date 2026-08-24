@@ -114,7 +114,7 @@ export default function ApplicationsManager() {
   ]
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="p-6 md:p-8 flex flex-col gap-6">
       {/* Header */}
       <div>
         <h1 className="font-display font-[500] text-white text-[22px] leading-none">Ambassador Applications</h1>

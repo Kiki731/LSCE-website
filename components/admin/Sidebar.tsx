@@ -89,6 +89,17 @@ const NAV = [
     ),
   },
   {
+    label: 'Sessions',
+    href: '/admin/sessions',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="1" y="3" width="14" height="10" rx="2" stroke="currentColor" strokeWidth="1.4"/>
+        <path d="M4 7h4M4 9.5h2.5" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+        <circle cx="12" cy="8" r="1.5" fill="currentColor"/>
+      </svg>
+    ),
+  },
+  {
     label: 'Team',
     href: '/admin/team',
     icon: (

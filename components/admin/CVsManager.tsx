@@ -51,6 +51,7 @@ export default function CVsManager() {
   const [totalPages, setTotalPages] = useState(1)
   const [downloading, setDownloading] = useState<string | null>(null)
   const [previewing, setPreviewing]   = useState<string | null>(null)
+  const [reminding, setReminding]     = useState<string | null>(null)
 
   const load = useCallback(async (p: number, f: Filter) => {
     setLoading(true)
@@ -89,6 +90,19 @@ export default function CVsManager() {
       if (data.url) window.open(data.url, '_blank', 'noopener')
     } finally {
       setPreviewing(null)
+    }
+  }
+
+  async function handleRemind(attendee: CVAttendee) {
+    setReminding(attendee.id)
+    try {
+      await fetch('/api/admin/cvs/remind', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ attendeeId: attendee.id, email: attendee.email, name: attendee.name }),
+      })
+    } finally {
+      setReminding(null)
     }
   }
 
@@ -283,7 +297,26 @@ export default function CVsManager() {
                         </button>
                       </div>
                     ) : (
-                      <span className="font-sans text-[11px] text-white/15">—</span>
+                      <button
+                        onClick={() => handleRemind(a)}
+                        disabled={reminding === a.id}
+                        title="Send CV upload reminder"
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] font-sans text-[12px] font-semibold transition-all"
+                        style={{
+                          background: 'rgba(255,189,77,0.10)',
+                          color:      '#FFBD4D',
+                          opacity:    reminding === a.id ? 0.5 : 1,
+                        }}
+                      >
+                        {reminding === a.id ? (
+                          <span className="w-3 h-3 rounded-full border border-[#FFBD4D] border-t-transparent animate-spin" />
+                        ) : (
+                          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+                            <path d="M1 2.5l10 3-5 1.5L4.5 11 1 2.5z" stroke="currentColor" strokeWidth="1.3" strokeLinejoin="round"/>
+                          </svg>
+                        )}
+                        Remind
+                      </button>
                     )}
                   </td>
 
