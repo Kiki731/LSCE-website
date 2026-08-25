@@ -89,6 +89,15 @@ const NAV = [
     ),
   },
   {
+    label: 'Recovery',
+    href: '/admin/recovery',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M1 2.5l14 5.5-14 5.5V9.5l9-1.5-9-1.5V2.5z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
+  {
     label: 'Sessions',
     href: '/admin/sessions',
     icon: (
