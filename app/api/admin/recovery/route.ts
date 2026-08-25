@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
         resend.emails.send({
           from:     FROM,
           to:       email.trim(),
-          reply_to: 'lagosstudentcareerexpo@gmail.com',
+          replyTo:  'lagosstudentcareerexpo@gmail.com',
           subject:  'Did something come up?',
           text: `You were this close.
 

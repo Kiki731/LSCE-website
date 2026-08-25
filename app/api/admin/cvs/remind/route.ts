@@ -14,7 +14,7 @@ export async function POST(req: NextRequest) {
     await resend.emails.send({
       from:     FROM,
       to:       email,
-      reply_to: 'lagosstudentcareerexpo@gmail.com',
+      replyTo:  'lagosstudentcareerexpo@gmail.com',
       subject:  `${firstName}, your CV is still missing`,
       text: `Hey ${firstName},
 
