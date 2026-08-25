@@ -12,55 +12,59 @@ export async function POST(req: NextRequest) {
     const firstName = name ? name.split(' ')[0] : 'there'
 
     await resend.emails.send({
-      from:    FROM,
-      to:      email,
-      subject: 'Reminder: Upload your CV for LSCE 2026',
+      from:     FROM,
+      to:       email,
+      reply_to: 'lagosstudentcareerexpo@gmail.com',
+      subject:  `${firstName}, your CV is still missing`,
+      text: `Hey ${firstName},
+
+You purchased a The Rise ticket for Lagos Students Career Expo 2026, which includes the exclusive CV review session with recruiters.
+
+We noticed you haven't uploaded your CV yet. Recruiters will be reviewing submissions before the event, so the sooner it's in, the better.
+
+Upload your CV here: https://thelscexpo.com/tickets
+
+Event details:
+Saturday, October 3rd, 2026
+Daystar Christian Centre, Ikeja, Lagos
+
+See you there,
+The LSCE Team`,
       html: `
 <!DOCTYPE html>
 <html>
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f4f4f4;font-family:'Helvetica Neue',Arial,sans-serif;">
-  <div style="max-width:600px;margin:0 auto;background:#ffffff;">
+<body style="margin:0;padding:0;background:#ffffff;font-family:'Helvetica Neue',Arial,sans-serif;">
+  <div style="max-width:560px;margin:0 auto;padding:48px 40px;">
 
-    <img src="https://thelscexpo.com/images/EMERGE%20Themee%20Reveal%20Header.png"
-         alt="LSCE 2026 — Emerge Beyond"
-         style="width:100%;display:block;" />
+    <p style="margin:0 0 8px;font-size:13px;color:#999;font-weight:600;letter-spacing:0.05em;text-transform:uppercase;">LSCE 2026</p>
 
-    <div style="padding:40px 40px 32px;">
-      <h1 style="margin:0 0 16px;font-size:24px;font-weight:600;color:#1a1a1a;line-height:1.3;">
-        Hey ${firstName}, don't forget your CV!
-      </h1>
-      <p style="margin:0 0 16px;font-size:15px;color:#444;line-height:1.6;">
-        You purchased a <strong>The Rise</strong> ticket for Lagos Students Career Expo 2026 —
-        which includes the exclusive CV review session with top recruiters.
-      </p>
-      <p style="margin:0 0 28px;font-size:15px;color:#444;line-height:1.6;">
-        We noticed you haven't uploaded your CV yet. Upload it before the event so recruiters
-        can review it on the day.
-      </p>
+    <h1 style="margin:0 0 20px;font-size:22px;font-weight:700;color:#1a1a1a;line-height:1.3;">
+      Hey ${firstName}, your CV is still missing.
+    </h1>
+    <p style="margin:0 0 16px;font-size:15px;color:#444;line-height:1.7;">
+      You purchased a <strong>The Rise</strong> ticket for Lagos Students Career Expo 2026,
+      which includes the exclusive CV review session with top recruiters.
+    </p>
+    <p style="margin:0 0 28px;font-size:15px;color:#444;line-height:1.7;">
+      We noticed you haven't uploaded your CV yet. Recruiters will be reviewing submissions
+      before the event — the sooner it's in, the better.
+    </p>
 
-      <a href="https://thelscexpo.com/tickets"
-         style="display:inline-block;background:#FF2035;color:#ffffff;text-decoration:none;
-                padding:14px 28px;border-radius:100px;font-size:15px;font-weight:600;">
-        Upload My CV →
-      </a>
+    <a href="https://thelscexpo.com/tickets"
+       style="display:inline-block;background:#FF2035;color:#ffffff;text-decoration:none;
+              padding:13px 28px;border-radius:100px;font-size:14px;font-weight:600;">
+      Upload my CV
+    </a>
 
-      <div style="margin-top:36px;padding-top:24px;border-top:1px solid #ebebeb;">
-        <p style="margin:0 0 6px;font-size:13px;color:#888;">
-          📅 Saturday, October 3rd, 2026
-        </p>
-        <p style="margin:0;font-size:13px;color:#888;">
-          📍 Daystar Christian Centre, Ikeja, Lagos
-        </p>
-      </div>
+    <div style="margin-top:40px;padding-top:28px;border-top:1px solid #ebebeb;">
+      <p style="margin:0 0 5px;font-size:13px;color:#888;">Saturday, October 3rd, 2026</p>
+      <p style="margin:0;font-size:13px;color:#888;">Daystar Christian Centre, Ikeja, Lagos</p>
     </div>
 
-    <div style="background:#1a1a1a;padding:24px 40px;text-align:center;">
-      <p style="margin:0;font-size:12px;color:rgba(255,255,255,0.4);">
-        Lagos Students Career Expo 2026 · thelscexpo.com
-      </p>
-    </div>
-
+    <p style="margin:36px 0 0;font-size:12px;color:#bbb;">
+      Lagos Students Career Expo 2026 &middot; <a href="https://thelscexpo.com" style="color:#bbb;">thelscexpo.com</a>
+    </p>
   </div>
 </body>
 </html>`,

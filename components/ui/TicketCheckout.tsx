@@ -8,7 +8,11 @@ import { BREAKOUTS } from '@/lib/breakouts'
 /* ─────────────────────────────────────────────
    Step breadcrumb (4 steps)
 ───────────────────────────────────────────── */
-function StepTrail({ step }: { step: 1 | 2 | 3 }) {
+function StepTrail({ step, skipBreakouts }: { step: 1 | 2 | 3; skipBreakouts: boolean }) {
+  // For Spark (bronze): Select Ticket → Buyer Info → Payment (3 steps)
+  // For Rise/Emergence: Select Ticket → Breakouts → Buyer Info → Payment (4 steps)
+  const infoStep = skipBreakouts ? 2 : 3
+
   return (
     <div className="flex items-center gap-1.5 md:gap-4 mb-6 md:mb-8">
       <p
@@ -18,24 +22,28 @@ function StepTrail({ step }: { step: 1 | 2 | 3 }) {
         Select Ticket
       </p>
       <div className="flex-1 h-px bg-[#1A1A1A]/15" />
+      {!skipBreakouts && (
+        <>
+          <div className="flex items-center gap-1 md:gap-1.5 shrink-0">
+            <Image src="/icons/Button Star red.svg" alt="" width={10} height={10}
+              className="size-[9px] md:size-[11px] transition-opacity"
+              style={{ opacity: step >= 2 ? 1 : 0.3 }}
+            />
+            <p className="font-display font-[500] text-[12px] md:text-[16px] leading-[1.2] whitespace-nowrap transition-colors"
+              style={{ color: step >= 2 ? '#1A1A1A' : 'rgba(26,26,26,0.4)' }}>
+              Breakouts
+            </p>
+          </div>
+          <div className="flex-1 h-px bg-[#1A1A1A]/15" />
+        </>
+      )}
       <div className="flex items-center gap-1 md:gap-1.5 shrink-0">
         <Image src="/icons/Button Star red.svg" alt="" width={10} height={10}
           className="size-[9px] md:size-[11px] transition-opacity"
-          style={{ opacity: step >= 2 ? 1 : 0.3 }}
+          style={{ opacity: step >= infoStep ? 1 : 0.3 }}
         />
         <p className="font-display font-[500] text-[12px] md:text-[16px] leading-[1.2] whitespace-nowrap transition-colors"
-          style={{ color: step >= 2 ? '#1A1A1A' : 'rgba(26,26,26,0.4)' }}>
-          Breakouts
-        </p>
-      </div>
-      <div className="flex-1 h-px bg-[#1A1A1A]/15" />
-      <div className="flex items-center gap-1 md:gap-1.5 shrink-0">
-        <Image src="/icons/Button Star red.svg" alt="" width={10} height={10}
-          className="size-[9px] md:size-[11px] transition-opacity"
-          style={{ opacity: step >= 3 ? 1 : 0.3 }}
-        />
-        <p className="font-display font-[500] text-[12px] md:text-[16px] leading-[1.2] whitespace-nowrap transition-colors"
-          style={{ color: step >= 3 ? '#1A1A1A' : 'rgba(26,26,26,0.4)' }}>
+          style={{ color: step >= infoStep ? '#1A1A1A' : 'rgba(26,26,26,0.4)' }}>
           Buyer Info
         </p>
       </div>
@@ -562,7 +570,7 @@ export default function TicketCheckout() {
     buyer.phone.trim().length > 6 &&
     (quantity === 1 || attendeeEmailsFull)
 
-  const breakoutsValid = selectedBreakouts.length === 2
+  const breakoutsValid = selectedTier === 'bronze' || selectedBreakouts.length === 2
 
   const addAttendeeEmail = (raw: string) => {
     const email = raw.trim().toLowerCase()
@@ -658,7 +666,7 @@ export default function TicketCheckout() {
 
   return (
     <>
-      <StepTrail step={step} />
+      <StepTrail step={step} skipBreakouts={selectedTier === 'bronze'} />
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_360px] gap-6 items-start">
 
@@ -775,22 +783,24 @@ export default function TicketCheckout() {
                 </div>
               )}
 
-              {/* Collapsed breakout chip */}
-              <div className="bg-white rounded-[14px] md:rounded-[16px] border border-[#E5E5E5] px-4 md:px-5 py-3.5 md:py-4 flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <StepBadge n={2} active={false} />
-                  <div>
-                    <p className="font-display font-[500] text-[13px] text-[#1A1A1A] leading-none">Breakout Sessions</p>
-                    <p className="font-sans text-[11px] text-[#1A1A1A]/40 mt-0.5">
-                      {selectedBreakouts.length === 2
-                        ? selectedBreakouts.map(id => BREAKOUTS.find(b => b.id === id)?.title).join(' · ')
-                        : '2 sessions selected'}
-                    </p>
+              {/* Collapsed breakout chip — hidden for Spark (bronze) buyers */}
+              {selectedTier !== 'bronze' && (
+                <div className="bg-white rounded-[14px] md:rounded-[16px] border border-[#E5E5E5] px-4 md:px-5 py-3.5 md:py-4 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <StepBadge n={2} active={false} />
+                    <div>
+                      <p className="font-display font-[500] text-[13px] text-[#1A1A1A] leading-none">Breakout Sessions</p>
+                      <p className="font-sans text-[11px] text-[#1A1A1A]/40 mt-0.5">
+                        {selectedBreakouts.length === 2
+                          ? selectedBreakouts.map(id => BREAKOUTS.find(b => b.id === id)?.title).join(' · ')
+                          : '2 sessions selected'}
+                      </p>
+                    </div>
                   </div>
+                  <button type="button" onClick={() => setStep(2)}
+                    className="font-sans text-[12px] text-[#FF2035] hover:underline shrink-0">Change</button>
                 </div>
-                <button type="button" onClick={() => setStep(2)}
-                  className="font-sans text-[12px] text-[#FF2035] hover:underline shrink-0">Change</button>
-              </div>
+              )}
 
               {/* Buyer info form */}
               <div className="bg-white rounded-[14px] md:rounded-[16px] border border-[#E5E5E5] overflow-hidden">
@@ -974,7 +984,7 @@ export default function TicketCheckout() {
 
           {/* Mobile step-1 continue button */}
           {step === 1 && selectedTier && (
-            <button type="button" onClick={() => setStep(2)}
+            <button type="button" onClick={() => setStep(selectedTier === 'bronze' ? 3 : 2)}
               className="lg:hidden w-full py-4 rounded-[60px] font-sans text-[14px] font-semibold bg-[#FF2035] text-white">
               Continue
             </button>
@@ -988,7 +998,7 @@ export default function TicketCheckout() {
             discountCode={discountCode} discountApplied={discountApplied} discountPct={discountPct}
             onDiscountChange={handleRemoveDiscount} onApplyDiscount={handleApplyDiscount}
             applyingCoupon={applyingCoupon} step={step}
-            onContinue={() => step === 1 ? setStep(2) : setStep(3)}
+            onContinue={() => step === 1 ? setStep(selectedTier === 'bronze' ? 3 : 2) : setStep(3)}
             onPay={handlePay}
             buyerInfoValid={buyerInfoValid} breakoutsValid={breakoutsValid} paying={paying}
           />

@@ -52,6 +52,7 @@ export default function CVsManager() {
   const [downloading, setDownloading] = useState<string | null>(null)
   const [previewing, setPreviewing]   = useState<string | null>(null)
   const [reminding, setReminding]     = useState<string | null>(null)
+  const [toast, setToast]             = useState<{ msg: string; ok: boolean } | null>(null)
 
   const load = useCallback(async (p: number, f: Filter) => {
     setLoading(true)
@@ -96,11 +97,17 @@ export default function CVsManager() {
   async function handleRemind(attendee: CVAttendee) {
     setReminding(attendee.id)
     try {
-      await fetch('/api/admin/cvs/remind', {
+      const res = await fetch('/api/admin/cvs/remind', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body:    JSON.stringify({ attendeeId: attendee.id, email: attendee.email, name: attendee.name }),
       })
+      const ok = res.ok
+      setToast({ msg: ok ? `Reminder sent to ${attendee.name}` : `Failed to send reminder to ${attendee.name}`, ok })
+      setTimeout(() => setToast(null), 4000)
+    } catch {
+      setToast({ msg: `Failed to send reminder to ${attendee.name}`, ok: false })
+      setTimeout(() => setToast(null), 4000)
     } finally {
       setReminding(null)
     }
@@ -128,6 +135,30 @@ export default function CVsManager() {
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
+
+      {/* Remind toast */}
+      {toast && (
+        <div
+          className="fixed bottom-6 right-6 z-50 flex items-center gap-3 px-5 py-3.5 rounded-[14px] shadow-xl"
+          style={{
+            background: toast.ok ? '#1a1a1a' : '#2a0a0a',
+            border: `1px solid ${toast.ok ? 'rgba(34,197,94,0.25)' : 'rgba(255,32,53,0.25)'}`,
+          }}
+        >
+          {toast.ok ? (
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M3 8l3.5 3.5 6.5-7" stroke="#22c55e" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
+          ) : (
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M4 4l8 8M12 4l-8 8" stroke="#FF2035" strokeWidth="1.8" strokeLinecap="round"/>
+            </svg>
+          )}
+          <p className="font-sans text-[13px]" style={{ color: toast.ok ? '#22c55e' : '#FF2035' }}>
+            {toast.msg}
+          </p>
+        </div>
+      )}
 
       {/* Header */}
       <div className="px-6 py-5 border-b border-white/6 flex items-center justify-between gap-4 shrink-0">
