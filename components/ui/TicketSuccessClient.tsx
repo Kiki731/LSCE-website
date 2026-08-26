@@ -125,13 +125,29 @@ export default function TicketSuccessClient() {
           sessionStorage.removeItem('lsce_pending_order')
           sessionStorage.removeItem('lsce_free_ref')
 
+          const confirmedTotal    = orderData.totalAmount ?? orderPayload.total_amount
+          const confirmedTier     = orderData.ticketType  ?? orderPayload.ticket_type
+          const confirmedQuantity = orderData.quantity    ?? orderPayload.quantity
+
+          // Only fire Purchase on fresh orders, not duplicates (page refresh)
+          if (orderData.success && !orderData.duplicate) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(window as any).fbq?.('track', 'Purchase', {
+              value:        confirmedTotal,
+              currency:     'NGN',
+              num_items:    confirmedQuantity,
+              content_type: 'product',
+              content_ids:  [confirmedTier],
+            })
+          }
+
           setDetails({
             orderId:     orderData.orderId,
             buyerName:   orderData.buyerName   ?? orderPayload.buyer_name,
             buyerEmail:  orderData.buyerEmail  ?? orderPayload.buyer_email,
-            ticketType:  orderData.ticketType  ?? orderPayload.ticket_type,
-            quantity:    orderData.quantity    ?? orderPayload.quantity,
-            totalAmount: orderData.totalAmount ?? orderPayload.total_amount,
+            ticketType:  confirmedTier,
+            quantity:    confirmedQuantity,
+            totalAmount: confirmedTotal,
             ticketCodes: orderData.ticketCodes ?? [],
             reference,
           })

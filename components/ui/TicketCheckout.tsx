@@ -625,6 +625,14 @@ export default function TicketCheckout() {
         setPaying(false)
         return
       }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(window as any).fbq?.('track', 'InitiateCheckout', {
+        value:        total,
+        currency:     'NGN',
+        num_items:    quantity,
+        content_type: 'product',
+        content_ids:  [selectedTier],
+      })
       sessionStorage.setItem('lsce_pending_order', JSON.stringify({
         buyer_name: buyer.name, buyer_email: buyer.email, buyer_phone: buyer.phone,
         ticket_type: selectedTier, quantity, unit_price: ticket!.price,
