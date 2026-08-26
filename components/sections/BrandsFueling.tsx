@@ -13,10 +13,6 @@ const LOGOS = [
   { name: 'Mariam Grey', src: '/partners/cropped-Mariam-Grey-Logo-01 2.png', width: 228, height: 55 },
   { name: 'GoNomad', src: '/partners/Gonomad.png', width: 200, height: 32 },
   { name: 'Niteon', src: '/partners/Niteon.png', width: 127, height: 111 },
-  { name: 'TechCabal', src: '/partners/techcabal.png', width: 180, height: 40 },
-  { name: 'Cowrywise', src: '/partners/cowrywise.png', width: 167, height: 31 },
-  { name: 'Paystack', src: '/partners/paystack.png', width: 151, height: 27 },
-  { name: 'Moniepoint', src: '/partners/moniepoint.png', width: 150, height: 37 },
 ]
 
 export default function BrandsFueling() {

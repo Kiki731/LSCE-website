@@ -74,7 +74,7 @@ export default function Navbar() {
 
         <div className="flex items-center gap-3 shrink-0">
           <a
-            href="https://wa.me/2348188276353?text=Hi%2C%20I%27m%20interested%20in%20sponsoring%20LSCE%203.0"
+            href="https://wa.me/2348130350327?text=Hi%2C%20I%27m%20interested%20in%20sponsoring%20LSCE%203.0"
             target="_blank"
             rel="noopener noreferrer"
             className={`px-5 py-[10px] rounded-[24px] font-sans text-[15px] leading-none transition-opacity hover:opacity-80 ${
@@ -163,7 +163,7 @@ export default function Navbar() {
             </Link>
           ))}
           <a
-            href="https://wa.me/2348188276353?text=Hi%2C%20I%27m%20interested%20in%20sponsoring%20LSCE%203.0"
+            href="https://wa.me/2348130350327?text=Hi%2C%20I%27m%20interested%20in%20sponsoring%20LSCE%203.0"
             target="_blank"
             rel="noopener noreferrer"
             onClick={() => setMobileOpen(false)}

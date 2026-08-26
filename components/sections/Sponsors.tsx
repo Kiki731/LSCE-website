@@ -80,7 +80,7 @@ export default function Sponsors() {
             </div>
 
             <a
-              href="https://wa.me/2348188276353?text=Hi%2C%20I%27m%20interested%20in%20sponsoring%20LSCE%203.0"
+              href="https://wa.me/2348130350327?text=Hi%2C%20I%27m%20interested%20in%20sponsoring%20LSCE%203.0"
               target="_blank"
               rel="noopener noreferrer"
               className="flex items-center justify-center gap-1.5 bg-white text-[#FF2035] px-5 py-3 rounded-[24px] font-sans text-[15px] leading-none hover:opacity-90 transition-opacity mt-auto"
@@ -140,7 +140,7 @@ export default function Sponsors() {
                 View Brochure
               </a>
               <a
-                href="https://wa.me/2348188276353?text=Hi%2C%20I%27m%20interested%20in%20exhibiting%20at%20LSCE%203.0"
+                href="https://wa.me/2348130350327?text=Hi%2C%20I%27m%20interested%20in%20exhibiting%20at%20LSCE%203.0"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1 flex items-center justify-center gap-1.5 bg-[#FF2035] text-white px-4 py-3 rounded-[24px] font-sans text-[14px] leading-none hover:opacity-90 transition-opacity"
