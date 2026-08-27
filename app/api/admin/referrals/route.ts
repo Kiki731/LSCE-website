@@ -7,7 +7,7 @@ export async function GET() {
   const { data: { user } } = await auth.auth.getUser()
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
-  const db = createSupabaseAdminClient()
+  const db = await createSupabaseAdminClient()
 
   // Fetch all referral codes
   const { data: codes, error } = await (db as any)

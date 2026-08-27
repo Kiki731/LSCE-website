@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Name and email are required.' }, { status: 400 })
     }
 
-    const db = createSupabaseAdminClient()
+    const db = await createSupabaseAdminClient()
 
     // Check if this email belongs to an approved ambassador application
     const { data: application } = await (db as any)
