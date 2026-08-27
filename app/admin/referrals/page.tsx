@@ -38,15 +38,15 @@ export default function ReferralsPage() {
       </div>
 
       {/* Stats */}
-      <div className="px-6 py-4 border-b border-white/6 flex gap-6 shrink-0">
+      <div className="px-6 py-5 border-b border-white/6 grid grid-cols-3 gap-4 shrink-0">
         {[
           { label: 'Total codes', value: rows.length },
           { label: 'Tickets via referral', value: totalSales },
           { label: 'Revenue via referral', value: formatNaira(totalRevenue) },
         ].map(({ label, value }) => (
-          <div key={label}>
+          <div key={label} className="bg-[#161616] border border-white/6 rounded-[16px] p-5 flex flex-col gap-2">
             <p className="font-sans text-[11px] text-white/35 uppercase tracking-wider">{label}</p>
-            <p className="font-display font-[500] text-[20px] text-white leading-none mt-0.5">{value}</p>
+            <p className="font-display font-[500] text-[24px] text-white leading-none">{value}</p>
           </div>
         ))}
       </div>
