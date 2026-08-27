@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
-import { sendTicketConfirmation, sendGuestTicketClaim, sendAdminSaleNotification } from '@/lib/email'
+import { sendTicketConfirmation, sendGuestTicketClaim, sendAdminSaleNotification, sendAmbassadorReferralNotification } from '@/lib/email'
 import { TICKET_TYPES, type TicketTier } from '@/lib/ticket-config'
 
 function getAdminClient() {
@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
       paystack_reference,
       attendee_emails,
       breakouts,
+      referral_code,
     } = body
 
     if (!buyer_name || !buyer_email || !ticket_type || !quantity || !paystack_reference) {
@@ -195,6 +196,7 @@ export async function POST(req: NextRequest) {
         total_amount:    expectedTotal,          // server-computed
         paystack_reference,
         payment_status: 'completed',
+        referral_code:   referral_code ? String(referral_code).toUpperCase().trim() : null,
       })
       .select('id')
       .single()
@@ -248,6 +250,36 @@ export async function POST(req: NextRequest) {
         }).catch(err => console.error('[create-order] guest email failed for', a.email, err))
       )
     )
+
+    // Ambassador referral notification (fire-and-forget)
+    const cleanReferralCode = referral_code ? String(referral_code).toUpperCase().trim() : null
+    if (cleanReferralCode) {
+      const { data: refRecord } = await db
+        .from('referral_codes')
+        .select('ambassador_email, ambassador_name')
+        .eq('code', cleanReferralCode)
+        .maybeSingle() as any
+
+      if (refRecord) {
+        // Count total tickets sold through this code (including this order)
+        const { count: totalSales } = await (db as any)
+          .from('orders')
+          .select('quantity', { count: 'exact', head: true })
+          .eq('referral_code', cleanReferralCode)
+          .eq('payment_status', 'completed')
+
+        sendAmbassadorReferralNotification({
+          ambassadorEmail: refRecord.ambassador_email,
+          ambassadorName:  refRecord.ambassador_name,
+          referralCode:    cleanReferralCode,
+          buyerName:       buyer_name,
+          ticketType:      ticket_type as TicketTier,
+          quantity,
+          totalAmount:     expectedTotal,
+          totalSales:      totalSales ?? 1,
+        }).catch(err => console.error('[create-order] ambassador referral email failed:', err))
+      }
+    }
 
     // Buyer confirmation + admin sale notification (fire in parallel)
     await Promise.allSettled([

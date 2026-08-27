@@ -517,6 +517,7 @@ export default function TicketCheckout() {
   const [paying, setPaying]               = useState(false)
   const [payError, setPayError]           = useState('')
   const [applyingCoupon, setApplyingCoupon] = useState(false)
+  const [referralCode, setReferralCode]     = useState('')
   const [emailUsed, setEmailUsed]         = useState(false)
   const emailCheckTimer                   = useRef<ReturnType<typeof setTimeout>>(null)
 
@@ -615,6 +616,7 @@ export default function TicketCheckout() {
           buyer_name:      buyer.name,
           buyer_phone:     buyer.phone || undefined,
           discount_code:   discountApplied ? discountCode : undefined,
+          referral_code:   referralCode.trim().toUpperCase() || undefined,
           attendee_emails: attendeeEmailList,
           breakouts:       selectedBreakouts,
         }),
@@ -876,6 +878,16 @@ export default function TicketCheckout() {
                       onChange={e => setBuyer(b => ({ ...b, phone: e.target.value }))}
                       placeholder="+234 000 000 0000"
                       className="border border-[#E5E5E5] rounded-[8px] px-4 py-3 font-sans text-[13px] text-[#1A1A1A] outline-none focus:border-[#1A1A1A] transition-colors placeholder:text-[#1A1A1A]/30"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-sans text-[12px] font-semibold text-[#1A1A1A]/70">
+                      Referral Code <span className="font-normal text-[#1A1A1A]/40">(optional)</span>
+                    </label>
+                    <input type="text" value={referralCode}
+                      onChange={e => setReferralCode(e.target.value.toUpperCase())}
+                      placeholder="e.g. TUNDE-4K9X"
+                      className="border border-[#E5E5E5] rounded-[8px] px-4 py-3 font-sans text-[13px] text-[#1A1A1A] outline-none focus:border-[#1A1A1A] transition-colors placeholder:text-[#1A1A1A]/30 uppercase"
                     />
                   </div>
                   <label className="flex items-center gap-3 cursor-pointer group">

@@ -806,3 +806,53 @@ export async function sendAmbassadorTeamNotification(p: AmbassadorTeamNotificati
 
   if (error) console.error('[email] Failed to send ambassador team notification:', error)
 }
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Ambassador referral sale notification
+   Sent to the ambassador whenever an order uses their referral code.
+───────────────────────────────────────────────────────────────────────────── */
+export async function sendAmbassadorReferralNotification(p: {
+  ambassadorEmail: string
+  ambassadorName:  string
+  referralCode:    string
+  buyerName:       string
+  ticketType:      TicketTier
+  quantity:        number
+  totalAmount:     number
+  totalSales:      number
+}) {
+  const resend = getResend()
+  if (!resend) return
+
+  const firstName   = p.ambassadorName.split(' ')[0]
+  const ticketLabel = TICKET_TYPES[p.ticketType]?.name ?? p.ticketType
+  const plural      = p.quantity > 1 ? `${p.quantity} tickets` : '1 ticket'
+
+  const body = `
+    <p style="margin:0 0 24px;font-size:15px;color:#444;line-height:1.7;">
+      Hey ${escHtml(firstName)}, someone just used your referral code <strong>${escHtml(p.referralCode)}</strong> to buy ${plural} (${escHtml(ticketLabel)}).
+    </p>
+    ${infoBox(`
+      <table width="100%" cellpadding="0" cellspacing="0">
+        ${fieldRow('Ticket type', escHtml(ticketLabel))}
+        ${fieldRow('Quantity', String(p.quantity))}
+        ${fieldRow('Order value', '&#x20A6;' + p.totalAmount.toLocaleString('en-NG'))}
+        ${fieldRow('Your total sales', String(p.totalSales) + (p.totalSales === 1 ? ' ticket' : ' tickets'))}
+      </table>
+    `, 'neutral')}
+    <p style="margin:24px 0 0;font-size:15px;color:#444;line-height:1.7;">
+      Keep sharing your code — the LSCE team is watching the leaderboard and the top ambassadors will be recognised and rewarded.
+    </p>
+  `
+
+  const { error } = await resend.emails.send({
+    from:    FROM_ADDRESS,
+    replyTo: TEAM_EMAIL,
+    to:      [p.ambassadorEmail],
+    subject: `Someone used your code — ${p.referralCode}`,
+    html:    wrapEmail(body),
+    text:    `Hey ${firstName},\n\nSomeone just used your referral code ${p.referralCode} to buy ${plural} (${ticketLabel}).\n\nYour total sales so far: ${p.totalSales}.\n\nKeep sharing your code!\n\nThe LSCE Team`,
+  })
+
+  if (error) console.error('[email] Failed to send ambassador referral notification:', error)
+}

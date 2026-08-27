@@ -6,6 +6,7 @@ import Footer from '@/components/ui/Footer'
 import FadeUp from '@/components/ui/FadeUp'
 import AmbassadorFAQ from '@/components/ui/AmbassadorFAQ'
 import AmbassadorMarquee from '@/components/ui/AmbassadorMarquee'
+import ReferralSection from '@/components/sections/ReferralSection'
 
 export const metadata: Metadata = {
   title: 'Become a Campus Ambassador | LSCE 3.0 — Lagos Students Career Expo',
@@ -355,6 +356,11 @@ export default function AmbassadorsPage() {
             </FadeUp>
           </div>
         </section>
+
+        {/* ════════════════════════════════
+            Referral Code
+        ════════════════════════════════ */}
+        <ReferralSection />
 
         {/* ════════════════════════════════
             FAQ

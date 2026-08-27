@@ -89,6 +89,18 @@ const NAV = [
     ),
   },
   {
+    label: 'Referrals',
+    href: '/admin/referrals',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <circle cx="5" cy="4" r="2" stroke="currentColor" strokeWidth="1.4"/>
+        <circle cx="12" cy="4" r="2" stroke="currentColor" strokeWidth="1.4"/>
+        <circle cx="8.5" cy="12" r="2" stroke="currentColor" strokeWidth="1.4"/>
+        <path d="M5 6c0 2 1.5 3 3.5 3M12 6c0 2-1.5 3-3.5 3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round"/>
+      </svg>
+    ),
+  },
+  {
     label: 'Recovery',
     href: '/admin/recovery',
     icon: (
