@@ -7,7 +7,7 @@ import TicketCheckout from '@/components/ui/TicketCheckout'
 
 export const metadata: Metadata = {
   title: 'Get a Ticket | LSCE 3.0 — Lagos Students Career Expo 2026',
-  description: 'Secure your spot at LSCE 3.0 — Lagos Students Career Expo, October 3rd 2026 at Daystar Christian Centre, Ikeja, Lagos. Bronze, Silver and Gold passes available.',
+  description: 'Secure your spot at LSCE 3.0 — Lagos Students Career Expo, November 28th 2026 at Daystar Christian Centre, Ikeja, Lagos. Bronze, Silver and Gold passes available.',
 }
 
 export default function TicketsPage() {

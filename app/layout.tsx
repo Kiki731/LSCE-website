@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: 'LSCE 3.0 | Lagos Students Career Expo 2026',
   description:
-    'More Than a Job Fair. A Career Revolution. Join the largest student-organised expo in Lagos, October 3rd 2026.',
+    'More Than a Job Fair. A Career Revolution. Join the largest student-organised expo in Lagos, November 28th 2026.',
   keywords: ['LSCE', 'Lagos Students Career Expo', 'career', 'expo', 'Lagos', 'students', 'networking', '2026','tech expo', 'tech jobs', 'tech careers', 'tech companies', 'tech startups', 'tech events', 'tech conferences', 'tech workshops', 'tech seminars', 'tech training', 'tech education', 'tech development', 'tech innovation', 'tech research', 'tech startups', 'tech companies', 'tech jobs', 'tech careers', 'tech events', 'tech conferences', 'tech workshops', 'tech seminars', 'tech training', 'tech education', 'tech development', 'tech innovation', 'tech research'],
 
   // ── Favicon / icons ──────────────────────────────────────────────────────────
@@ -29,7 +29,7 @@ export const metadata: Metadata = {
     url:         SITE_URL,
     siteName:    'LSCE 2026',
     title:       'LSCE 3.0 | Lagos Students Career Expo 2026',
-    description: 'More Than a Job Fair. A Career Revolution. October 3rd 2026, Lagos.',
+    description: 'More Than a Job Fair. A Career Revolution. November 28th 2026, Lagos.',
     // OG image is auto-generated from app/opengraph-image.tsx (1200×630)
     images: [
       {
@@ -45,7 +45,7 @@ export const metadata: Metadata = {
   twitter: {
     card:        'summary_large_image',
     title:       'LSCE 3.0 | Lagos Students Career Expo 2026',
-    description: 'More Than a Job Fair. A Career Revolution. October 3rd 2026, Daystar Christian Centre, Ikeja, Lagos.',
+    description: 'More Than a Job Fair. A Career Revolution. November 28th 2026, Daystar Christian Centre, Ikeja, Lagos.',
     images:      ['/opengraph-image'],
   },
 }
@@ -59,7 +59,7 @@ const JSON_LD = {
       url: SITE_URL,
       name: 'Lagos Students Career Expo',
       alternateName: 'LSCE',
-      description: 'The largest student-organised career expo in Lagos. October 3rd 2026, Daystar Christian Centre, Ikeja.',
+      description: 'The largest student-organised career expo in Lagos. November 28th 2026, Daystar Christian Centre, Ikeja.',
       potentialAction: {
         '@type': 'SearchAction',
         target: { '@type': 'EntryPoint', urlTemplate: `${SITE_URL}/?q={search_term_string}` },
@@ -102,7 +102,7 @@ const JSON_LD = {
           '@type': 'ListItem',
           position: 1,
           name: 'Get a Ticket',
-          description: 'Secure your spot at LSCE 3.0 — Lagos Students Career Expo, October 3rd 2026.',
+          description: 'Secure your spot at LSCE 3.0 — Lagos Students Career Expo, November 28th 2026.',
           url: `${SITE_URL}/tickets`,
         },
         {

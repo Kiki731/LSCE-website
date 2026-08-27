@@ -11,7 +11,7 @@ function getResend() {
 }
 
 const EVENT_NAME  = 'Lagos Students Career Expo 2026'
-const EVENT_DATE  = 'Saturday, October 3rd, 2026'
+const EVENT_DATE  = 'Saturday, November 28th, 2026'
 const EVENT_VENUE = 'Daystar Christian Centre, Ikeja, Lagos'
 const BRAND_RED   = '#FF2035'
 const REPLY_TO    = 'lagosstudentcareerexpo@gmail.com'
@@ -567,7 +567,7 @@ export async function sendCVUploadConfirmation(p: CVUploadPayload): Promise<void
       ${[
         'Your CV is added to the employer-facing portfolio reviewed before the event.',
         'Recruiters can shortlist attendees they want to connect with on the day.',
-        'Show up on October 3rd ready to make your impression in person.',
+        'Show up on November 28th ready to make your impression in person.',
       ].map(item => `
         <tr>
           <td style="padding:7px 0;font-size:14px;color:#444444;line-height:1.6;">

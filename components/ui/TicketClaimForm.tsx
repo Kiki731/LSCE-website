@@ -169,7 +169,7 @@ export default function TicketClaimForm({ code }: { code: string }) {
               />
             </div>
             <p className="font-sans text-[11px] text-[#1A1A1A]/40 text-center leading-[1.5]">
-              📅 Saturday, October 3rd, 2026 · Daystar Christian Centre, Ikeja, Lagos
+              📅 Saturday, November 28th, 2026 · Daystar Christian Centre, Ikeja, Lagos
             </p>
           </div>
         </div>
@@ -255,7 +255,7 @@ export default function TicketClaimForm({ code }: { code: string }) {
           </span>
           <div>
             <p className="font-sans text-[12px] text-[#1A1A1A]/50">LSCE 2026</p>
-            <p className="font-sans text-[11px] text-[#1A1A1A]/30">Oct 3rd · Daystar Christian Centre, Ikeja</p>
+            <p className="font-sans text-[11px] text-[#1A1A1A]/30">Nov 28th · Daystar Christian Centre, Ikeja</p>
           </div>
         </div>
         <code className="font-mono text-[13px] text-[#1A1A1A]/50 tracking-wider">{attendee.ticket_code}</code>

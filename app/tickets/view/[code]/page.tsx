@@ -204,7 +204,7 @@ export default function TicketViewPage() {
                 style={{ backgroundColor: tierBg }}
               >
                 <p className="font-sans text-[13px] text-[#1A1A1A]/75">
-                  📅 Saturday, October 3rd, 2026
+                  📅 Saturday, November 28th, 2026
                 </p>
                 <p className="font-sans text-[13px] text-[#1A1A1A]/75">
                   📍 Daystar Christian Centre, Ikeja, Lagos

@@ -213,7 +213,7 @@ export default function CVUploadForm({ code }: { code: string }) {
           </span>
           <div>
             <p className="font-sans text-[12px] text-[#1A1A1A]/60">{attendee?.name ?? attendee?.email}</p>
-            <p className="font-sans text-[11px] text-[#1A1A1A]/30">LSCE 2026 · Oct 3rd</p>
+            <p className="font-sans text-[11px] text-[#1A1A1A]/30">LSCE 2026 · Nov 28th</p>
           </div>
         </div>
         <code className="font-mono text-[12px] text-[#1A1A1A]/40 tracking-wider">{code}</code>

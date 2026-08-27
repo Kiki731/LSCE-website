@@ -25,7 +25,7 @@ We noticed you haven't uploaded your CV yet. Recruiters will be reviewing submis
 Upload your CV here: https://thelscexpo.com/tickets
 
 Event details:
-Saturday, October 3rd, 2026
+Saturday, November 28th, 2026
 Daystar Christian Centre, Ikeja, Lagos
 
 See you there,
@@ -58,7 +58,7 @@ The LSCE Team`,
     </a>
 
     <div style="margin-top:40px;padding-top:28px;border-top:1px solid #ebebeb;">
-      <p style="margin:0 0 5px;font-size:13px;color:#888;">Saturday, October 3rd, 2026</p>
+      <p style="margin:0 0 5px;font-size:13px;color:#888;">Saturday, November 28th, 2026</p>
       <p style="margin:0;font-size:13px;color:#888;">Daystar Christian Centre, Ikeja, Lagos</p>
     </div>
 

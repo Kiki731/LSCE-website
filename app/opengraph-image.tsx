@@ -122,7 +122,7 @@ export default function Image() {
           >
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#FF2035' }} />
             <span style={{ color: '#FF2035', fontSize: 18, fontWeight: 600, letterSpacing: '0.06em' }}>
-              October 3rd, 2026
+              November 28th, 2026
             </span>
           </div>
 

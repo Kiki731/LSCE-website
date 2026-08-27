@@ -109,7 +109,7 @@ export default function About() {
               className="size-3.5"
             />
             <span className="font-display text-[13px] md:text-[15px] text-white leading-[1.2] font-[500] whitespace-nowrap">
-              October 3rd, 2026
+              November 28th, 2026
             </span>
           </div>
         </FadeUp>

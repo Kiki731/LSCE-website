@@ -336,7 +336,7 @@ export default function TicketSuccessClient() {
 
             {/* Event info */}
             <div className="flex flex-col gap-1.5">
-              <p className="font-sans text-[13px] text-[#1A1A1A]/70">📅 Saturday, October 3rd, 2026</p>
+              <p className="font-sans text-[13px] text-[#1A1A1A]/70">📅 Saturday, November 28th, 2026</p>
               <p className="font-sans text-[13px] text-[#1A1A1A]/70">📍 Daystar Christian Centre, Ikeja, Lagos</p>
             </div>
 

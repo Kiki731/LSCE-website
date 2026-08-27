@@ -234,7 +234,7 @@ export default function ContactPage() {
                 <div className="bg-white border border-[#E5E5E5] rounded-[16px] p-5">
                   <p className="font-display font-[500] text-[14px] text-[#1A1A1A] mb-2">Event Details</p>
                   <p className="font-sans text-[13px] text-[#1A1A1A]/55 leading-[1.7]">
-                    📅 Saturday, October 3rd, 2026<br />
+                    📅 Saturday, November 28th, 2026<br />
                     📍 Daystar Christian Centre,<br />
                     &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Ikeja, Lagos
                   </p>
