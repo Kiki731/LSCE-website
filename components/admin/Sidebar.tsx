@@ -101,6 +101,15 @@ const NAV = [
     ),
   },
   {
+    label: 'Broadcast',
+    href: '/admin/broadcast',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M1 4.5l14 3.5-14 3.5V9.5l9-1.5-9-1.5V4.5z" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
+  {
     label: 'Recovery',
     href: '/admin/recovery',
     icon: (
