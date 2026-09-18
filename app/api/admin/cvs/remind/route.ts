@@ -6,10 +6,13 @@ const FROM   = process.env.RESEND_FROM ?? 'LSCE Tickets <tickets@thelscexpo.com>
 
 export async function POST(req: NextRequest) {
   try {
-    const { email, name } = await req.json()
+    const { email, name, ticket_code } = await req.json()
     if (!email) return NextResponse.json({ error: 'Missing email' }, { status: 400 })
 
-    const firstName = name ? name.split(' ')[0] : 'there'
+    const firstName  = name ? name.split(' ')[0] : 'there'
+    const uploadLink = ticket_code
+      ? `https://thelscexpo.com/tickets/upload-cv/${encodeURIComponent(ticket_code.toUpperCase())}`
+      : 'https://thelscexpo.com'
 
     await resend.emails.send({
       from:     FROM,
@@ -22,7 +25,7 @@ You purchased a The Rise ticket for Lagos Students Career Expo 2026, which inclu
 
 We noticed you haven't uploaded your CV yet. Recruiters will be reviewing submissions before the event, so the sooner it's in, the better.
 
-Upload your CV here: https://thelscexpo.com/tickets
+Upload your CV here: ${uploadLink}
 
 Event details:
 Saturday, November 28th, 2026
@@ -51,7 +54,7 @@ The LSCE Team`,
       before the event — the sooner it's in, the better.
     </p>
 
-    <a href="https://thelscexpo.com/tickets"
+    <a href="${uploadLink}"
        style="display:inline-block;background:#FF2035;color:#ffffff;text-decoration:none;
               padding:13px 28px;border-radius:100px;font-size:14px;font-weight:600;">
       Upload my CV

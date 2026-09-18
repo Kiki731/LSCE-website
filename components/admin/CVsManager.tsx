@@ -100,7 +100,7 @@ export default function CVsManager() {
       const res = await fetch('/api/admin/cvs/remind', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ attendeeId: attendee.id, email: attendee.email, name: attendee.name }),
+        body:    JSON.stringify({ attendeeId: attendee.id, email: attendee.email, name: attendee.name, ticket_code: attendee.ticket_code }),
       })
       const ok = res.ok
       setToast({ msg: ok ? `Reminder sent to ${attendee.name}` : `Failed to send reminder to ${attendee.name}`, ok })

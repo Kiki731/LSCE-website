@@ -7,6 +7,10 @@ interface Coupon {
   code: string
   description: string | null
   discount_pct: number
+  discount_type: 'percentage' | 'fixed'
+  discount_value: number | null
+  is_discount: boolean
+  assigned_to: string | null
   max_uses: number | null
   times_used: number
   valid_from: string | null
@@ -19,7 +23,11 @@ interface Coupon {
 
 type FormState = {
   description: string
+  is_discount: boolean
+  discount_type: 'percentage' | 'fixed'
   discount_pct: string
+  discount_value: string
+  assigned_to: string
   max_uses: string
   valid_from: string
   valid_until: string
@@ -28,9 +36,9 @@ type FormState = {
 }
 
 const BLANK_FORM: FormState = {
-  description: '', discount_pct: '', max_uses: '',
-  valid_from: '', valid_until: '',
-  ticket_types: [], is_active: true,
+  description: '', is_discount: true, discount_type: 'percentage',
+  discount_pct: '', discount_value: '', assigned_to: '', max_uses: '',
+  valid_from: '', valid_until: '', ticket_types: [], is_active: true,
 }
 
 /* Convert an ISO timestamp → datetime-local value (YYYY-MM-DDTHH:mm) */
@@ -71,7 +79,7 @@ function SkeletonRow() {
 function CouponFormFields({
   form,
   setForm,
-  codeValue,         // only for create (read-only in edit)
+  codeValue,
   onCodeChange,
   isEdit = false,
 }: {
@@ -96,7 +104,7 @@ function CouponFormFields({
 
         {/* Code — shown in create only */}
         {!isEdit && (
-          <Field label="Code *" hint="e.g. SUMMER25">
+          <Field label="Code *" hint="e.g. TUNDE10 or SUMMER25">
             <input
               required value={codeValue ?? ''}
               onChange={e => onCodeChange?.(e.target.value.toUpperCase())}
@@ -106,21 +114,21 @@ function CouponFormFields({
           </Field>
         )}
 
-        <Field label="Discount % *" hint="1–100">
-          <input
-            required type="number" min={1} max={100}
-            value={form.discount_pct}
-            onChange={e => setForm(f => ({ ...f, discount_pct: e.target.value }))}
-            placeholder="10"
-            className="input-dark"
-          />
-        </Field>
-
         <Field label="Description" hint="Internal note">
           <input
             value={form.description}
             onChange={e => setForm(f => ({ ...f, description: e.target.value }))}
             placeholder="What is this code for?"
+            className="input-dark"
+          />
+        </Field>
+
+        <Field label="Assigned To" hint="Optional — influencer / person email">
+          <input
+            type="email"
+            value={form.assigned_to}
+            onChange={e => setForm(f => ({ ...f, assigned_to: e.target.value }))}
+            placeholder="influencer@email.com"
             className="input-dark"
           />
         </Field>
@@ -152,6 +160,79 @@ function CouponFormFields({
             className="input-dark"
           />
         </Field>
+      </div>
+
+      {/* Discount toggle */}
+      <div className="flex flex-col gap-3 pt-1">
+        <label className="flex items-center gap-3 cursor-pointer w-fit">
+          <div
+            onClick={() => setForm(f => ({ ...f, is_discount: !f.is_discount }))}
+            className="relative w-10 h-5 rounded-full transition-colors cursor-pointer shrink-0"
+            style={{ background: form.is_discount ? '#FF2035' : 'rgba(255,255,255,0.12)' }}
+          >
+            <span
+              className="absolute top-0.5 left-0.5 w-4 h-4 rounded-full bg-white transition-transform"
+              style={{ transform: form.is_discount ? 'translateX(20px)' : 'translateX(0)' }}
+            />
+          </div>
+          <div>
+            <p className="font-sans text-[13px] text-white/80 font-semibold">
+              {form.is_discount ? 'Applies a discount' : 'Tracking only (no discount)'}
+            </p>
+            <p className="font-sans text-[11px] text-white/35 mt-0.5">
+              {form.is_discount
+                ? 'Buyers get a price reduction when they use this code'
+                : 'Code is valid but does not change the price — just tracks usage'}
+            </p>
+          </div>
+        </label>
+
+        {form.is_discount && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pl-1 border-l border-white/10">
+            <Field label="Discount Type">
+              <div className="flex gap-2">
+                {(['percentage', 'fixed'] as const).map(t => (
+                  <button
+                    key={t} type="button"
+                    onClick={() => setForm(f => ({ ...f, discount_type: t }))}
+                    className="flex-1 py-2 rounded-[8px] font-sans text-[12px] font-semibold border transition-colors"
+                    style={{
+                      background:  form.discount_type === t ? '#FF2035' : 'transparent',
+                      borderColor: form.discount_type === t ? '#FF2035' : 'rgba(255,255,255,0.15)',
+                      color:       form.discount_type === t ? 'white'   : 'rgba(255,255,255,0.5)',
+                    }}
+                  >
+                    {t === 'percentage' ? '% Percentage' : '₦ Fixed amount'}
+                  </button>
+                ))}
+              </div>
+            </Field>
+
+            {form.discount_type === 'percentage' ? (
+              <Field label="Discount %" hint="1–100">
+                <input
+                  required={form.is_discount && form.discount_type === 'percentage'}
+                  type="number" min={1} max={100}
+                  value={form.discount_pct}
+                  onChange={e => setForm(f => ({ ...f, discount_pct: e.target.value }))}
+                  placeholder="10"
+                  className="input-dark"
+                />
+              </Field>
+            ) : (
+              <Field label="Fixed amount (₦)" hint="e.g. 1000">
+                <input
+                  required={form.is_discount && form.discount_type === 'fixed'}
+                  type="number" min={1}
+                  value={form.discount_value}
+                  onChange={e => setForm(f => ({ ...f, discount_value: e.target.value }))}
+                  placeholder="1000"
+                  className="input-dark"
+                />
+              </Field>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Tier restriction */}
@@ -239,13 +320,17 @@ export default function CouponsManager() {
     setMode('edit')
     setEditingCoupon(c)
     setForm({
-      description:  c.description  ?? '',
-      discount_pct: String(c.discount_pct),
-      max_uses:     c.max_uses != null ? String(c.max_uses) : '',
-      valid_from:   toDatetimeLocal(c.valid_from),
-      valid_until:  toDatetimeLocal(c.valid_until),
-      ticket_types: c.ticket_types ?? [],
-      is_active:    c.is_active,
+      description:    c.description  ?? '',
+      is_discount:    c.is_discount  ?? true,
+      discount_type:  c.discount_type ?? 'percentage',
+      discount_pct:   String(c.discount_pct ?? ''),
+      discount_value: c.discount_value != null ? String(c.discount_value) : '',
+      assigned_to:    c.assigned_to  ?? '',
+      max_uses:       c.max_uses != null ? String(c.max_uses) : '',
+      valid_from:     toDatetimeLocal(c.valid_from),
+      valid_until:    toDatetimeLocal(c.valid_until),
+      ticket_types:   c.ticket_types ?? [],
+      is_active:      c.is_active,
     })
     setFormError('')
     // scroll form into view
@@ -268,13 +353,17 @@ export default function CouponsManager() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        code:         newCode,
-        description:  form.description  || null,
-        discount_pct: Number(form.discount_pct),
-        max_uses:     form.max_uses ? Number(form.max_uses) : null,
-        valid_from:   form.valid_from  || null,
-        valid_until:  form.valid_until || null,
-        ticket_types: form.ticket_types.length ? form.ticket_types : null,
+        code:           newCode,
+        description:    form.description    || null,
+        is_discount:    form.is_discount,
+        discount_type:  form.discount_type,
+        discount_pct:   form.discount_pct   ? Number(form.discount_pct)   : 0,
+        discount_value: form.discount_value ? Number(form.discount_value) : null,
+        assigned_to:    form.assigned_to    || null,
+        max_uses:       form.max_uses       ? Number(form.max_uses)       : null,
+        valid_from:     form.valid_from     || null,
+        valid_until:    form.valid_until    || null,
+        ticket_types:   form.ticket_types.length ? form.ticket_types     : null,
       }),
     })
 
@@ -297,13 +386,17 @@ export default function CouponsManager() {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        description:  form.description  || null,
-        discount_pct: Number(form.discount_pct),
-        max_uses:     form.max_uses ? Number(form.max_uses) : null,
-        valid_from:   form.valid_from  || null,
-        valid_until:  form.valid_until || null,
-        ticket_types: form.ticket_types.length ? form.ticket_types : null,
-        is_active:    form.is_active,
+        description:    form.description    || null,
+        is_discount:    form.is_discount,
+        discount_type:  form.discount_type,
+        discount_pct:   form.discount_pct   ? Number(form.discount_pct)   : 0,
+        discount_value: form.discount_value ? Number(form.discount_value) : null,
+        assigned_to:    form.assigned_to    || null,
+        max_uses:       form.max_uses       ? Number(form.max_uses)       : null,
+        valid_from:     form.valid_from     || null,
+        valid_until:    form.valid_until    || null,
+        ticket_types:   form.ticket_types.length ? form.ticket_types     : null,
+        is_active:      form.is_active,
       }),
     })
 
@@ -457,7 +550,18 @@ export default function CouponsManager() {
                         {c.description && <p className="font-sans text-[11px] text-white/35 mt-0.5">{c.description}</p>}
                       </td>
                       <td className="px-4 py-3.5">
-                        <span className="font-display font-[500] text-[#FF2035] text-[14px]">{c.discount_pct}%</span>
+                        {!c.is_discount ? (
+                          <span className="font-sans text-[11px] text-white/35 italic">Tracking only</span>
+                        ) : c.discount_type === 'fixed' ? (
+                          <span className="font-display font-[500] text-[#FF2035] text-[14px]">₦{Number(c.discount_value ?? 0).toLocaleString('en-NG')}</span>
+                        ) : (
+                          <span className="font-display font-[500] text-[#FF2035] text-[14px]">{c.discount_pct}%</span>
+                        )}
+                        {c.assigned_to && (
+                          <p className="font-sans text-[10px] text-white/30 mt-0.5 truncate max-w-[120px]" title={c.assigned_to}>
+                            for {c.assigned_to}
+                          </p>
+                        )}
                       </td>
                       <td className="px-4 py-3.5 font-sans text-[13px] text-white/70">
                         {c.times_used}{c.max_uses ? ` / ${c.max_uses}` : ''}

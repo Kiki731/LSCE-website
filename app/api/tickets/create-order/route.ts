@@ -251,6 +251,20 @@ export async function POST(req: NextRequest) {
       )
     )
 
+    // ── Increment coupon times_used ───────────────────────────────────────────
+    if (couponWasValid) {
+      const couponCode = String(discount_code).toUpperCase().trim()
+      const { data: cur } = await (db as any)
+        .from('coupons').select('times_used').eq('code', couponCode).single()
+      if (cur) {
+        await (db as any)
+          .from('coupons')
+          .update({ times_used: cur.times_used + 1 })
+          .eq('code', couponCode)
+          .catch((err: unknown) => console.error('[create-order] coupon increment failed:', err))
+      }
+    }
+
     // Ambassador referral notification (fire-and-forget)
     const cleanReferralCode = referral_code ? String(referral_code).toUpperCase().trim() : null
     if (cleanReferralCode) {
@@ -261,6 +275,17 @@ export async function POST(req: NextRequest) {
         .maybeSingle() as any
 
       if (refRecord) {
+        // Increment uses on the referral code
+        const { data: curRef } = await (db as any)
+          .from('referral_codes').select('uses').eq('code', cleanReferralCode).single()
+        if (curRef != null) {
+          await (db as any)
+            .from('referral_codes')
+            .update({ uses: curRef.uses + 1 })
+            .eq('code', cleanReferralCode)
+            .catch((err: unknown) => console.error('[create-order] referral uses increment failed:', err))
+        }
+
         // Count total tickets sold through this code (including this order)
         const { count: totalSales } = await (db as any)
           .from('orders')

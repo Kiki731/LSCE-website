@@ -17,7 +17,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const raw = await req.json()
 
   // Allowlist — never pass the raw body to update() (mass-assignment risk)
-  const allowed = ['is_active', 'code', 'description', 'discount_pct', 'max_uses', 'valid_from', 'valid_until', 'ticket_types'] as const
+  const allowed = ['is_active', 'code', 'description', 'discount_pct', 'discount_type', 'discount_value', 'is_discount', 'assigned_to', 'max_uses', 'valid_from', 'valid_until', 'ticket_types'] as const
   const updates = Object.fromEntries(
     allowed.filter(k => raw[k] !== undefined).map(k => [k, raw[k]])
   )

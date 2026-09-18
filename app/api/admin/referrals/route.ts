@@ -12,7 +12,7 @@ export async function GET() {
   // Fetch all referral codes
   const { data: codes, error } = await (db as any)
     .from('referral_codes')
-    .select('id, code, ambassador_name, ambassador_email, created_at')
+    .select('id, code, ambassador_name, ambassador_email, university, uses, created_at')
     .order('created_at', { ascending: false })
 
   if (error) {
@@ -32,7 +32,7 @@ export async function GET() {
       const sales   = (orders ?? []).reduce((s: number, o: any) => s + (o.quantity ?? 0), 0)
       const revenue = (orders ?? []).reduce((s: number, o: any) => s + (o.total_amount ?? 0), 0)
 
-      return { ...row, sales, revenue }
+      return { ...row, sales, revenue, uses: row.uses ?? 0 }
     })
   )
 

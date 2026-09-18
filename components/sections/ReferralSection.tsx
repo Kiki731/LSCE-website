@@ -6,12 +6,13 @@ import Image from 'next/image'
 type State = 'idle' | 'loading' | 'success' | 'error'
 
 export default function ReferralSection() {
-  const [name, setName]   = useState('')
-  const [email, setEmail] = useState('')
-  const [state, setState] = useState<State>('idle')
-  const [code, setCode]   = useState('')
-  const [errMsg, setErrMsg] = useState('')
-  const [copied, setCopied] = useState(false)
+  const [name, setName]           = useState('')
+  const [email, setEmail]         = useState('')
+  const [university, setUniversity] = useState('')
+  const [state, setState]         = useState<State>('idle')
+  const [code, setCode]           = useState('')
+  const [errMsg, setErrMsg]       = useState('')
+  const [copied, setCopied]       = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -21,7 +22,7 @@ export default function ReferralSection() {
       const res  = await fetch('/api/ambassadors/referral', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ name: name.trim(), email: email.trim() }),
+        body:    JSON.stringify({ name: name.trim(), email: email.trim(), university: university.trim() }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -66,10 +67,10 @@ export default function ReferralSection() {
 
           <div className="flex flex-col gap-3">
             {[
-              { label: 'Unique to you', desc: 'Your code is linked to your name and campus — no one else shares it.' },
-              { label: 'Every sale tracked', desc: "We log each ticket bought through your code in real time." },
-              { label: 'You get notified', desc: 'An email lands in your inbox every time someone uses your code.' },
-              { label: 'Top ambassadors rewarded', desc: 'The LSCE team recognises and rewards the ambassadors driving the most sales.' },
+              { label: 'One code per campus', desc: 'Your university gets its own dedicated code — no one else can claim it for the same campus.' },
+              { label: 'Every sale tracked', desc: "We log each ticket bought through your campus code in real time." },
+              { label: 'You get notified', desc: 'An email lands in your inbox every time someone uses your campus code.' },
+              { label: 'Top campuses rewarded', desc: 'The LSCE team recognises and rewards the ambassadors driving the most sales from their campus.' },
             ].map(({ label, desc }) => (
               <div key={label} className="flex items-start gap-3">
                 <div className="w-5 h-5 rounded-full bg-[#FF2035]/10 flex items-center justify-center shrink-0 mt-0.5">
@@ -128,13 +129,28 @@ export default function ReferralSection() {
                     />
                   </div>
 
+                  <div className="flex flex-col gap-1.5">
+                    <label className="font-sans text-[12px] text-[#1A1A1A]/60 uppercase tracking-wider">
+                      University / Campus
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={university}
+                      onChange={e => setUniversity(e.target.value)}
+                      placeholder="e.g. University of Lagos"
+                      className="w-full bg-white border border-[#E5E5E5] rounded-[12px] px-4 py-3 font-sans text-[14px] text-[#1A1A1A] placeholder:text-[#1A1A1A]/30 focus:outline-none focus:border-[#FF2035]/40"
+                    />
+                    <p className="font-sans text-[11px] text-[#1A1A1A]/35">One code is issued per campus. Enter your full school name.</p>
+                  </div>
+
                   {state === 'error' && (
                     <p className="font-sans text-[13px] text-[#FF2035] leading-[1.5]">{errMsg}</p>
                   )}
 
                   <button
                     type="submit"
-                    disabled={state === 'loading' || !name.trim() || !email.trim()}
+                    disabled={state === 'loading' || !name.trim() || !email.trim() || !university.trim()}
                     className="flex items-center justify-center gap-2 bg-[#FF2035] hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity text-white px-6 py-3.5 rounded-[60px] font-sans text-[14px] font-[500]"
                   >
                     {state === 'loading' ? (
@@ -202,7 +218,7 @@ export default function ReferralSection() {
                 </p>
 
                 <button
-                  onClick={() => { setState('idle'); setName(''); setEmail(''); setCode('') }}
+                  onClick={() => { setState('idle'); setName(''); setEmail(''); setCode(''); setUniversity('') }}
                   className="font-sans text-[13px] text-[#FF2035] hover:underline text-left w-fit"
                 >
                   Look up a different code

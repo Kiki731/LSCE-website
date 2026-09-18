@@ -29,10 +29,22 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   const body = await req.json()
-  const { code, description, discount_pct, max_uses, valid_from, valid_until, ticket_types } = body
+  const {
+    code, description, discount_pct, max_uses, valid_from, valid_until, ticket_types,
+    is_discount, discount_type, discount_value, assigned_to,
+  } = body
 
-  if (!code || !discount_pct) {
-    return NextResponse.json({ error: 'code and discount_pct are required' }, { status: 400 })
+  const isDiscount   = is_discount !== false  // default true
+  const discountType = discount_type ?? 'percentage'
+
+  if (!code) {
+    return NextResponse.json({ error: 'code is required' }, { status: 400 })
+  }
+  if (isDiscount && discountType === 'percentage' && !discount_pct) {
+    return NextResponse.json({ error: 'discount_pct is required for percentage discounts' }, { status: 400 })
+  }
+  if (isDiscount && discountType === 'fixed' && !discount_value) {
+    return NextResponse.json({ error: 'discount_value is required for fixed discounts' }, { status: 400 })
   }
 
   const supabase = await createSupabaseAdminClient()
@@ -40,15 +52,19 @@ export async function POST(req: NextRequest) {
   const { data, error } = await (supabase as any)
     .from('coupons')
     .insert({
-      code:         code.toUpperCase().trim(),
-      description:  description ?? null,
-      discount_pct: Number(discount_pct),
-      max_uses:     max_uses ? Number(max_uses) : null,
-      valid_from:   valid_from ?? null,
-      valid_until:  valid_until ?? null,
-      ticket_types: ticket_types?.length ? ticket_types : null,
-      is_active:    true,
-      created_by:   user.email,
+      code:           code.toUpperCase().trim(),
+      description:    description ?? null,
+      discount_pct:   discountType === 'percentage' ? Number(discount_pct ?? 0) : 0,
+      discount_type:  discountType,
+      discount_value: discountType === 'fixed' ? Number(discount_value) : null,
+      is_discount:    isDiscount,
+      assigned_to:    assigned_to?.trim().toLowerCase() || null,
+      max_uses:       max_uses ? Number(max_uses) : null,
+      valid_from:     valid_from ?? null,
+      valid_until:    valid_until ?? null,
+      ticket_types:   ticket_types?.length ? ticket_types : null,
+      is_active:      true,
+      created_by:     user.email,
     })
     .select()
     .single()

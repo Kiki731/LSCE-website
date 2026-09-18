@@ -9,10 +9,6 @@ function getAdminClient() {
   )
 }
 
-/**
- * Validates a coupon code against the `coupons` table in Supabase.
- * The code itself is never exposed to the client — only valid/invalid + discount %.
- */
 export async function POST(req: NextRequest) {
   try {
     const { code, tier, quantity } = await req.json() as {
@@ -31,27 +27,25 @@ export async function POST(req: NextRequest) {
     }
 
     const supabase = getAdminClient()
-    const { data: coupon, error } = await supabase
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: coupon, error } = await (supabase as any)
       .from('coupons')
       .select('*')
       .eq('code', code.toUpperCase().trim())
       .single()
 
     if (error || !coupon) {
-      return NextResponse.json({ valid: false, message: 'Invalid discount code' })
+      return NextResponse.json({ valid: false, message: 'Invalid code' })
     }
 
-    // Check active
     if (!coupon.is_active) {
       return NextResponse.json({ valid: false, message: 'This code is no longer active' })
     }
 
-    // Check usage limit
     if (coupon.max_uses !== null && coupon.times_used >= coupon.max_uses) {
       return NextResponse.json({ valid: false, message: 'This code has reached its usage limit' })
     }
 
-    // Check validity window
     const now = new Date()
     if (coupon.valid_from && new Date(coupon.valid_from) > now) {
       return NextResponse.json({ valid: false, message: 'This code is not active yet' })
@@ -60,21 +54,44 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ valid: false, message: 'This code has expired' })
     }
 
-    // Check tier restriction
     if (coupon.ticket_types?.length && !coupon.ticket_types.includes(tier)) {
       return NextResponse.json({ valid: false, message: `This code only applies to: ${coupon.ticket_types.join(', ')}` })
     }
 
-    const pct = coupon.discount_pct as number
     const subtotal = ticket.price * quantity
-    const discountAmount = Math.round(subtotal * (pct / 100))
-    const total = subtotal - discountAmount
 
+    // Tracking-only code — valid but no discount
+    if (coupon.is_discount === false) {
+      return NextResponse.json({
+        valid: true,
+        pct: 0,
+        discountAmount: 0,
+        total: subtotal,
+        message: 'Code applied',
+      })
+    }
+
+    // Fixed-amount discount
+    if (coupon.discount_type === 'fixed') {
+      const value = Number(coupon.discount_value ?? 0)
+      const discountAmount = Math.min(value, subtotal)
+      return NextResponse.json({
+        valid: true,
+        pct: 0,
+        discountAmount,
+        total: subtotal - discountAmount,
+        message: `₦${discountAmount.toLocaleString('en-NG')} off applied`,
+      })
+    }
+
+    // Percentage discount (default)
+    const pct = coupon.discount_pct as number
+    const discountAmount = Math.round(subtotal * (pct / 100))
     return NextResponse.json({
       valid: true,
       pct,
       discountAmount,
-      total,
+      total: subtotal - discountAmount,
       message: `${pct}% discount applied`,
     })
   } catch (err) {
