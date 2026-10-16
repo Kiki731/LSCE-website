@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
       buyer_name,
       buyer_phone,
       discount_code,
+      referral_code,
       attendee_emails,
       breakouts,
     } = await req.json() as {
@@ -41,6 +42,7 @@ export async function POST(req: NextRequest) {
       buyer_name: string
       buyer_phone?: string
       discount_code?: string
+      referral_code?: string
       attendee_emails?: string[]
       breakouts?: string[]
     }
@@ -73,7 +75,7 @@ export async function POST(req: NextRequest) {
       const supabase = getAdminClient()
       const { data: coupon } = await supabase
         .from('coupons')
-        .select('discount_pct, is_active, max_uses, times_used, valid_from, valid_until, ticket_types')
+        .select('discount_pct, discount_type, discount_value, is_discount, is_active, max_uses, times_used, valid_from, valid_until, ticket_types')
         .eq('code', discount_code.toUpperCase().trim())
         .single()
 
@@ -86,9 +88,17 @@ export async function POST(req: NextRequest) {
         (!coupon.ticket_types?.length || coupon.ticket_types.includes(tier))
 
       if (valid) {
-        discountPct    = coupon.discount_pct as number
-        discountAmount = Math.round(subtotal * (discountPct / 100))
-        subtotal       = subtotal - discountAmount
+        if (coupon.is_discount === false) {
+          // Tracking-only — charge full price
+          discountAmount = 0
+        } else if (coupon.discount_type === 'fixed' && coupon.discount_value) {
+          discountAmount = Math.min(Math.round(coupon.discount_value), subtotal)
+          subtotal = subtotal - discountAmount
+        } else {
+          discountPct    = (coupon.discount_pct as number) ?? 0
+          discountAmount = Math.round(subtotal * (discountPct / 100))
+          subtotal       = subtotal - discountAmount
+        }
       }
     }
 
@@ -123,6 +133,7 @@ export async function POST(req: NextRequest) {
           discount_code:   discount_code ?? null,
           discount_amount: discountAmount,
           discount_pct:    discountPct,
+          referral_code:   referral_code ?? null,
           // Seat emails and breakouts stored in Paystack metadata so the webhook can access them
           // even if the browser crashes after payment (no session storage available)
           attendee_emails: Array.isArray(attendee_emails) ? attendee_emails : [],

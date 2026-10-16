@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     if (discount_code) {
       const { data: coupon } = await db
         .from('coupons')
-        .select('discount_pct, is_active, max_uses, times_used, valid_from, valid_until, ticket_types')
+        .select('discount_pct, discount_type, discount_value, is_discount, is_active, max_uses, times_used, valid_from, valid_until, ticket_types')
         .eq('code', String(discount_code).toUpperCase().trim())
         .single()
 
@@ -69,7 +69,14 @@ export async function POST(req: NextRequest) {
         (!coupon.ticket_types?.length || coupon.ticket_types.includes(ticket_type)))
 
       if (couponWasValid) {
-        verifiedDiscountAmount = Math.round(expectedSubtotal * (coupon.discount_pct / 100))
+        if (coupon.is_discount === false) {
+          // Tracking-only code — no discount applied
+          verifiedDiscountAmount = 0
+        } else if (coupon.discount_type === 'fixed' && coupon.discount_value) {
+          verifiedDiscountAmount = Math.min(Math.round(coupon.discount_value), expectedSubtotal)
+        } else {
+          verifiedDiscountAmount = Math.round(expectedSubtotal * ((coupon.discount_pct ?? 0) / 100))
+        }
         expectedTotal = expectedSubtotal - verifiedDiscountAmount
       }
     }
@@ -202,6 +209,35 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (orderErr) {
+      // Unique constraint violation (code 23505) means the Paystack webhook inserted
+      // the order in the milliseconds between our duplicate-check and our insert.
+      // Recover by treating it as a duplicate instead of failing.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      if ((orderErr as any).code === '23505') {
+        console.log('[create-order] unique conflict on paystack_reference — webhook beat us, recovering as duplicate')
+        const { data: raced } = await db
+          .from('orders')
+          .select('id')
+          .eq('paystack_reference', paystack_reference)
+          .single()
+        if (raced) {
+          const { data: racedSeats } = await db
+            .from('attendees')
+            .select('ticket_code')
+            .eq('order_id', raced.id)
+          const racedCodes = (racedSeats ?? []).map((s: any) => s.ticket_code as string)
+          return NextResponse.json({
+            orderId:     raced.id,
+            duplicate:   true,
+            buyerName:   buyer_name,
+            buyerEmail:  buyer_email,
+            ticketType:  ticket_type,
+            quantity,
+            totalAmount: expectedTotal,
+            ticketCodes: racedCodes,
+          })
+        }
+      }
       console.error('[create-order] order insert error:', orderErr)
       return NextResponse.json({ error: 'Failed to create order' }, { status: 500 })
     }

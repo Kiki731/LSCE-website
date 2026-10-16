@@ -640,6 +640,7 @@ export default function TicketCheckout() {
         ticket_type: selectedTier, quantity, unit_price: ticket!.price,
         discount_code: discountApplied ? discountCode : null,
         discount_amount: discountAmount, total_amount: total,
+        referral_code: referralCode.trim().toUpperCase() || null,
         attendee_emails: buyer.belongsToMe
           ? [buyer.email, ...buyer.attendeeEmails].slice(0, quantity)
           : buyer.attendeeEmails.slice(0, quantity),
