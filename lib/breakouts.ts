@@ -1,30 +1,33 @@
-export interface Breakout {
+export interface BreakoutOption {
   id: string
   title: string
   description: string
 }
 
-export const BREAKOUTS: Breakout[] = [
-  {
-    id: 'breaking-into-tech',
-    title: 'Breaking Into Tech',
-    description: 'Pathways from campus to your first tech role — software, product, design, and data.',
+export const BREAKOUT_MAP: Record<string, BreakoutOption> = {
+  'session-1': {
+    id: 'session-1',
+    title: 'Your Career, Your Brand, Your Future',
+    description: 'Opening session for all Rise pass holders — sets the tone for the full day.',
   },
-  {
-    id: 'finance-and-banking',
-    title: 'Finance & Banking Masterclass',
-    description: 'How top firms recruit, what they look for, and how to ace the assessment centre.',
+  'session-2a': {
+    id: 'session-2a',
+    title: 'AI, Jobs and the Human Advantage',
+    description: 'Who will win in the future of work? Navigate the AI era with clarity on the skills that keep you indispensable.',
   },
-  {
-    id: 'entrepreneurship',
-    title: 'Building While You Study',
-    description: 'Student founders share how they balance academics with building real businesses.',
+  'session-2b': {
+    id: 'session-2b',
+    title: 'Beyond Content: Building Influence That Lasts',
+    description: 'More than follower counts — build a brand that opens professional doors and creates lasting impact.',
   },
-  {
-    id: 'personal-branding',
-    title: 'Personal Brand & LinkedIn',
-    description: 'Stand out online before the expo floor even opens — craft a profile that gets noticed.',
+  'session-3a': {
+    id: 'session-3a',
+    title: "The Founder's Playbook",
+    description: 'From idea to traction — frameworks and lessons from founders who built while studying.',
   },
-]
-
-export const BREAKOUT_MAP = Object.fromEntries(BREAKOUTS.map(b => [b.id, b]))
+  'session-3b': {
+    id: 'session-3b',
+    title: 'Mentorship Session',
+    description: 'Small-group mentorship with professionals across technology, finance, business and consulting.',
+  },
+}

@@ -3,7 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import Image from 'next/image'
 import { TICKET_LIST, TICKET_TYPES, type TicketTier } from '@/lib/ticket-config'
-import { BREAKOUTS } from '@/lib/breakouts'
+import { BREAKOUT_MAP } from '@/lib/breakouts'
 
 /* ─────────────────────────────────────────────
    Step breadcrumb (4 steps)
@@ -423,21 +423,32 @@ function MobileOrderSummary({ tier, quantity, discountCode, discountApplied, dis
 }
 
 /* ─────────────────────────────────────────────
-   Breakout session picker (step 3)
+   Breakout session picker (step 2) — Rise only
 ───────────────────────────────────────────── */
+const SESSION_2_OPTIONS = [
+  { id: 'session-2a', title: 'AI, Jobs and the Human Advantage', desc: 'Who will win in the future of work? Navigate the AI era with clarity on the skills that keep you indispensable.' },
+  { id: 'session-2b', title: 'Beyond Content: Building Influence That Lasts', desc: 'More than follower counts — build a brand that opens professional doors and creates lasting impact.' },
+]
+const SESSION_3_OPTIONS = [
+  { id: 'session-3a', title: "The Founder's Playbook", desc: 'From idea to traction — frameworks and lessons from founders who built while studying.' },
+  { id: 'session-3b', title: 'Mentorship Session', desc: 'Small-group mentorship with professionals across technology, finance, business and consulting.' },
+]
+
 function BreakoutPicker({ selected, onChange }: {
   selected: string[]
   onChange: (ids: string[]) => void
 }) {
-  function toggle(id: string) {
-    if (selected.includes(id)) {
-      onChange(selected.filter(s => s !== id))
-    } else if (selected.length < 2) {
-      onChange([...selected, id])
-    }
+  const session2 = selected.find(id => id.startsWith('session-2')) ?? null
+  const session3 = selected.find(id => id.startsWith('session-3')) ?? null
+
+  function selectSession2(id: string) {
+    onChange([...selected.filter(s => !s.startsWith('session-2')), id])
+  }
+  function selectSession3(id: string) {
+    onChange([...selected.filter(s => !s.startsWith('session-3')), id])
   }
 
-  const remaining = 2 - selected.length
+  const allDone = session2 !== null && session3 !== null
 
   return (
     <div className="bg-white rounded-[14px] md:rounded-[16px] border border-[#E5E5E5] overflow-hidden">
@@ -448,53 +459,97 @@ function BreakoutPicker({ selected, onChange }: {
             Choose Your Breakout Sessions
           </h2>
           <p className="font-sans text-[11px] text-[#1A1A1A]/40 mt-0.5">
-            Select exactly 2 sessions you&apos;ll attend on the day
+            Pick one session for each slot
           </p>
         </div>
       </div>
-      <div className="p-4 md:p-5 flex flex-col gap-3">
-        {selected.length === 2 ? (
+      <div className="p-4 md:p-5 flex flex-col gap-5">
+        {allDone && (
           <div className="flex items-center gap-2 bg-[#F0FDF4] border border-green-100 rounded-[8px] px-3 py-2.5">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
               <path d="M2 7l4 4 6-6" stroke="#22c55e" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
-            <p className="font-sans text-[12px] text-green-700">2 sessions selected — you&apos;re all set.</p>
+            <p className="font-sans text-[12px] text-green-700">You&apos;re all set — both sessions chosen.</p>
           </div>
-        ) : (
-          <p className="font-sans text-[12px] text-[#1A1A1A]/45">
-            Pick {remaining} more session{remaining !== 1 ? 's' : ''} to continue
-          </p>
         )}
-        {BREAKOUTS.map(b => {
-          const isSelected = selected.includes(b.id)
-          const isDisabled = !isSelected && selected.length >= 2
-          return (
-            <button
-              key={b.id}
-              type="button"
-              onClick={() => toggle(b.id)}
-              disabled={isDisabled}
-              className="w-full text-left rounded-[12px] border-2 p-4 flex items-start gap-3 transition-all duration-150"
-              style={{
-                borderColor: isSelected ? '#FF2035' : '#E5E5E5',
-                backgroundColor: isSelected ? '#FFF5F5' : isDisabled ? '#FAFAFA' : '#FFFFFF',
-                opacity: isDisabled ? 0.45 : 1,
-                cursor: isDisabled ? 'not-allowed' : 'pointer',
-              }}
-            >
-              <span
-                className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors"
-                style={{ borderColor: isSelected ? '#FF2035' : '#CCCCCC' }}
-              >
-                {isSelected && <span className="w-2.5 h-2.5 rounded-full bg-[#FF2035]" />}
-              </span>
-              <div className="flex flex-col gap-1 min-w-0">
-                <p className="font-display font-[500] text-[14px] text-[#1A1A1A] leading-[1.2]">{b.title}</p>
-                <p className="font-sans text-[12px] text-[#1A1A1A]/55 leading-[1.4]">{b.description}</p>
+
+        {/* Session 1 — auto-selected, locked */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-1.5">
+            <span className="font-sans text-[10px] font-semibold text-[#FF2035] uppercase tracking-wider">Session 1</span>
+            <span className="font-sans text-[10px] text-[#1A1A1A]/40">· All Rise attendees</span>
+          </div>
+          <div className="rounded-[12px] border-2 p-4 flex items-start gap-3"
+            style={{ borderColor: '#FF2035', backgroundColor: '#FFF5F5' }}>
+            <span className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5"
+              style={{ borderColor: '#FF2035' }}>
+              <span className="w-2.5 h-2.5 rounded-full bg-[#FF2035]" />
+            </span>
+            <div className="flex flex-col gap-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="font-display font-[500] text-[14px] text-[#1A1A1A] leading-[1.2]">
+                  Your Career, Your Brand, Your Future
+                </p>
+                <span className="inline-flex items-center shrink-0 bg-[#FF2035]/10 text-[#FF2035] text-[10px] font-semibold px-1.5 py-0.5 rounded-full">
+                  Auto
+                </span>
               </div>
-            </button>
-          )
-        })}
+              <p className="font-sans text-[12px] text-[#1A1A1A]/55 leading-[1.4]">
+                Opening session for all Rise pass holders — no selection needed.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Session 2 — choose one */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-1.5">
+            <span className="font-sans text-[10px] font-semibold text-[#FF2035] uppercase tracking-wider">Session 2</span>
+            <span className="font-sans text-[10px] text-[#1A1A1A]/40">· Choose one</span>
+          </div>
+          {SESSION_2_OPTIONS.map(opt => {
+            const isSelected = session2 === opt.id
+            return (
+              <button key={opt.id} type="button" onClick={() => selectSession2(opt.id)}
+                className="w-full text-left rounded-[12px] border-2 p-4 flex items-start gap-3 transition-all duration-150"
+                style={{ borderColor: isSelected ? '#FF2035' : '#E5E5E5', backgroundColor: isSelected ? '#FFF5F5' : '#FFFFFF' }}>
+                <span className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors"
+                  style={{ borderColor: isSelected ? '#FF2035' : '#CCCCCC' }}>
+                  {isSelected && <span className="w-2.5 h-2.5 rounded-full bg-[#FF2035]" />}
+                </span>
+                <div className="flex flex-col gap-1 min-w-0">
+                  <p className="font-display font-[500] text-[14px] text-[#1A1A1A] leading-[1.2]">{opt.title}</p>
+                  <p className="font-sans text-[12px] text-[#1A1A1A]/55 leading-[1.4]">{opt.desc}</p>
+                </div>
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Session 3 — choose one */}
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center gap-1.5">
+            <span className="font-sans text-[10px] font-semibold text-[#FF2035] uppercase tracking-wider">Session 3</span>
+            <span className="font-sans text-[10px] text-[#1A1A1A]/40">· Choose one</span>
+          </div>
+          {SESSION_3_OPTIONS.map(opt => {
+            const isSelected = session3 === opt.id
+            return (
+              <button key={opt.id} type="button" onClick={() => selectSession3(opt.id)}
+                className="w-full text-left rounded-[12px] border-2 p-4 flex items-start gap-3 transition-all duration-150"
+                style={{ borderColor: isSelected ? '#FF2035' : '#E5E5E5', backgroundColor: isSelected ? '#FFF5F5' : '#FFFFFF' }}>
+                <span className="w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 mt-0.5 transition-colors"
+                  style={{ borderColor: isSelected ? '#FF2035' : '#CCCCCC' }}>
+                  {isSelected && <span className="w-2.5 h-2.5 rounded-full bg-[#FF2035]" />}
+                </span>
+                <div className="flex flex-col gap-1 min-w-0">
+                  <p className="font-display font-[500] text-[14px] text-[#1A1A1A] leading-[1.2]">{opt.title}</p>
+                  <p className="font-sans text-[12px] text-[#1A1A1A]/55 leading-[1.4]">{opt.desc}</p>
+                </div>
+              </button>
+            )
+          })}
+        </div>
       </div>
     </div>
   )
@@ -571,7 +626,10 @@ export default function TicketCheckout() {
     buyer.phone.trim().length > 6 &&
     (quantity === 1 || attendeeEmailsFull)
 
-  const breakoutsValid = selectedTier === 'bronze' || selectedBreakouts.length === 2
+  const breakoutsValid = selectedTier === 'bronze' || (
+    selectedBreakouts.some(id => id.startsWith('session-2')) &&
+    selectedBreakouts.some(id => id.startsWith('session-3'))
+  )
 
   const addAttendeeEmail = (raw: string) => {
     const email = raw.trim().toLowerCase()
@@ -618,7 +676,7 @@ export default function TicketCheckout() {
           discount_code:   discountApplied ? discountCode : undefined,
           referral_code:   referralCode.trim().toUpperCase() || undefined,
           attendee_emails: attendeeEmailList,
-          breakouts:       selectedBreakouts,
+          breakouts:       selectedTier === 'silver' ? ['session-1', ...selectedBreakouts] : selectedBreakouts,
         }),
       })
       const data = await res.json()
@@ -644,7 +702,7 @@ export default function TicketCheckout() {
         attendee_emails: buyer.belongsToMe
           ? [buyer.email, ...buyer.attendeeEmails].slice(0, quantity)
           : buyer.attendeeEmails.slice(0, quantity),
-        breakouts: selectedBreakouts,
+        breakouts: selectedTier === 'silver' ? ['session-1', ...selectedBreakouts] : selectedBreakouts,
       }))
       // Free ticket — flag reference in sessionStorage so the success page knows
       // to skip Paystack verify. Never put this in the URL — URL params are
@@ -802,9 +860,9 @@ export default function TicketCheckout() {
                     <div>
                       <p className="font-display font-[500] text-[13px] text-[#1A1A1A] leading-none">Breakout Sessions</p>
                       <p className="font-sans text-[11px] text-[#1A1A1A]/40 mt-0.5">
-                        {selectedBreakouts.length === 2
-                          ? selectedBreakouts.map(id => BREAKOUTS.find(b => b.id === id)?.title).join(' · ')
-                          : '2 sessions selected'}
+                        {selectedBreakouts.length >= 2
+                          ? selectedBreakouts.map(id => BREAKOUT_MAP[id]?.title).filter(Boolean).join(' · ')
+                          : 'Sessions selected'}
                       </p>
                     </div>
                   </div>
