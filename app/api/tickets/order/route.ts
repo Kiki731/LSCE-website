@@ -31,5 +31,12 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: 'Order not found' }, { status: 404 })
   }
 
-  return NextResponse.json({ order: data })
+  const { data: attendees } = await supabase
+    .from('attendees')
+    .select('ticket_code')
+    .eq('order_id', data.id)
+
+  const ticketCodes = (attendees ?? []).map((a: { ticket_code: string }) => a.ticket_code)
+
+  return NextResponse.json({ order: data, ticketCodes })
 }

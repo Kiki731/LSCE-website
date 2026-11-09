@@ -153,10 +153,55 @@ export default function TicketSuccessClient() {
           })
           setState('success')
         } else {
+          // create-order failed — fallback: check if the order was created server-side anyway
+          // (can happen when the server succeeds but the HTTP response times out)
+          try {
+            const fallbackRes  = await fetch(`/api/tickets/order?ref=${encodeURIComponent(reference)}`)
+            const fallbackData = await fallbackRes.json()
+            if (fallbackData.order) {
+              sessionStorage.removeItem('lsce_pending_order')
+              sessionStorage.removeItem('lsce_free_ref')
+              const o = fallbackData.order
+              setDetails({
+                orderId:     o.id,
+                buyerName:   o.buyer_name,
+                buyerEmail:  o.buyer_email,
+                ticketType:  o.ticket_type,
+                quantity:    o.quantity,
+                totalAmount: o.total_amount,
+                ticketCodes: fallbackData.ticketCodes ?? [],
+                reference,
+              })
+              setState('success')
+              return
+            }
+          } catch { /* fallback also failed — show error below */ }
           setErrorMsg('Payment received but order save failed. Keep your ref: ' + reference)
           setState('error')
         }
       } catch {
+        // Network error — still try the fallback lookup before showing the error page
+        try {
+          const fallbackRes  = await fetch(`/api/tickets/order?ref=${encodeURIComponent(reference)}`)
+          const fallbackData = await fallbackRes.json()
+          if (fallbackData.order) {
+            sessionStorage.removeItem('lsce_pending_order')
+            sessionStorage.removeItem('lsce_free_ref')
+            const o = fallbackData.order
+            setDetails({
+              orderId:     o.id,
+              buyerName:   o.buyer_name,
+              buyerEmail:  o.buyer_email,
+              ticketType:  o.ticket_type,
+              quantity:    o.quantity,
+              totalAmount: o.total_amount,
+              ticketCodes: fallbackData.ticketCodes ?? [],
+              reference,
+            })
+            setState('success')
+            return
+          }
+        } catch { /* fallback also failed */ }
         setErrorMsg('Something went wrong. Keep your reference: ' + reference)
         setState('error')
       }
