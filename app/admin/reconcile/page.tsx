@@ -83,7 +83,9 @@ export default function ReconcilePage() {
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? 'Failed')
-      setNote(`${json.succeeded} of ${json.total} recovery emails sent.`)
+      setNote(json.errors?.length
+        ? `${json.succeeded} of ${json.total} sent — ${json.errors.length} error(s): ${json.errors.join('; ')}`
+        : `${json.succeeded} of ${json.total} recovery emails sent.`)
       setPicked(new Set())
     } catch (e) { setNote((e as Error).message) }
     finally { setMailing(false) }

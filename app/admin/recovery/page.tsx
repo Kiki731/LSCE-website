@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 
-interface Result { succeeded: number; failed: number; total: number }
+interface Result { succeeded: number; failed: number; total: number; errors?: string[] }
 
 export default function RecoveryPage() {
   const [raw, setRaw]         = useState('')
@@ -58,7 +58,9 @@ export default function RecoveryPage() {
               {result.succeeded} of {result.total} emails sent successfully
             </p>
             {result.failed > 0 && (
-              <p className="font-sans text-[12px] text-white/40 mt-0.5">{result.failed} failed — check Resend logs</p>
+              <p className="font-sans text-[12px] text-white/40 mt-0.5">
+                {result.failed} failed{result.errors?.length ? ` — ${result.errors.join('; ')}` : ' — check Resend logs'}
+              </p>
             )}
           </div>
         </div>
