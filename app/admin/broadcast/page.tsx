@@ -30,7 +30,7 @@ export default function BroadcastPage() {
       <div className="px-6 py-5 border-b border-white/6 shrink-0">
         <h1 className="font-display font-[500] text-[18px] text-white">Date Change Broadcast</h1>
         <p className="font-sans text-[12px] text-white/35 mt-0.5">
-          Send the November 28th date update to all ticket buyers
+          Send the 17 April 2027 date update to all ticket buyers
         </p>
       </div>
 
@@ -45,7 +45,7 @@ export default function BroadcastPage() {
           <div className="px-5 py-5 space-y-3">
             <div className="flex gap-3">
               <span className="font-sans text-[11px] text-white/30 uppercase tracking-wider w-16 shrink-0 mt-0.5">Subject</span>
-              <span className="font-sans text-[13px] text-white">Important update — LSCE 2026 new date</span>
+              <span className="font-sans text-[13px] text-white">A new date for LSCE 3.0, and a thank-you</span>
             </div>
             <div className="flex gap-3">
               <span className="font-sans text-[11px] text-white/30 uppercase tracking-wider w-16 shrink-0 mt-0.5">From</span>
@@ -56,21 +56,23 @@ export default function BroadcastPage() {
               <span className="font-sans text-[13px] text-white/70">lagosstudentcareerexpo@gmail.com</span>
             </div>
             <div className="border-t border-white/6 pt-4 mt-2">
-              <p className="font-sans text-[13px] text-white/90 font-semibold mb-2">Hey [Name], we've moved the date.</p>
+              <p className="font-sans text-[13px] text-white/90 font-semibold mb-2">Hi [Name],</p>
               <p className="font-sans text-[13px] text-white/55 leading-relaxed mb-3">
-                We have an important update about your ticket to Lagos Students Career Expo 2026.
+                First, thank you. You got your ticket, told your friends, and planned your day around LSCE 3.0.
+                We are writing with news we know is not what you hoped for: due to unforeseen circumstances,
+                LSCE 3.0 has moved to a new date.
               </p>
               <div className="border-l-2 border-[#FF2035] bg-[#FF2035]/6 rounded-r-[8px] px-4 py-3 mb-3">
                 <p className="font-sans text-[11px] text-white/40 mb-1">New date</p>
-                <p className="font-sans text-[14px] text-white font-semibold">Saturday, November 28th, 2026</p>
-                <p className="font-sans text-[12px] text-white/50 mt-1">Daystar Christian Centre, Ikeja, Lagos — same venue</p>
+                <p className="font-sans text-[14px] text-white font-semibold">Saturday, 17 April 2027</p>
+                <p className="font-sans text-[12px] text-white/50 mt-1">Venue to be communicated soon</p>
               </div>
               <p className="font-sans text-[13px] text-white/55 leading-relaxed mb-3">
-                If November 28th doesn't work for you and you'd like a full refund, just reply to this email or reach us at{' '}
-                <span className="text-[#FF2035]">lagosstudentcareerexpo@gmail.com</span> — we'll sort it out, no questions asked.
+                Your ticket stays valid and no action is needed. If April does not work, they reply and{' '}
+                <span className="text-[#FF2035]">get a refund</span>.
               </p>
               <p className="font-sans text-[13px] text-white/55 leading-relaxed">
-                If you're still coming, we can't wait to see you. This extra time means we're making LSCE 3.0 even bigger.
+                Sent with the LSCE banner header. Signed off as “With gratitude, The LSCE 3.0 Team”.
               </p>
             </div>
           </div>

@@ -856,3 +856,87 @@ export async function sendAmbassadorReferralNotification(p: {
 
   if (error) console.error('[email] Failed to send ambassador referral notification:', error)
 }
+
+/* ── Date-change broadcast ────────────────────────────────────────────────── */
+export const DATE_CHANGE_SUBJECT = 'A new date for LSCE 3.0, and a thank-you'
+
+export function buildDateChangeEmail(firstName: string): { text: string; html: string } {
+  const text = `Hi ${firstName},
+
+First, thank you. You got your ticket, told your friends, and planned your day around LSCE 3.0. That means the world to us.
+
+We are writing with news we know is not what you hoped for: due to unforeseen circumstances, LSCE 3.0 has moved to a new date.
+
+NEW DATE: Saturday, 17 April 2027
+
+We know a date change can mean rearranged plans, and we are sorry for the disruption. We do not take your trust lightly, and we want to make this as easy for you as we can.
+
+Here is what happens next:
+- Your ticket stays valid for the new date. You do not need to do anything.
+- If April does not work for you, reply to this email and we will refund you.
+- Venue: the new venue will be communicated to you soon.
+
+What has not changed is why we started: to put you in the room that moves your career forward. The extra time lets us work towards the experience you were promised, and we will keep you updated every step of the way.
+
+If you have any questions, reply to this email or write to lagosstudentcareerexpo@gmail.com. A real person will get back to you.
+
+With gratitude,
+The LSCE 3.0 Team`
+  const html = wrapEmail(`    <p style="margin:0 0 18px;font-size:16px;color:#1A1A1A;line-height:1.6;">Hi ${firstName},</p>
+
+    <p style="margin:0 0 16px;font-size:15px;color:#444444;line-height:1.75;">
+      First, thank you. You got your ticket, told your friends, and planned your day around
+      LSCE 3.0. That means the world to us.
+    </p>
+
+    <p style="margin:0 0 20px;font-size:15px;color:#444444;line-height:1.75;">
+      We are writing with news we know is not what you hoped for: due to unforeseen
+      circumstances, <strong style="color:#1A1A1A;">LSCE 3.0 has moved to a new date.</strong>
+    </p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 22px;">
+      <tr>
+        <td style="background:#FFF5F5;border-left:3px solid #FF2035;border-radius:6px;padding:18px 22px;">
+          <p style="margin:0 0 4px;font-size:11px;color:#FF2035;text-transform:uppercase;letter-spacing:0.08em;font-weight:700;">New date</p>
+          <p style="margin:0;font-size:20px;font-weight:700;color:#1A1A1A;line-height:1.3;">Saturday, 17 April 2027</p>
+        </td>
+      </tr>
+    </table>
+
+    <p style="margin:0 0 22px;font-size:15px;color:#444444;line-height:1.75;">
+      We know a date change can mean rearranged plans, and we are sorry for the disruption.
+      We do not take your trust lightly, and we want to make this as easy for you as we can.
+    </p>
+
+    <p style="margin:0 0 12px;font-size:15px;font-weight:700;color:#1A1A1A;">Here is what happens next</p>
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+      <tr><td style="padding:7px 0;font-size:15px;color:#444444;line-height:1.65;">
+        <span style="display:inline-block;width:6px;height:6px;background:#FF2035;border-radius:50%;vertical-align:middle;margin-right:11px;"></span>
+        Your ticket stays valid for the new date. You do not need to do anything.
+      </td></tr>
+      <tr><td style="padding:7px 0;font-size:15px;color:#444444;line-height:1.65;">
+        <span style="display:inline-block;width:6px;height:6px;background:#FF2035;border-radius:50%;vertical-align:middle;margin-right:11px;"></span>
+        If April does not work for you, reply to this email and we will refund you.
+      </td></tr>
+      <tr><td style="padding:7px 0;font-size:15px;color:#444444;line-height:1.65;">
+        <span style="display:inline-block;width:6px;height:6px;background:#FF2035;border-radius:50%;vertical-align:middle;margin-right:11px;"></span>
+        Venue: the new venue will be communicated to you soon.
+      </td></tr>
+    </table>
+
+    <p style="margin:0 0 18px;font-size:15px;color:#444444;line-height:1.75;">
+      What has not changed is why we started: to put you in the room that moves your career
+      forward. The extra time lets us work towards the experience you were promised, and we
+      will keep you updated every step of the way.
+    </p>
+
+    <p style="margin:0 0 24px;font-size:15px;color:#444444;line-height:1.75;">
+      If you have any questions, reply to this email and a real person will get back to you.
+    </p>
+
+    <p style="margin:0;font-size:15px;color:#1A1A1A;line-height:1.7;">
+      With gratitude,<br /><strong>The LSCE 3.0 Team</strong>
+    </p>`)
+  return { text, html }
+}
