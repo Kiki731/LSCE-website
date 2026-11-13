@@ -11,8 +11,8 @@ function getResend() {
 }
 
 const EVENT_NAME  = 'Lagos Students Career Expo 2026'
-const EVENT_DATE  = 'Saturday, November 28th, 2026'
-const EVENT_VENUE = 'Daystar Christian Centre, Ikeja, Lagos'
+const EVENT_DATE  = 'Saturday, 17 April 2027'
+const EVENT_VENUE = 'Lagos, Nigeria'
 const BRAND_RED   = '#FF2035'
 const REPLY_TO    = 'lagosstudentcareerexpo@gmail.com'
 const TEAM_EMAIL  = 'lagosstudentcareerexpo@gmail.com'
@@ -567,7 +567,7 @@ export async function sendCVUploadConfirmation(p: CVUploadPayload): Promise<void
       ${[
         'Your CV is added to the employer-facing portfolio reviewed before the event.',
         'Recruiters can shortlist attendees they want to connect with on the day.',
-        'Show up on November 28th ready to make your impression in person.',
+        'Show up on 17 April 2027 ready to make your impression in person.',
       ].map(item => `
         <tr>
           <td style="padding:7px 0;font-size:14px;color:#444444;line-height:1.6;">
@@ -878,8 +878,6 @@ Here is what happens next:
 
 What has not changed is why we started: to put you in the room that moves your career forward. The extra time lets us work towards the experience you were promised, and we will keep you updated every step of the way.
 
-If you have any questions, reply to this email or write to lagosstudentcareerexpo@gmail.com. A real person will get back to you.
-
 With gratitude,
 The LSCE 3.0 Team`
   const html = wrapEmail(`    <p style="margin:0 0 18px;font-size:16px;color:#1A1A1A;line-height:1.6;">Hi ${firstName},</p>
@@ -929,10 +927,6 @@ The LSCE 3.0 Team`
       What has not changed is why we started: to put you in the room that moves your career
       forward. The extra time lets us work towards the experience you were promised, and we
       will keep you updated every step of the way.
-    </p>
-
-    <p style="margin:0 0 24px;font-size:15px;color:#444444;line-height:1.75;">
-      If you have any questions, reply to this email and a real person will get back to you.
     </p>
 
     <p style="margin:0;font-size:15px;color:#1A1A1A;line-height:1.7;">

@@ -28,7 +28,7 @@ const FAQS: { question: string; answer: string }[] = [
   {
     question: "When and where is LSCE 3.0?",
     answer:
-      "LSCE 3.0 holds on November 28th, 2026 at the Daystar Christian Centre, Ikeja, Lagos. Doors open at 9am.",
+      "LSCE 3.0 holds on 17 April 2027 at the Lagos, Nigeria. Doors open at 9am.",
   },
   {
     question: "Can I volunteer to help at the event?",

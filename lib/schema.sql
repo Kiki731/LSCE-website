@@ -88,7 +88,7 @@ CREATE TABLE IF NOT EXISTS site_config (
 -- Seed default site config
 INSERT INTO site_config (key, value) VALUES
   ('event_date', 'October 3rd, 2026'),
-  ('event_venue', 'Daystar Christian Centre, Ikeja, Lagos'),
+  ('event_venue', 'Lagos, Nigeria'),
   ('event_city', 'Lagos, Nigeria'),
   ('bronze_price', '4000'),
   ('silver_price', '8000'),

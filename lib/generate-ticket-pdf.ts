@@ -59,9 +59,8 @@ export function generateTicketPDF(params: {
           />
           <div class="ticket-event-info">
             <p class="event-label">LSCE 2026</p>
-            <p class="event-detail">📅 Nov 28th, 2026</p>
-            <p class="event-detail">📍 Daystar Christian Centre</p>
-            <p class="event-detail" style="color:#999;">Ikeja, Lagos</p>
+            <p class="event-detail">📅 17 Apr 2027</p>
+            <p class="event-detail">📍 Lagos, Nigeria</p>
           </div>
           ${quantity > 1 ? `<p class="seat-tag" style="background:${tierColor}22;color:${tierColor};">SEAT ${i + 1} OF ${quantity}</p>` : ''}
         </div>

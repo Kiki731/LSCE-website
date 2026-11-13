@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
 
 You started getting your ticket to Lagos Students Career Expo 2026 — and then something happened.
 
-We get it. Life interrupts. Tabs get closed. But the expo is on November 28th, 2026 at Daystar Christian Centre, Ikeja — and spots are limited.
+We get it. Life interrupts. Tabs get closed. But the expo is on 17 April 2027 at Lagos, Nigeria — and spots are limited.
 
 The conversation you were hoping to have, the room you were trying to get into, the person you were hoping to meet — they'll all be there.
 
@@ -32,7 +32,7 @@ Two options:
 - The Spark (N4,000) — morning keynote, Genius Arena, Exhibition floor, panel sessions
 - The Rise (N8,000) — full day, six tracks, lunch, Grand Networking Hour, CV review with recruiters
 
-Event: Saturday, November 28th, 2026 at Daystar Christian Centre, Ikeja, Lagos
+Event: Saturday, 17 April 2027 at Lagos, Nigeria
 
 The LSCE Team`,
           html: `
@@ -54,7 +54,7 @@ The LSCE Team`,
 
   <p style="margin:0 0 16px;font-size:15px;color:#444;line-height:1.7;">
     We get it. Life interrupts. Tabs get closed. But the expo is happening on
-    <strong>November 28th, 2026</strong> at Daystar Christian Centre, Ikeja — and spots are limited.
+    <strong>17 April 2027</strong> at Lagos, Nigeria — and spots are limited.
   </p>
 
   <p style="margin:0 0 28px;font-size:15px;color:#444;line-height:1.7;">
@@ -81,8 +81,8 @@ The LSCE Team`,
   </div>
 
   <div style="margin-top:28px;padding-top:24px;border-top:1px solid #ebebeb;">
-    <p style="margin:0 0 5px;font-size:13px;color:#888;">Saturday, November 28th, 2026</p>
-    <p style="margin:0;font-size:13px;color:#888;">Daystar Christian Centre, Ikeja, Lagos</p>
+    <p style="margin:0 0 5px;font-size:13px;color:#888;">Saturday, 17 April 2027</p>
+    <p style="margin:0;font-size:13px;color:#888;">Lagos, Nigeria</p>
   </div>
 
   <p style="margin:40px 0 0;font-size:12px;color:#bbb;">

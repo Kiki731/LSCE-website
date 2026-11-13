@@ -122,7 +122,7 @@ export default function Image() {
           >
             <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#FF2035' }} />
             <span style={{ color: '#FF2035', fontSize: 18, fontWeight: 600, letterSpacing: '0.06em' }}>
-              November 28th, 2026
+              17 April 2027
             </span>
           </div>
 
@@ -160,7 +160,7 @@ export default function Image() {
               marginTop: 8,
             }}
           >
-            Daystar Christian Centre, Ikeja, Lagos
+            Lagos, Nigeria
           </span>
         </div>
 

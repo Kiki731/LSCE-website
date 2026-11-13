@@ -99,7 +99,7 @@ export default function About() {
               className="size-3.5"
             />
             <span className="font-display text-[13px] md:text-[15px] text-white leading-[1.2] font-[500] whitespace-nowrap">
-              Daystar Christian Centre, Ikeja
+              Lagos, Nigeria
             </span>
             <Image
               src="/icons/Star Decoration.svg"
@@ -109,7 +109,7 @@ export default function About() {
               className="size-3.5"
             />
             <span className="font-display text-[13px] md:text-[15px] text-white leading-[1.2] font-[500] whitespace-nowrap">
-              November 28th, 2026
+              17 April 2027
             </span>
           </div>
         </FadeUp>

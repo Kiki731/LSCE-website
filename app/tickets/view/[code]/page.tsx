@@ -204,10 +204,10 @@ export default function TicketViewPage() {
                 style={{ backgroundColor: tierBg }}
               >
                 <p className="font-sans text-[13px] text-[#1A1A1A]/75">
-                  📅 Saturday, November 28th, 2026
+                  📅 Saturday, 17 April 2027
                 </p>
                 <p className="font-sans text-[13px] text-[#1A1A1A]/75">
-                  📍 Daystar Christian Centre, Ikeja, Lagos
+                  📍 Lagos, Nigeria
                 </p>
               </div>
 
