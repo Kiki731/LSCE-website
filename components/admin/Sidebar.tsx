@@ -110,6 +110,15 @@ const NAV = [
     ),
   },
   {
+    label: 'Reconcile',
+    href: '/admin/reconcile',
+    icon: (
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M2 5.5h9.5M11.5 5.5L9 3M14 10.5H4.5M4.5 10.5L7 13" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    ),
+  },
+  {
     label: 'Recovery',
     href: '/admin/recovery',
     icon: (

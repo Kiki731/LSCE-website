@@ -23,6 +23,24 @@ function generateRef(): string {
   return 'LSCE-' + Date.now() + '-' + Math.random().toString(36).substring(2, 8).toUpperCase()
 }
 
+/**
+ * Record the checkout attempt BEFORE the user leaves for Paystack.
+ *
+ * Without this a payment is only ever visible if the browser returns and
+ * calls create-order, or the webhook fires. When both fail the payment is
+ * invisible to us entirely. Never allowed to block checkout.
+ */
+async function recordAttempt(row: Record<string, unknown>) {
+  try {
+    const supabase = getAdminClient()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any).from('checkout_attempts').insert(row)
+    if (error) console.error('[initiate] attempt log failed:', error.message)
+  } catch (err) {
+    console.error('[initiate] attempt log threw:', err)
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const {
@@ -106,6 +124,21 @@ export async function POST(req: NextRequest) {
     const totalKobo  = totalNaira * 100  // Paystack requires kobo
 
     const reference = generateRef()
+
+    await recordAttempt({
+      paystack_reference: reference,
+      buyer_name:      buyer_name,
+      buyer_email:     buyer_email,
+      buyer_phone:     buyer_phone ?? null,
+      ticket_type:     tier,
+      quantity,
+      expected_total:  totalNaira,
+      discount_code:   discount_code ?? null,
+      referral_code:   referral_code ?? null,
+      attendee_emails: Array.isArray(attendee_emails) ? attendee_emails : [],
+      breakouts:       Array.isArray(breakouts) ? breakouts : [],
+      status:          'initiated',
+    })
 
     // ── Free order (100% coupon) — skip Paystack entirely ─────────────────────
     if (totalNaira === 0) {
