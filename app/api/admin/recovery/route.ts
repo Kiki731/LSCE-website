@@ -1,43 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { sendBatched, type BatchPayload } from '@/lib/send-batch'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 const FROM   = process.env.RESEND_FROM ?? 'LSCE Tickets <tickets@thelscexpo.com>'
 const SITE   = process.env.NEXT_PUBLIC_SITE_URL ?? 'https://thelscexpo.com'
-
-type Payload = Parameters<typeof resend.emails.send>[0]
-
-/**
- * Resend allows ~2 requests/second, so firing one request per recipient
- * rate-limits almost everything away. The batch endpoint takes up to 100
- * messages as a SINGLE request.
- *
- * The SDK also resolves (rather than throws) on API errors, so a rejected
- * send looks identical to a successful one unless the error field is read.
- * That combination previously reported "all sent" while nothing arrived.
- */
-async function sendBatched(payloads: Payload[]) {
-  let succeeded = 0
-  const errors: string[] = []
-
-  for (let i = 0; i < payloads.length; i += 100) {
-    const chunk = payloads.slice(i, i + 100)
-    try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error } = await (resend as any).batch.send(chunk)
-      if (error) {
-        errors.push(error.message ?? 'Resend rejected the batch')
-      } else {
-        succeeded += data?.data?.length ?? chunk.length
-      }
-    } catch (err) {
-      errors.push((err as Error).message)
-    }
-    if (i + 100 < payloads.length) await new Promise(r => setTimeout(r, 600))
-  }
-
-  return { succeeded, failed: payloads.length - succeeded, errors }
-}
 
 export async function POST(req: NextRequest) {
   try {
@@ -46,7 +13,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No emails provided' }, { status: 400 })
     }
 
-    const payloads: Payload[] = emails.map(email => ({
+    const payloads: BatchPayload[] = emails.map(email => ({
           from:     FROM,
           to:       email.trim(),
           replyTo:  'lagosstudentcareerexpo@gmail.com',

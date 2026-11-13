@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { Resend } from 'resend'
+import { sendBatched, type BatchPayload } from '@/lib/send-batch'
 import { createSupabaseServerClient } from '@/lib/supabase-server'
 import { createSupabaseAdminClient } from '@/lib/supabase-server'
 
@@ -103,23 +104,21 @@ export async function POST() {
     }
   }
 
-  const results = await Promise.allSettled(
-    recipients.map(({ email, name }) => {
-      const firstName = name.split(' ')[0] || 'there'
-      const { text, html } = buildEmail(firstName)
-      return resend.emails.send({
-        from:    FROM,
-        to:      email,
-        replyTo: 'lagosstudentcareerexpo@gmail.com',
-        subject: 'Important update — LSCE 2026 new date',
-        text,
-        html,
-      })
-    })
-  )
+  const payloads: BatchPayload[] = recipients.map(({ email, name }) => {
+    const firstName = name.split(' ')[0] || 'there'
+    const { text, html } = buildEmail(firstName)
+    return {
+      from:    FROM,
+      to:      email,
+      replyTo: 'lagosstudentcareerexpo@gmail.com',
+      subject: 'Important update — LSCE 2026 new date',
+      text,
+      html,
+    }
+  })
 
-  const succeeded = results.filter(r => r.status === 'fulfilled').length
-  const failed    = results.filter(r => r.status === 'rejected').length
+  const { succeeded, failed, errors } = await sendBatched(payloads)
+  if (errors.length) console.error('[broadcast] send errors:', errors)
 
-  return NextResponse.json({ succeeded, failed, total: recipients.length })
+  return NextResponse.json({ succeeded, failed, total: recipients.length, errors })
 }
